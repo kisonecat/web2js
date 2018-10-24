@@ -1,0 +1,16 @@
+{
+  "name": "web2js",
+  "version": "1.0.0",
+  "description": "Convert \"Pascal\" output of WEB into JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jim Fowler",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "flex-js": "^1.0.4",
+    "jison": "^0.4.18",
+    "pegjs": "^0.10.0"
+  }
+}
