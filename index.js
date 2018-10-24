@@ -14,7 +14,6 @@ var symbols = require('./symbols.json');
 
 for( var key in symbols ) {
   symbols[key].forEach( function(s) {
-    console.log(s);
     if (key == "fun") {
       sym_table[s] = { type: 'fun_param' };
     } else {
@@ -205,12 +204,15 @@ parser.lexer = {
     var token = lexer.lex();
     last_token = token;
     this.yytext = lexer.text;
-    console.log(lexer.text,token);
+    //console.log(lexer.text,token);
     return token;
     },
   setInput: function (str) {
   }
 };
 
-parser.parse();
+var program = parser.parse();
+
+console.log(program);
+
 

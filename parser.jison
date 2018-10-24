@@ -9,76 +9,60 @@
 
 %start PROGRAM
 
+%{
+
+var Program = require('./pascal/program.js');
+var Block = require('./pascal/block.js');
+var ConstantDeclaration = require('./pascal/constant-declaration.js');
+var TypeDeclaration = require('./pascal/type-declaration.js');
+var VariableDeclaration = require('./pascal/variable-declaration.js');
+var RecordDeclaration = require('./pascal/record-declaration.js');
+var Constant = require('./pascal/constant.js');
+var Variable = require('./pascal/variable.js');
+var Type = require('./pascal/type.js');
+var Pointer = require('./pascal/pointer.js');
+var Desig = require('./pascal/desig.js');
+var SubrangeType = require('./pascal/subrange-type.js');
+var PointerType = require('./pascal/pointer-type.js');
+var ArrayType = require('./pascal/array-type.js');
+var RecordType = require('./pascal/record-type.js');
+var FileType = require('./pascal/file-type.js');
+var FieldIdentifier = require('./pascal/field-identifier.js');
+var FunctionIdentifier = require('./pascal/function-identifier.js');
+var FunctionDeclaration = require('./pascal/function-declaration.js');
+var ProcedureIdentifier = require('./pascal/procedure-identifier.js');
+var ProcedureDeclaration = require('./pascal/procedure-declaration.js');
+var Operation = require('./pascal/operation.js');
+var UnaryOperation = require('./pascal/unary-operation.js');
+var StringLiteral = require('./pascal/string-literal.js');
+var SingleCharacter = require('./pascal/single-character.js');
+var FunctionEvaluation = require('./pascal/function-evaluation.js');
+var ExpressionWithWidth = require('./pascal/expression-with-width.js');
+
+var BreakStatement = require('./pascal/statements/break.js');
+var Nop = require('./pascal/statements/nop.js');
+var Assignment = require('./pascal/statements/assignment.js');
+var Goto = require('./pascal/statements/goto.js');
+var Conditional = require('./pascal/statements/conditional.js');
+var Switch = require('./pascal/statements/switch.js');
+var Case = require('./pascal/statements/case.js');
+var While = require('./pascal/statements/while.js');
+var Repeat = require('./pascal/statements/repeat.js');
+var For = require('./pascal/statements/for.js');
+var CallProcedure = require('./pascal/statements/call-procedure.js');
+
+%}
+
 %%
 
-
-
 PROGRAM:
-  	DEFS
           PROGRAM_HEAD
   	LABEL_DEC_PART CONST_DEC_PART TYPE_DEC_PART
   	VAR_DEC_PART
   	P_F_DEC_PART
   	BODY
-  	  { YYACCEPT; }
+  	  { return new Program($2,$3,$4,$5,$6,$7); }
           ;
-
-/* The @define statements we use to populate the symbol table.  */
-DEFS:
- 	  /* empty */
- 	| DEFS DEF
- 	;
- DEF:
- 	  define field undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = field_id;
- 	    }
- 	| define function undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = fun_id;
- 	    }
- 	| define const undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = const_id;
- 	    }
- 	| define function undef_id '(' ')' ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = fun_param;
- 	    }
- 	| define procedure undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = proc_id;
- 	    }
- 	| define procedure undef_id '(' ')' ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = proc_param;
- 	    }
- 	| define type undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = type_id;
- 	    }
- 	| define type undef_id '=' SUBRANGE_TYPE ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = type_id;
- 	      sym_table[ii].val = lower_bound;
- 	      sym_table[ii].val_sym = lower_sym;
- 	      sym_table[ii].upper = upper_bound;
- 	      sym_table[ii].upper_sym = upper_sym;
- 	    }
- 	| define var undef_id ';'
- 	    {
- 	      ii = add_to_table (last_id);
- 	      sym_table[ii].typ = var_id;
- 	    }
- 	;
 
 /* program statement.  Ignore any files.  */
 PROGRAM_HEAD:
@@ -100,248 +84,247 @@ PROGRAM_FILE:
  	| undef_id
  	;
 
-BLOCK:
-           LABEL_DEC_PART
-           CONST_DEC_PART TYPE_DEC_PART
-           VAR_DEC_PART
-STAT_PART
-{ }
+BLOCK: LABEL_DEC_PART
+       CONST_DEC_PART TYPE_DEC_PART
+       VAR_DEC_PART
+       STAT_PART
+  	  { $$ = new Block($1,$2,$3,$4,$5); }
  	;
 
- LABEL_DEC_PART:		/* empty */
+ LABEL_DEC_PART:		/* empty */  { $$ = []; }
          |	label
-                 LABEL_LIST ';'
+                 LABEL_LIST ';'   { $$ = $2; }
          ;
 
- LABEL_LIST:		LABEL
-         |	LABEL_LIST ',' LABEL
+ LABEL_LIST:		LABEL  { $$ = [$1]; }
+         |	LABEL_LIST ',' LABEL  { $$ = $1.concat( $3 ); }
          ;
 
  LABEL:
- 	i_num {  }
+ 	i_num { $$ = parseInt(yytext); }
  	;
 
  CONST_DEC_PART:
-                 /* empty */
+                 /* empty */ { $$ = []; }
          |	const CONST_DEC_LIST
-                         {  }
+                         { $$ = $2; }
          ;
 
  CONST_DEC_LIST:
- 	  CONST_DEC
-         | CONST_DEC_LIST CONST_DEC
+ 	  CONST_DEC { $$ = [$1]; }
+         | CONST_DEC_LIST CONST_DEC  { $$ = $1.concat( $2 ); }
          ;
 
-CONST_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "const_id" }; } ;
+CONST_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "const_id" }; $$ = yytext; } ;
 
  CONST_DEC:
  	CONST_ID_DEF
  	'='		  
          CONSTANT_EXPRESS 
-';'		  { }
+';'		  { $$ = new ConstantDeclaration( $1, $3 ); }
          ;
 
 CONSTANT:
-i_num  { }
-         | r_num
-         | STRING   
-         | CONSTANT_ID
+         i_num  { $$ = parseInt( yytext ); }
+         | r_num  { $$ = parseFloat( yytext ); }
+         | STRING     { $$ = new StringLiteral(yytext); }
+         | CONSTANT_ID  { $$ = new Constant( $1 ); }
          ;
 
  CONSTANT_EXPRESS:
  	  UNARY_OP CONSTANT_EXPRESS %prec '*'
-             {  }
+             { $$ = new UnaryOperation($1, $2);}
          | CONSTANT_EXPRESS '+'          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('+', $1, $3);}
          | CONSTANT_EXPRESS '-'          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('-', $1, $3);}
          | CONSTANT_EXPRESS '*'          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              {$$ = new Operation('*', $1, $3); }
          | CONSTANT_EXPRESS div      
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('div', $1, $3);}
          | CONSTANT_EXPRESS '='          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('==', $1, $3);}
          | CONSTANT_EXPRESS '<>'   
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              {$$ = new Operation('!=', $1, $3); }
          | CONSTANT_EXPRESS mod      
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('%', $1, $3);}
          | CONSTANT_EXPRESS '<'          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('<', $1, $3);}
          | CONSTANT_EXPRESS '>'          
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              { $$ = new Operation('>', $1, $3);}
          | CONSTANT_EXPRESS '<='  
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              {$$ = new Operation('<=', $1, $3); }
          | CONSTANT_EXPRESS '>=' 
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              {$$ = new Operation('>=', $1, $3); }
          | CONSTANT_EXPRESS and      
-           CONSTANT_EXPRESS              { }
+           CONSTANT_EXPRESS              {$$ = new Operation('&&', $1, $3); }
          | CONSTANT_EXPRESS or       
-CONSTANT_EXPRESS              { }
+CONSTANT_EXPRESS              { $$ = new Operation('||', $1, $3);}
          | CONSTANT_EXPRESS '/'          
-CONSTANT_EXPRESS              {}
+CONSTANT_EXPRESS              {$$ = new Operation('/', $1, $3);}
          | CONST_FACTOR { $$ = $1; }
          ;
 
  CONST_FACTOR:
  	  '('
-           CONSTANT_EXPRESS ')'
-         | CONSTANT
+           CONSTANT_EXPRESS ')'  { $$ = $2; }
+         | CONSTANT   { $$ = $1; }
          ;
 
  STRING:
- 	  string_literal
- 	| single_char
+ 	  string_literal   { $$ = new StringLiteral(yytext); }
+ 	| single_char      { $$ = new SingleCharacter(yytext); }
  	;
 
- CONSTANT_ID:
-const_id {  }
+ CONSTANT_ID: const_id { $$ = yytext; }
  	;
 
- TYPE_DEC_PART:		/* empty */
- 		| type TYPE_DEF_LIST
+ TYPE_DEC_PART:		/* empty */ { $$ = []; }
+ 		| type TYPE_DEF_LIST { $$ = $2; }
  		;
 
- TYPE_DEF_LIST:		TYPE_DEF
- 		| TYPE_DEF_LIST TYPE_DEF
+ TYPE_DEF_LIST:		TYPE_DEF  { $$ = [$1]; }
+ 		| TYPE_DEF_LIST TYPE_DEF { $$ = $1.concat( $2 ); }
  		;
 
  TYPE_DEF:
          TYPE_ID_DEF
          '='
-         TYPE ';' {  } 
+         TYPE ';' { $$ = new TypeDeclaration( $1, $3 ); }
  	;
 
-TYPE_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "type_id" }; } ;
+TYPE_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "type_id" }; $$ = $1; } ;
 
 TYPE:
- 	  SIMPLE_TYPE
- 	| STRUCTURED_TYPE
+ 	  SIMPLE_TYPE     { $$ = $1; }
+ 	| STRUCTURED_TYPE  { $$ = $1; }
  	;
 
 SIMPLE_TYPE:
- 	  SUBRANGE_TYPE
-         | TYPE_ID
+ 	  SUBRANGE_TYPE   { $$ = $1; }
+         | type_id        { $$ = new Type(yytext); }
  	;
 
 SUBRANGE_TYPE:
- 	SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT
+ 	SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT  { $$ = new SubrangeType($1,$3); }
  	;
 
 // I modified this
  POSSIBLE_PLUS:
- 	  /* empty */
- 	| unary_plus
-	| unary_minus
+ 	  /* empty */  { $$ = 1; }
+ 	| unary_plus   { $$ = 1; }
+	| unary_minus { $$ = -1; }
  	;
+
+INTEGER: i_num { $$ = parseInt(yytext); } ;
+
+CONST_ID: const_id { $$ = new Constant( yytext ); } ;
 
  SUBRANGE_CONSTANT:
-           POSSIBLE_PLUS i_num
-         | POSSIBLE_PLUS const_id
- 	| var_id
- 	| undef_id
+           POSSIBLE_PLUS INTEGER { $$ = $1 * $2; }
+         | POSSIBLE_PLUS CONST_ID { if ($1 == 1) { $$ = $2; } else { $$ = new UnaryOperation( '-', $2 ); } }
+ 	| var_id   { $$ = new Variable( yytext); }
+ 	| undef_id { $$ = new Variable( yytext); }
          ;
 
- TYPE_ID:
- 	type_id
+STRUCTURED_TYPE:
+ 	  ARRAY_TYPE  { $$ = $1; }
+ 	| RECORD_TYPE { $$ = $1; }
+ 	| FILE_TYPE { $$ = $1; }
+ 	| POINTER_TYPE { $$ = $1; }
  	;
 
-STRUCTURED_TYPE:
- 	  ARRAY_TYPE
- 	| RECORD_TYPE
- 	| FILE_TYPE
- 	| POINTER_TYPE
- 	;
+TYPE_ID: type_id { $$ = new Type(yytext); } ;
 
  POINTER_TYPE:
- 	'^' type_id
+ 	'^' TYPE_ID   { $$ = new PointerType( $2 ); }
  	;
 
  ARRAY_TYPE:
-           array '[' INDEX_TYPE ']' of COMPONENT_TYPE
+           array '[' INDEX_TYPE ']' of COMPONENT_TYPE  { $$ = new ArrayType( $3, $6 ); }
          | array '[' INDEX_TYPE ',' INDEX_TYPE ']' of COMPONENT_TYPE
+	 { $$ = new ArrayType( [$3,$5], $8 ); }
          ;
 
  INDEX_TYPE:
- 	  SUBRANGE_TYPE
-{  }
-         | type_id
-             {
-             }
+ 	  SUBRANGE_TYPE { $$ = $1; }
+         | TYPE_ID       { $$ = $1; }
          ;
 
- COMPONENT_TYPE: TYPE ;
+ COMPONENT_TYPE: TYPE { $$= $1; };
 
  RECORD_TYPE:
  	record
          FIELD_LIST end
-{  }
+{  $$ = new RecordType( $2 ); }
          ;
 
- FIELD_LIST:		RECORD_SECTION
- 		| FIELD_LIST ';' RECORD_SECTION
+ FIELD_LIST:		RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
+ 		| FIELD_LIST ';' RECORD_SECTION  { if ($3) { $$ = $1.concat( [$3] ); } else { $$ = $1; } }
  		;
 
- RECORD_SECTION: 			FIELD_ID_LIST ':'
- 			TYPE
- 		| /* empty */
+ RECORD_SECTION: 			FIELD_ID_LIST ':' 
+ 			TYPE { $$ = new RecordDeclaration( $1, $2 ); }
+ 		| /* empty */ { $$ = undefined; }
  		;
 
- FIELD_ID_LIST:		FIELD_ID
- 		| FIELD_ID_LIST ',' FIELD_ID
+ FIELD_ID_LIST:		FIELD_ID { $$ = [$1]; }
+ 		| FIELD_ID_LIST ',' FIELD_ID  { $$ = $1.concat( [$3] ); }
  		;
 
- FIELD_ID:		undef_id { yy.sym_table[yytext] = { type: "field_id" }; }
- 		| field_id
+ FIELD_ID:		undef_id { yy.sym_table[yytext] = { type: "field_id" }; $$ = new FieldIdentifier(yytext); }
+ 		| field_id { $$ = new FieldIdentifier(yytext); }
  		;
 
  FILE_TYPE:
          file of
          TYPE
-{  }
+{  $$ = new FileType( $3 ); }
  	;
 
  VAR_DEC_PART:
- 	  /* empty */
- 	| var VAR_DEC_LIST
+ 	  /* empty */ { $$ = []; }
+ 	| var VAR_DEC_LIST  { $$ = $2; }
  	;
 
  VAR_DEC_LIST:
- 	  VAR_DEC
- 	| VAR_DEC_LIST VAR_DEC
+ 	  VAR_DEC   { $$ = [$1]; }
+ 	| VAR_DEC_LIST VAR_DEC  { $$ = $1.concat( [$2] ); }
  	;
 
  VAR_DEC:
          VAR_ID_DEC_LIST ':'
          TYPE ';'
-{  }
+{  $$ = new VariableDeclaration( $1, $3 ); }
  	;
 
- VAR_ID_DEC_LIST:	VAR_ID
- 		| VAR_ID_DEC_LIST ',' VAR_ID
+ VAR_ID_DEC_LIST:	VAR_ID    { $$ = [$1]; }
+ 		| VAR_ID_DEC_LIST ',' VAR_ID  { $$ = $1.concat( [$3] ); }
  		;
 
-VAR_ID:			undef_id { yy.sym_table[yytext] = { type: "var_id" }; } 
-		| var_id { yy.sym_table[yytext] = { type: "var_id" }; } 
-		| field_id { yy.sym_table[yytext] = { type: "var_id" }; } 
+VAR_ID:			undef_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
+		| var_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
+		| field_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
 		;
 
 BODY:
-	  /* empty */
+	  /* empty */ { $$ = []; }
 	| begin
-	  STAT_LIST end '.'
+	  STAT_LIST end '.' { $$ = $2; }
 	;
 
 P_F_DEC_PART:
-	  P_F_DEC
-	| P_F_DEC_PART P_F_DEC
+	  P_F_DEC { $$ = [$1]; }
+	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
 	;
 
-P_F_DEC:		PROCEDURE_DEC ';'
-		| FUNCTION_DEC ';'
+P_F_DEC:		PROCEDURE_DEC ';' { $$ = $1; }
+		| FUNCTION_DEC ';' { $$ = $1; }
 		;
 
 PROCEDURE_DEC:
-	PROCEDURE_HEAD BLOCK ;
+	PROCEDURE_HEAD BLOCK  { $$ = new ProcedureDeclaration( $1[0], $1[1], $2 ); }
+	;
 
 PROCEDURE:
 	  procedure
@@ -349,70 +332,69 @@ PROCEDURE:
 	  procedure
 	;
 
-PROC_ID_DEF: undef_id { $$ = yytext; } ;
+PROC_ID_DEF: undef_id { $$ = new ProcedureIdentifier( yytext ); } ;
 
 PROCEDURE_HEAD:
 	  PROCEDURE PROC_ID_DEF
-	  PARAM ';' { if ($3) { yy.sym_table[$2] = { type: "proc_param" }; } else
-	   { yy.sym_table[$2] = { type: "proc_id" }; } }
+	  PARAM ';' { if ($3.length > 0) { yy.sym_table[$2.name] = { type: "proc_param" }; } else
+	   { yy.sym_table[$2.name] = { type: "proc_id" }; }  $$ = [$2, $3]; }
 	| procedure DECLARED_PROC
-	  PARAM ';'
+	  PARAM ';'   { $$ = [$2, $3]; }
 	;
 
-PARAM:  { $$ = undefined; } |
+PARAM:  { $$ = []; } |
 	'('
 	  FORM_PAR_SEC_L ')'
 	{ $$ = $2; } ;
 
-FORM_PAR_SEC_L:		FORM_PAR_SEC
-		| FORM_PAR_SEC_L ';' FORM_PAR_SEC
+FORM_PAR_SEC_L:		FORM_PAR_SEC  { $$ = [$1]; }
+		| FORM_PAR_SEC_L ';' FORM_PAR_SEC  { $$ = $1.concat( [$3] ); }
 		;
 
-FORM_PAR_SEC1:
-	  VAR_ID_DEC_LIST ':' type_id
+FORM_PAR_SEC1:  VAR_ID_DEC_LIST ':' TYPE_ID  {  $$ = new VariableDeclaration( $1, $3 ); }
 	;
 
-FORM_PAR_SEC:		 FORM_PAR_SEC1
-		| var FORM_PAR_SEC1
+FORM_PAR_SEC:	FORM_PAR_SEC1 { $$ = $1; }
+		| var FORM_PAR_SEC1  { $$ = $2; }
 		;
 
 DECLARED_PROC:
-	  proc_id
-	| proc_param
+	  proc_id { $$ = new ProcedureIdentifier( yytext ); }
+	| proc_param  { $$ = new ProcedureIdentifier( yytext ); }
 	;
 
-FUNCTION_DEC: FUNCTION_HEAD BLOCK ;
+FUNCTION_DEC: FUNCTION_HEAD BLOCK { $$ = new FunctionDeclaration( $1[0], $1[1], $1[2], $2 ); };
 
-FUN_ID_DEF: undef_id { $$ = yytext ; } ;
+FUN_ID_DEF: undef_id { $$ = new FunctionIdentifier( yytext ); } ;
 
 FUNCTION_HEAD:
-	  function undef_id
+	  function FUN_ID_DEF
 	  PARAM ':'
           RESULT_TYPE
-          ';' { if ($3) { yy.sym_table[$2] = { type: "fun_param" }; } else
-	   { yy.sym_table[$2] = { type: "fun_id" }; } }
+          ';' { if ($3.length > 0) { yy.sym_table[$2.name] = { type: "fun_param" }; } else
+	   { yy.sym_table[$2.name] = { type: "fun_id" }; } $$ = [$2, $3, $5]; }
 	| function DECLARED_FUN
           PARAM ':'
           RESULT_TYPE
-          ';'
+          ';' { $$ = [$2, $3, $5]; }
 	;
 
-DECLARED_FUN:		fun_id
-		| fun_param
+DECLARED_FUN:		fun_id  { $$ = new FunctionIdentifier( yytext ); }
+		| fun_param   { $$ = new FunctionIdentifier( yytext ); }
 		;
 
-RESULT_TYPE:		TYPE
+RESULT_TYPE:		TYPE { $$ = $1; }
 		;
 
-STAT_PART:		begin STAT_LIST end
+STAT_PART:		begin STAT_LIST end { $$ = $2; }
 		;
 
 COMPOUND_STAT:		begin
-			STAT_LIST end
+			STAT_LIST end  { $$ = $2; }
 		;
 
-STAT_LIST:		STATEMENT
-		| STAT_LIST ';' STATEMENT
+STAT_LIST:		STATEMENT  { $$ = [$1]; }
+		| STAT_LIST ';' STATEMENT  { $$ = $1.concat( [$3] ); }
 		;
 
 STATEMENT:		UNLAB_STAT
@@ -420,206 +402,227 @@ STATEMENT:		UNLAB_STAT
 			UNLAB_STAT
 		;
 
-S_LABEL:		i_num
+S_LABEL:		i_num { $$ = parseInt(yytext); }
 		;
 
-UNLAB_STAT:		SIMPLE_STAT
-		| STRUCT_STAT
+UNLAB_STAT:		SIMPLE_STAT { $$ = $1; }
+		| STRUCT_STAT  { $$ = $1; }
 		;
 
-SIMPLE_STAT:		ASSIGN_STAT
-		| PROC_STAT
-		| GO_TO_STAT
-		| EMPTY_STAT
-		| break	
+SIMPLE_STAT:		ASSIGN_STAT  { $$ = $1; }
+		| PROC_STAT { $$ = $1; }
+		| GO_TO_STAT { $$ = $1; }
+		| EMPTY_STAT { $$ = $1; }
+		| break	{ $$ = new BreakStatement(); }
 		;
 
 ASSIGN_STAT:		VARIABLE assign
-			EXPRESS
+			EXPRESS  { $$ = new Assignment( $1, $3 ); }
 		| FUNC_ID_AS assign
-			EXPRESS
+			EXPRESS { $$ = new Assignment( $1, $3 ); }
 		;
 
-POINTER: | '^' { };
+POINTER: {$$ = false;}
+       | '^' { $$ = true;}
+       ;
 
-VARIABLE:	var_id POINTER
-		VAR_DESIG_LIST
-		| var_id POINTER
+VAR_ID: var_id { $$ = new Variable( yytext ); } ;
+
+VARP: VAR_ID POINTER { if ($2) { $$ = new Pointer( $1 ); } else { $$ = $1; } } ;
+
+VARIABLE:	VARP VAR_DESIG_LIST { $$ = new Desig( $1, $2 ); }
+		| VARP  { $$ = $1; }
 		;
 
-FUNC_ID_AS:		fun_id
-		| fun_param
+FUNC_ID_AS:		fun_id { $$ = new FunctionIdentifier(yytext); }
+		| fun_param { $$ = new FunctionIdentifier(yytext); }
 		;
 
-VAR_DESIG_LIST:		VAR_DESIG
-		| VAR_DESIG_LIST VAR_DESIG
+VAR_DESIG_LIST:		VAR_DESIG { $$ = [$1]; }
+		| VAR_DESIG_LIST VAR_DESIG { $$ = $1.concat( [$2] ); }
 		;
 
 VAR_DESIG:		'['
-			EXPRESS VAR_DESIG1
-		| '.' field_id
-		| '.' var_id		
-		| '.' hhb0
-		| '.' hhb1
+			EXPRESS VAR_DESIG1 { if ($3) { $$ = [$2, $3]; } else {$$ = $2; } }
+		| '.' FIELD_ID { $$ = $2; }
+		| '.' VAR_ID { $$ = $2; }	
+		| '.' hhb0 { $$ = new FieldIdentifier('hhb0'); }
+		| '.' hhb1 { $$ = new FieldIdentifier('hhb1'); }
 		;
 
-VAR_DESIG1:		']'
+VAR_DESIG1:		']'  { $$ = false; }
 		| ','
-			EXPRESS	']'
+			EXPRESS	']' {$$ = $2; }
 		;
 
 EXPRESS:		UNARY_OP EXPRESS	%prec '*'
-				
+				{ $$ = new UnaryOperation( $1, $2 ); }
 		| EXPRESS '+'  EXPRESS
+				{ $$ = new Operation( '+', $1, $3 ); }		
 		| EXPRESS '-'  EXPRESS
+				{ $$ = new Operation( '-', $1, $3 ); }				
 		| EXPRESS '*' EXPRESS
+				{ $$ = new Operation( '*', $1, $3 ); }						
 		| EXPRESS div EXPRESS
+				{ $$ = new Operation( 'div', $1, $3 ); }								
 		| EXPRESS '='  EXPRESS
+				{ $$ = new Operation( '==', $1, $3 ); }										
 		| EXPRESS '<>' EXPRESS
+				{ $$ = new Operation( '!=', $1, $3 ); }
 		| EXPRESS mod  EXPRESS
+				{ $$ = new Operation( '%', $1, $3 ); }
 		| EXPRESS '<'  EXPRESS
+				{ $$ = new Operation( '<', $1, $3 ); }
 		| EXPRESS '>'  EXPRESS
+				{ $$ = new Operation( '>', $1, $3 ); }		
 		| EXPRESS '<=' EXPRESS
+				{ $$ = new Operation( '<=', $1, $3 ); }		
 		| EXPRESS '>='  EXPRESS
+				{ $$ = new Operation( '>=', $1, $3 ); }				
 		| EXPRESS and  EXPRESS
+				{ $$ = new Operation( '&&', $1, $3 ); }						
 		| EXPRESS or  EXPRESS
+				{ $$ = new Operation( '||', $1, $3 ); }			
 		| EXPRESS '/'
 			EXPRESS
-		| FACTOR
+				{ $$ = new Operation( '/', $1, $3 ); }						
+		| FACTOR { $$ = $1; }
 		;
 
 UNARY_OP:
-	  unary_plus
-	| unary_minus
-	| not
+	  unary_plus { $$ = "+"; }
+	| unary_minus { $$ = "-"; }
+	| not  { $$ = "!"; }
 	;
 
 FACTOR:
 	  '('
-	  EXPRESS ')'
-	| VARIABLE
-	| CONSTANT
-	| fun_id
+	  EXPRESS ')' { $$ = $2; }
+	| VARIABLE { $$ = $1; }
+	| CONSTANT { $$ = $1; }
+	| fun_id  { $$ = new FunctionEvaluation( new FunctionIdentifier(yytext), [] ); }
 	| fun_param
-	  PARAM_LIST
+	  PARAM_LIST  { $$ = new FunctionEvaluation( new FunctionIdentifier(yytext), $2 ); }
 	;
 
 PARAM_LIST:
 	'('               
-	ACTUAL_PARAM_L ')'
+	ACTUAL_PARAM_L ')' { $$ = $2; }
 	;
 
 ACTUAL_PARAM_L:
-	  ACTUAL_PARAM
-	| ACTUAL_PARAM_L ',' 
-	  ACTUAL_PARAM
+	  ACTUAL_PARAM  { $$ = [$1]; }
+	| ACTUAL_PARAM_L ','    
+	  ACTUAL_PARAM   { $$ = $1.concat( [$3] ); }
 	;
 
 ACTUAL_PARAM:
-	  EXPRESS WIDTH_FIELD
-	| type_id
+	  EXPRESS WIDTH_FIELD  { if ($2 === undefined) { $$ = $1; } else { $$ = new ExpressionWithWidth( $1, $2 ); } }
+	| TYPE_ID   { $$ = $1; }
 	;
 
 WIDTH_FIELD:
-	  ':' i_num
-	| /* empty */
+	  ':' INTEGER { $$ = $2; }
+	| /* empty */ { $$ = undefined; }
 	;
 
-PROC_STAT:		proc_id
-		| undef_id
-		| break PARAM_LIST
-		| proc_param
-			PARAM_LIST
+PROC_PARAM: proc_param { $$ = new ProcedureIdentifier(yytext); } ;
+
+PROC_STAT:	proc_id { $$ = new CallProcedure( new ProcedureIdentifier( yytext ), [] ); }
+		| undef_id { $$ = new CallProcedure( new ProcedureIdentifier( yytext ), [] ); }
+		| break PARAM_LIST { $$ = new CallProcedure( new ProcedureIdentifier( 'break' ), $2 ); }
+		| PROC_PARAM
+			PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
 		;
 
-GO_TO_STAT:		goto i_num
+GO_TO_STAT:		goto INTEGER  { $$ = new Goto( $2 ); }
 		;
 
-EMPTY_STAT:		/* empty */
+EMPTY_STAT:		/* empty */  { $$ = new Nop(); }
 		;
 
-STRUCT_STAT:		COMPOUND_STAT
-		| CONDIT_STAT
-		| REPETIT_STAT
+STRUCT_STAT:		COMPOUND_STAT { $$ = $1; }
+		| CONDIT_STAT { $$ = $1; }
+		| REPETIT_STAT { $$ = $1; }
 		;
 
-CONDIT_STAT:		IF_STATEMENT
-		| CASE_STATEMENT
+CONDIT_STAT:		IF_STATEMENT { $$ = $1; }
+		| CASE_STATEMENT { $$ = $1; }
 		;
 
 IF_STATEMENT:		if
-			IF_THEN_ELSE_STAT
+			IF_THEN_ELSE_STAT { $$ = $2; }
 		;
 
 IF_THEN_ELSE_STAT:	EXPRESS
-			THEN_ELSE_STAT
+			THEN_ELSE_STAT  { $$ = new Conditional($1, $2[0], $2[1]); }
 		;
 
 THEN_ELSE_STAT:		then
-			STATEMENT ELSE_STAT
+			STATEMENT ELSE_STAT  { $$ = [$2,$3]; }
 		| then if
 			IF_THEN_ELSE_STAT
-			ELSE_STAT
+			ELSE_STAT  { $$ = [$3,$4]; }
 		;
 
-ELSE_STAT:		/* empty */
+ELSE_STAT:		/* empty */ { $$ = undefined; }
 		| else
-			STATEMENT
+			STATEMENT  { $$ = $2; }
 		;
 
 CASE_STATEMENT:		case
 			EXPRESS of
-			CASE_EL_LIST END_CASE
+			CASE_EL_LIST END_CASE { $$ = new Switch( $2, $4 ); }
 		;
 
-CASE_EL_LIST:		CASE_ELEMENT
-		| CASE_EL_LIST ';' CASE_ELEMENT
+CASE_EL_LIST:		CASE_ELEMENT       { $$ = [$1]; }
+		| CASE_EL_LIST ';' CASE_ELEMENT  { $$ = $1.concat( [$3] ); }
 		;
 
-CASE_ELEMENT:		CASE_LAB_LIST ':' UNLAB_STAT
+CASE_ELEMENT:		CASE_LAB_LIST ':' UNLAB_STAT { $$ = new Case($1,$3); }
 		;
 
-CASE_LAB_LIST:		CASE_LAB
-		| CASE_LAB_LIST ',' CASE_LAB
+CASE_LAB_LIST:		CASE_LAB      { $$ = [$1]; }
+		| CASE_LAB_LIST ',' CASE_LAB  { $$ = $1.concat([$3]); }
 		;
 
-CASE_LAB:		i_num
-		| others
+CASE_LAB:		i_num      { $$ = parseInt(yytext); }
+		| others  { $$ = true; }
 		;
 
 END_CASE:		end
 		| ';' end
 		;
 
-REPETIT_STAT:		WHILE_STATEMENT
-		| REP_STATEMENT
-		| FOR_STATEMENT
+REPETIT_STAT:		WHILE_STATEMENT { $$ = $1; }
+		| REP_STATEMENT { $$ = $1; }
+		| FOR_STATEMENT { $$ = $1; }
 		;
 
 WHILE_STATEMENT:	while
 			EXPRESS
-			do STATEMENT
+			do STATEMENT { $$ = new While( $2, $4 ); }
 		;
 
 REP_STATEMENT:		repeat
 			STAT_LIST until
-			EXPRESS
+			EXPRESS { $$ = new Repeat( $4, $2 ); }
 		;
 
 FOR_STATEMENT:		for
 			CONTROL_VAR assign
 			FOR_LIST do
-			STATEMENT
+			STATEMENT  { $$ = new For( $1, $4[0], $4[1], $4[2], $6 ); }
 		;
 
-CONTROL_VAR:		var_id
+CONTROL_VAR:		var_id { $$ = new Variable(yytext); }
 		;
 
 FOR_LIST:		EXPRESS
 			to
-			EXPRESS
+			EXPRESS  { $$ = [$1,$3,1]; }
 		| EXPRESS
 			downto
-			EXPRESS
+			EXPRESS   { $$ = [$1,$3,-1]; }
 		;
 
