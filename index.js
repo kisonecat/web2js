@@ -213,6 +213,8 @@ parser.lexer = {
 
 var program = parser.parse();
 
-console.log(program);
+console.log( program.toString() );
+
+
 
 

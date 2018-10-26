@@ -28,6 +28,7 @@ var ArrayType = require('./pascal/array-type.js');
 var RecordType = require('./pascal/record-type.js');
 var FileType = require('./pascal/file-type.js');
 var FieldIdentifier = require('./pascal/field-identifier.js');
+var ArrayIndex = require('./pascal/array-index.js');
 var FunctionIdentifier = require('./pascal/function-identifier.js');
 var FunctionDeclaration = require('./pascal/function-declaration.js');
 var ProcedureIdentifier = require('./pascal/procedure-identifier.js');
@@ -50,6 +51,7 @@ var While = require('./pascal/statements/while.js');
 var Repeat = require('./pascal/statements/repeat.js');
 var For = require('./pascal/statements/for.js');
 var CallProcedure = require('./pascal/statements/call-procedure.js');
+var Compound = require('./pascal/statements/compound.js');
 
 %}
 
@@ -443,7 +445,7 @@ VAR_DESIG_LIST:		VAR_DESIG { $$ = [$1]; }
 		;
 
 VAR_DESIG:		'['
-			EXPRESS VAR_DESIG1 { if ($3) { $$ = [$2, $3]; } else {$$ = $2; } }
+			EXPRESS VAR_DESIG1 { if ($3) { $$ = new ArrayIndex([$2, $3]); } else {$$ = new ArrayIndex($2); } }
 		| '.' FIELD_ID { $$ = $2; }
 		| '.' VAR_ID { $$ = $2; }	
 		| '.' hhb0 { $$ = new FieldIdentifier('hhb0'); }
@@ -495,14 +497,18 @@ UNARY_OP:
 	| not  { $$ = "!"; }
 	;
 
+FUN_ID: fun_id { $$ = new FunctionIdentifier(yytext); }
+      | fun_param { $$ = new FunctionIdentifier(yytext); }
+      ;
+      
 FACTOR:
 	  '('
 	  EXPRESS ')' { $$ = $2; }
 	| VARIABLE { $$ = $1; }
 	| CONSTANT { $$ = $1; }
-	| fun_id  { $$ = new FunctionEvaluation( new FunctionIdentifier(yytext), [] ); }
+	| fun_id  { $$ = new FunctionEvaluation( $1, [] ); }
 	| fun_param
-	  PARAM_LIST  { $$ = new FunctionEvaluation( new FunctionIdentifier(yytext), $2 ); }
+	  PARAM_LIST  { $$ = new FunctionEvaluation( $1, $2 ); }
 	;
 
 PARAM_LIST:
@@ -541,7 +547,7 @@ GO_TO_STAT:		goto INTEGER  { $$ = new Goto( $2 ); }
 EMPTY_STAT:		/* empty */  { $$ = new Nop(); }
 		;
 
-STRUCT_STAT:		COMPOUND_STAT { $$ = $1; }
+STRUCT_STAT:		COMPOUND_STAT { $$ = new Compound($1); }
 		| CONDIT_STAT { $$ = $1; }
 		| REPETIT_STAT { $$ = $1; }
 		;
@@ -612,7 +618,7 @@ REP_STATEMENT:		repeat
 FOR_STATEMENT:		for
 			CONTROL_VAR assign
 			FOR_LIST do
-			STATEMENT  { $$ = new For( $1, $4[0], $4[1], $4[2], $6 ); }
+			STATEMENT  { $$ = new For( $2, $4[0], $4[1], $4[2], $6 ); }
 		;
 
 CONTROL_VAR:		var_id { $$ = new Variable(yytext); }

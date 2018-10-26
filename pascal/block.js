@@ -9,7 +9,27 @@ module.exports = class Block {
      this.statements = statements;
    }
 
-   toString() {
-     return this.body.toString();
+  toString() {
+    var code = "";
+    
+    this.consts.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";
+    });
+    this.types.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";
+    });
+    this.vars.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";      
+    });
+
+    this.statements.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";      
+    });
+
+    return code;
    }
 }

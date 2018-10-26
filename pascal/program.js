@@ -13,7 +13,32 @@ module.exports = class Program {
      this.body = body;
    }
 
-   toString() {
-     return this.body.toString();
-   }
-}
+  toString() {
+    var code  = "";
+    
+    this.consts.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";
+    });
+    this.types.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";
+    });
+    this.vars.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";      
+    });
+
+    this.pfs.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";      
+    });
+
+    this.body.forEach( function(v) {
+      code = code + v.toString();
+      code = code + "\n";      
+    });
+
+    return code;
+  }
+};
