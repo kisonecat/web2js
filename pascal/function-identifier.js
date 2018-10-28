@@ -5,7 +5,7 @@ module.exports = class FunctionIdentifier {
     this.name = name;
   }
 
-  toString() {
+  generate(e) {
     if (this.name === "break")
       return "_break";
     

@@ -5,7 +5,7 @@ module.exports = class ProcedureIdentifier {
     this.name = name;
   }
   
-  toString() {
+  generate(e) {
     if (this.name === "break")
       return "_break";
     

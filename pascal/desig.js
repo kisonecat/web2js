@@ -14,6 +14,8 @@ module.exports = class Desig {
     var factor = 1;
     var offset = 0;
 
+    return this.variable.generate(block);
+    
     // Handle arrays of twohalves in a special way
     if (v.type && v.type.componentType && v.type.componentType.name == "twohalves") {
       if (desig.length == 1) {

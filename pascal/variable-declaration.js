@@ -17,18 +17,24 @@ module.exports = class VariableDeclaration {
       }
       return code;
     }
-    
+
     var varName = this.names[0].generate(block);
+
+    var code = `var ${varName}; /* has type ${this.type.generate(block)} */`;
+
+    return code;
     
     if (this.type.componentType && this.type.componentType.name == "memoryword") {
       var code = `var ${varName} = {}; /* has type ${this.type} */\n`;
 
       var words;
-      if (this.type.index.lower) 
-        words = `(${this.type.index.upper}) - (${this.type.index.lower})`;
+      if (this.type.index.lower)
+        //words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
+        words = `SOBROKEN`;
       else {
         var indexingType = block.resolveType(this.type.index);
-        words = `(${indexingType.upper}) - (${indexingType.lower})`;        
+        //words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;
+        words = `SOBROKEN`;        
       }
 
       code = code + `${varName}.int = new Int32Array(${words});\n`;
@@ -44,11 +50,11 @@ module.exports = class VariableDeclaration {
       var code = `var ${varName} = {}; /* has type ${this.type} */\n`;
 
       var words;
-      if (this.type.index.lower) 
-        words = `(${this.type.index.upper}) - (${this.type.index.lower})`;
+      if (this.type.index.lower)
+        words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
       else {
         var indexingType = block.resolveType(this.type.index);
-        words = `(${indexingType.upper}) - (${indexingType.lower})`;        
+        words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;        
       }
 
       code = code + `${varName}.int = new Int32Array(${words});\n`;
@@ -61,11 +67,13 @@ module.exports = class VariableDeclaration {
       var c = block.resolveType(this.type.componentType);
 
       var words;
-      if (this.type.index.lower) 
-        words = `(${this.type.index.upper}) - (${this.type.index.lower})`;
+      if (this.type.index.lower)
+        //words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
+        words = `ALSOBAD`;
       else {
         var indexingType = block.resolveType(this.type.index);
-        words = `(${indexingType.upper}) - (${indexingType.lower})`;        
+        words = "BROKEN";
+        //words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;        
       }
 
       if (c.fields) {
@@ -119,7 +127,8 @@ module.exports = class VariableDeclaration {
       if (t.componentType.name == "packedASCIIcode")
         intType = "Uint8";            
         
-      var constructor = `new ${intType}Array((${index.upper}) - (${index.lower}));`;
+      //var constructor = `new ${intType}Array((${index.upper.generate(block)}) - (${index.lower.generate(block)}));`;
+      var constructor = `new ${intType}Array(BAD);`;
       
       return `var ${varName} = ${constructor}; /* has type ${this.type} */`;
     } else {

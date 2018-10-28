@@ -5,7 +5,7 @@ module.exports = class Type {
     this.name = name;
   }
 
-  toString() {
+  generate(e) {
     return this.name;
   }
 };

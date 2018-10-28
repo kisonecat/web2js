@@ -6,7 +6,7 @@ module.exports = class ExpressionWithWidth {
     this.width = width;
   }
 
-  toString() {
-    return this.expression.toString() + `/*with width ${this.width}*/`;
+  generate(e) {
+    return this.expression.generate(e) + `/*with width ${this.width}*/`;
   }
 };

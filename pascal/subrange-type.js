@@ -6,7 +6,7 @@ module.exports = class SubrangeType {
     this.upper = upper;
   }
 
-  toString() {
-    return `range ${this.lower}..${this.upper}`;
+  generate(e) {
+    return `range ${this.lower.generate(e)}..${this.upper.generate(e)}`;
   }
 }

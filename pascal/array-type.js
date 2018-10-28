@@ -6,7 +6,7 @@ module.exports = class ArrayType {
     this.componentType = componentType;
   }
 
-  toString() {
-    return `array indexed by ${this.index} of ${this.componentType}`;
+  generate(e) {
+    return `array indexed by ${this.index.generate(e)} of ${this.componentType.generate(e)}`;
   }
 };

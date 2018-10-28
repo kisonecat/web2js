@@ -7,6 +7,6 @@ module.exports = class FunctionEvaluation {
   }
 
   generate(block) {
-    return `${this.f}(${this.xs.map( function(p) { if (p.generate) return p.generate(block); else return p.toString();} ).join(',')})`;
+    return `${this.f.generate(block)}(${this.xs.map( function(p) { return p.generate(block); } ).join(',')})`;
   }
 };

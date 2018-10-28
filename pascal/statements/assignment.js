@@ -21,7 +21,8 @@ module.exports = class Assignment {
       v = environment.resolveVariable( this.lhs.variable );
     }
 
-    if (environment.functionIdentifier && this.lhs.name == environment.functionIdentifier.name) {
+    if (environment.functionIdentifier &&
+        this.lhs.name == environment.functionIdentifier.name) {
       lhs = `_${this.lhs.name}`;
     } else {
       lhs = this.lhs.generate(environment);

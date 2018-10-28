@@ -31,7 +31,6 @@ var ArrayIndex = require('./pascal/array-index.js');
 var FunctionIdentifier = require('./pascal/function-identifier.js');
 var FunctionDeclaration = require('./pascal/function-declaration.js');
 var ProcedureIdentifier = require('./pascal/procedure-identifier.js');
-var ProcedureDeclaration = require('./pascal/procedure-declaration.js');
 var Operation = require('./pascal/operation.js');
 var UnaryOperation = require('./pascal/unary-operation.js');
 var StringLiteral = require('./pascal/string-literal.js');
@@ -232,7 +231,7 @@ INTEGER: i_num { $$ = parseInt(yytext); } ;
 CONST_ID: const_id { $$ = new Constant( yytext ); } ;
 
  SUBRANGE_CONSTANT:
-           POSSIBLE_PLUS INTEGER { $$ = $1 * $2; }
+           POSSIBLE_PLUS INTEGER { $$ = new NumericLiteral($1 * $2); }
          | POSSIBLE_PLUS CONST_ID { if ($1 == 1) { $$ = $2; } else { $$ = new UnaryOperation( '-', $2 ); } }
  	| var_id   { $$ = new Variable( yytext); }
  	| undef_id { $$ = new Variable( yytext); }
@@ -264,20 +263,23 @@ TYPE_ID: type_id { $$ = new Type(yytext); } ;
 
  COMPONENT_TYPE: TYPE { $$= $1; };
 
- RECORD_TYPE:
- 	record
-         FIELD_LIST end
-{  $$ = new RecordType( $2 ); }
+ RECORD_TYPE:   record FIELD_LIST end  { $$ = new RecordType( $2 ); }
          ;
 
- FIELD_LIST:		RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
+FIELD_LIST:		RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
  		| FIELD_LIST ';' RECORD_SECTION  { if ($3) { $$ = $1.concat( [$3] ); } else { $$ = $1; } }
  		;
 
- RECORD_SECTION: 			FIELD_ID_LIST ':' 
- 			TYPE { $$ = new RecordDeclaration( $1, $2 ); }
+RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $2 ); }
+          	| case type_id of RECORD_CASES { $$ = $4; }
  		| /* empty */ { $$ = undefined; }
  		;
+
+RECORD_CASES: RECORD_CASE { $$ = [$1]; }
+	      | RECORD_CASES RECORD_CASE { $$ = $1.concat( $2 ); }
+	      ;
+
+RECORD_CASE: i_num ':' '(' FIELD_LIST ')' ';' { $$ = $4; } ;
 
  FIELD_ID_LIST:		FIELD_ID { $$ = [$1]; }
  		| FIELD_ID_LIST ',' FIELD_ID  { $$ = $1.concat( [$3] ); }
@@ -334,7 +336,7 @@ P_F_DEC:		PROCEDURE_DEC ';' { $$ = $1; }
 		;
 
 PROCEDURE_DEC:
-	PROCEDURE_HEAD BLOCK  { $$ = new ProcedureDeclaration( $1[0], $1[1], $2 ); }
+	PROCEDURE_HEAD BLOCK  { $$ = new FunctionDeclaration( $1[0], $1[1], undefined, $2 ); }
 	;
 
 PROCEDURE:
@@ -427,10 +429,10 @@ SIMPLE_STAT:	  ASSIGN_STAT  { $$ = $1; }
 		| break	{ $$ = new BreakStatement(); }
 		;
 
-ASSIGN_STAT:		VARIABLE assign
-			EXPRESS  { $$ = new Assignment( $1, $3 ); }
+ASSIGN_STAT:	  VARIABLE assign
+		  EXPRESS  { $$ = new Assignment( $1, $3 ); }
 		| FUNC_ID_AS assign
-			EXPRESS { $$ = new Assignment( $1, $3 ); }
+		  EXPRESS { $$ = new Assignment( $1, $3 ); }
 		;
 
 POINTER: {$$ = false;}
@@ -467,15 +469,15 @@ VAR_DESIG1:		']'  { $$ = false; }
 EXPRESS:		UNARY_OP EXPRESS	%prec '*'
 				{ $$ = new UnaryOperation( $1, $2 ); }
 		| EXPRESS '+'  EXPRESS
-				{ $$ = new Operation( '+', $1, $3 ); }		
+				{ $$ = new Operation( '+', $1, $3 ); }
 		| EXPRESS '-'  EXPRESS
-				{ $$ = new Operation( '-', $1, $3 ); }				
+				{ $$ = new Operation( '-', $1, $3 ); }
 		| EXPRESS '*' EXPRESS
-				{ $$ = new Operation( '*', $1, $3 ); }						
+				{ $$ = new Operation( '*', $1, $3 ); }
 		| EXPRESS div EXPRESS
-				{ $$ = new Operation( 'div', $1, $3 ); }								
+				{ $$ = new Operation( 'div', $1, $3 ); }
 		| EXPRESS '='  EXPRESS
-				{ $$ = new Operation( '==', $1, $3 ); }										
+				{ $$ = new Operation( '==', $1, $3 ); }
 		| EXPRESS '<>' EXPRESS
 				{ $$ = new Operation( '!=', $1, $3 ); }
 		| EXPRESS mod  EXPRESS
@@ -487,11 +489,11 @@ EXPRESS:		UNARY_OP EXPRESS	%prec '*'
 		| EXPRESS '<=' EXPRESS
 				{ $$ = new Operation( '<=', $1, $3 ); }		
 		| EXPRESS '>='  EXPRESS
-				{ $$ = new Operation( '>=', $1, $3 ); }				
+				{ $$ = new Operation( '>=', $1, $3 ); }
 		| EXPRESS and  EXPRESS
-				{ $$ = new Operation( '&&', $1, $3 ); }						
+				{ $$ = new Operation( '&&', $1, $3 ); }
 		| EXPRESS or  EXPRESS
-				{ $$ = new Operation( '||', $1, $3 ); }			
+				{ $$ = new Operation( '||', $1, $3 ); }
 		| EXPRESS '/'
 			EXPRESS
 				{ $$ = new Operation( '/', $1, $3 ); }						
@@ -513,9 +515,9 @@ FACTOR:
 	  EXPRESS ')' { $$ = $2; }
 	| VARIABLE { $$ = $1; }
 	| CONSTANT { $$ = $1; }
-	| fun_id  { $$ = new FunctionEvaluation( $1, [] ); }
+	| fun_id  { $$ = new FunctionEvaluation( new FunctionIdentifier($1), [] ); }
 	| fun_param
-	  PARAM_LIST  { $$ = new FunctionEvaluation( $1, $2 ); }
+	  PARAM_LIST  { $$ = new FunctionEvaluation(new FunctionIdentifier( $1 ), $2 ); }
 	;
 
 PARAM_LIST:

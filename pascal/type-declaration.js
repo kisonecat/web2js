@@ -6,8 +6,8 @@ module.exports = class TypeDeclaration {
     this.expression = expression;
   }
 
-  toString() {
-    return `// type ${this.name} = ${this.expression};`;
+  generate(e) {
+    return `// type ${this.name.generate(e)} = ${this.expression.generate(e)};`;
   }
 
 };

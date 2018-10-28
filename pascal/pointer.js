@@ -5,7 +5,7 @@ module.exports = class Pointer {
     this.referent = referent;
   }
 
-  generate() {
-    return this.referent.toString() + ".arrow";
+  generate(e) {
+    return this.referent.generate(e) + ".arrow";
   }
 };

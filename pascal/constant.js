@@ -5,7 +5,11 @@ module.exports = class Constant {
     this.name = name;
   }
 
-  generate() {
-    return this.name;
+  generate(environment) {
+    if (environment.constants[this.name] == undefined) {
+      return `${this.name}`;
+    } else {
+      return `${environment.constants[this.name].generate(environment)}`;
+    } 
   }
-}
+};

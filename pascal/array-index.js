@@ -9,7 +9,6 @@ module.exports = class ArrayIndex {
     if (Array.isArray(this.index)) {
       return "???";
     } else {
-      console.log("this.index=",this.index);
       return this.index.generate(block);
     }
   }

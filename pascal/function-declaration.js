@@ -1,5 +1,7 @@
 'use strict';
 
+var Environment = require('./environment.js');
+
 module.exports = class FunctionDeclaration {
   constructor(identifier, params, resultType, block) {
     this.identifier = identifier;
@@ -12,25 +14,38 @@ module.exports = class FunctionDeclaration {
     var code  = "";
     var params = [];
 
+    environment = new Environment(environment);
+    
     for( var i in this.params ) {
       var param = this.params[i];
 
       for( var j in param.names ) {
-        var name = param.names[j];
+        environment.variables[param.names[j].name] = this.params[i].type;
+        var name = param.names[j].generate(environment);        
         params.push( name );
       }
     }
-
-    environment.functionIdentifier = this.identifier;
     
-    code = code + `function ${this.identifier}(${params.join(',')}) {\n`;
-    code = code + `trace("${this.identifier}");\n`;
-    code = code + `var _${this.identifier}; /* has result type ${this.resultType} */\n`;
+    if (this.resultType) {
+      environment.functionIdentifier = this.identifier;
+    }
+
+    var id = this.identifier.generate(environment);
+    
+    code = code + `function ${id}(${params.join(',')}) {\n`;
+    code = code + `trace("${id}");\n`;
+    if (this.resultType) {
+      code = code + `var _${id}; /* has result type ${this.resultType.generate(environment)} */\n`;
+    }
     code = code + this.block.generate(environment);
-    code = code + `return _${this.identifier};\n`;
+    if (this.resultType) {
+      code = code + `return _${id};\n`;
+    }
     code = code + "}\n";
 
-    environment.functionIdentifier = undefined;
+    if (this.resultType) {
+      environment.functionIdentifier = undefined;
+    }
     
     return code;
   }

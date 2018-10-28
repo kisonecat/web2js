@@ -1,10 +1,12 @@
 'use strict';
 
 module.exports = class Environment {
-  constructor(block) {
-    this.block = block;
+  constructor(parent) {
+    this.parent = parent;
     this.labels = {};
-  }
+    this.constants = {};
+    this.variables = {};    
+  }   
 
   resolveLabel( label ) {
     return this.labels[label];
@@ -23,14 +25,16 @@ module.exports = class Environment {
   }
 
   resolveVariable( variableIdentifier ) {
-    for(var i in this.block.vars)
-      if (this.block.vars[i].names == variableIdentifier.name)
-        return this.block.vars[i];
+    var e = this;
+    
+    while( e ) {
+      if (e.variables[variableIdentifier.name])
+        return e.variables[variableIdentifier.name];
 
-    if (this.block.parent)
-      return this.block.parent.resolveVariable( variableIdentifier );
-    else
-      return variableIdentifier;
+      e = e.parent;
+    }
+
+    return undefined;
   }
   
 };

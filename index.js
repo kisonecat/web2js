@@ -26,13 +26,6 @@ for( var key in symbols ) {
   });
 }
 
-def_type('boolean');
-def_type('memoryword');
-def_type('real');
-def_type('integer');
-def_type('char');
-def_type('twohalves');
-
 // definitions
 lexer.addDefinition('DIGIT', /[0-9]/);
 lexer.addDefinition('ALPHA', /[a-zA-Z]/);
@@ -57,6 +50,7 @@ lexer.addRule(/{W}/);
 lexer.addRule(/procedure [a-z_]+;[ \n\t]*forward;/);
 lexer.addRule(/function [(),:a-z_]+;[ \n\t]*forward;/);
 
+lexer.addRule("packed");
 lexer.addRule("and"		, function(lexer) { return 'and'; } );
 lexer.addRule("array"		, function(lexer) { return 'array'; } );
 lexer.addRule("begin"		, function(lexer) { return 'begin'; } );
@@ -201,7 +195,7 @@ parser.lexer = {
     var token = lexer.lex();
     last_token = token;
     this.yytext = lexer.text;
-    //console.log(lexer.text,token);
+    console.log(lexer.text,token);
     return token;
     },
   setInput: function (str) {
@@ -212,7 +206,4 @@ var program = parser.parse();
 
 var Environment = require('./pascal/environment.js');
 
-var environment = new Environment(program);
-
-//console.log( program.generate(environment) );
-program.generate(environment);
+fs.writeFile( "tex.js", program.generate() );
