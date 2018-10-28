@@ -6,6 +6,9 @@ module.exports = class FunctionIdentifier {
   }
 
   toString() {
+    if (this.name === "break")
+      return "_break";
+    
     return this.name;
   }  
 };

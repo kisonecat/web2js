@@ -6,8 +6,13 @@ module.exports = class UnaryOperation {
     this.operand = operand;
   }
 
-  toString() {
-    return `(${this.operator} (${this.operand2}))`;
+  generate(block) {
+    var a;
+
+    a = this.operand.generate(block);
+    
+    return `(${this.operator} (${a}))`;
   }
+  
 
 };

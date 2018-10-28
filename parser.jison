@@ -11,7 +11,6 @@
 
 %{
 
-var Program = require('./pascal/program.js');
 var Block = require('./pascal/block.js');
 var ConstantDeclaration = require('./pascal/constant-declaration.js');
 var TypeDeclaration = require('./pascal/type-declaration.js');
@@ -36,10 +35,12 @@ var ProcedureDeclaration = require('./pascal/procedure-declaration.js');
 var Operation = require('./pascal/operation.js');
 var UnaryOperation = require('./pascal/unary-operation.js');
 var StringLiteral = require('./pascal/string-literal.js');
+var NumericLiteral = require('./pascal/numeric-literal.js');
 var SingleCharacter = require('./pascal/single-character.js');
 var FunctionEvaluation = require('./pascal/function-evaluation.js');
 var ExpressionWithWidth = require('./pascal/expression-with-width.js');
 
+var LabeledStatement = require('./pascal/statements/labeled-statement.js');
 var BreakStatement = require('./pascal/statements/break.js');
 var Nop = require('./pascal/statements/nop.js');
 var Assignment = require('./pascal/statements/assignment.js');
@@ -53,6 +54,8 @@ var For = require('./pascal/statements/for.js');
 var CallProcedure = require('./pascal/statements/call-procedure.js');
 var Compound = require('./pascal/statements/compound.js');
 
+var theProgram = new Block();
+
 %}
 
 %%
@@ -63,7 +66,14 @@ PROGRAM:
   	VAR_DEC_PART
   	P_F_DEC_PART
   	BODY
-  	  { return new Program($2,$3,$4,$5,$6,$7); }
+  	  {
+	  theProgram.labels = $2;
+	  theProgram.consts = $3;
+	  theProgram.types = $4;
+	  theProgram.vars = $5;
+	  theProgram.pfs = $6;
+	  theProgram.compound = new Compound($7);
+	  return theProgram; }
           ;
 
 /* program statement.  Ignore any files.  */
@@ -90,7 +100,7 @@ BLOCK: LABEL_DEC_PART
        CONST_DEC_PART TYPE_DEC_PART
        VAR_DEC_PART
        STAT_PART
-  	  { $$ = new Block($1,$2,$3,$4,$5); }
+  	  { $$ = new Block($1,$2,$3,$4,[],new Compound($5), theProgram); }
  	;
 
  LABEL_DEC_PART:		/* empty */  { $$ = []; }
@@ -127,9 +137,9 @@ CONST_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "const_id" }; $$ = yytex
          ;
 
 CONSTANT:
-         i_num  { $$ = parseInt( yytext ); }
-         | r_num  { $$ = parseFloat( yytext ); }
-         | STRING     { $$ = new StringLiteral(yytext); }
+         i_num  { $$ = new NumericLiteral(parseInt( yytext )); }
+         | r_num  { $$ = new NumericLiteral(parseFloat( yytext )); }
+         | STRING     { $$ = $1; }
          | CONSTANT_ID  { $$ = new Constant( $1 ); }
          ;
 
@@ -173,8 +183,7 @@ CONSTANT_EXPRESS              {$$ = new Operation('/', $1, $3);}
          | CONSTANT   { $$ = $1; }
          ;
 
- STRING:
- 	  string_literal   { $$ = new StringLiteral(yytext); }
+ STRING:  string_literal   { $$ = new StringLiteral(yytext); }
  	| single_char      { $$ = new SingleCharacter(yytext); }
  	;
 
@@ -399,19 +408,19 @@ STAT_LIST:		STATEMENT  { $$ = [$1]; }
 		| STAT_LIST ';' STATEMENT  { $$ = $1.concat( [$3] ); }
 		;
 
-STATEMENT:		UNLAB_STAT
+STATEMENT:		UNLAB_STAT { $$ = $1; }
 		| S_LABEL ':'
-			UNLAB_STAT
+			UNLAB_STAT { $$ = new LabeledStatement( $1, $3 ); }
 		;
 
-S_LABEL:		i_num { $$ = parseInt(yytext); }
+S_LABEL:	  i_num { $$ = parseInt(yytext); }
 		;
 
-UNLAB_STAT:		SIMPLE_STAT { $$ = $1; }
+UNLAB_STAT:	  SIMPLE_STAT { $$ = $1; }
 		| STRUCT_STAT  { $$ = $1; }
 		;
 
-SIMPLE_STAT:		ASSIGN_STAT  { $$ = $1; }
+SIMPLE_STAT:	  ASSIGN_STAT  { $$ = $1; }
 		| PROC_STAT { $$ = $1; }
 		| GO_TO_STAT { $$ = $1; }
 		| EMPTY_STAT { $$ = $1; }
@@ -448,8 +457,6 @@ VAR_DESIG:		'['
 			EXPRESS VAR_DESIG1 { if ($3) { $$ = new ArrayIndex([$2, $3]); } else {$$ = new ArrayIndex($2); } }
 		| '.' FIELD_ID { $$ = $2; }
 		| '.' VAR_ID { $$ = $2; }	
-		| '.' hhb0 { $$ = new FieldIdentifier('hhb0'); }
-		| '.' hhb1 { $$ = new FieldIdentifier('hhb1'); }
 		;
 
 VAR_DESIG1:		']'  { $$ = false; }
@@ -612,7 +619,7 @@ WHILE_STATEMENT:	while
 
 REP_STATEMENT:		repeat
 			STAT_LIST until
-			EXPRESS { $$ = new Repeat( $4, $2 ); }
+			EXPRESS { $$ = new Repeat( $4, new Compound($2) ); }
 		;
 
 FOR_STATEMENT:		for

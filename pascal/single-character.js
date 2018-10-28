@@ -2,10 +2,13 @@
 
 module.exports = class SingleCharacter {
   constructor(character) {
-    this.character = character;
+    this.character = character.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'");
   }
 
-  toString() {
-    return `"${this.character}".charCodeAt(0)`;
+  generate() {
+    var c = this.character;
+    if (c === "\\") { c = "\\\\"; }
+    if (c === "'") { c = '\\\''; }    
+    return `'${c}'.charCodeAt(0)`;
   }
 };

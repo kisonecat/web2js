@@ -6,10 +6,18 @@ module.exports = class While {
     this.statement = statement;
   }
 
-  toString() {
-  var code = `while (${this.expression}) \n`;
+  gotos() {
+    return this.statement.gotos();
+  }
 
-    code = code + this.statement.toString();
+  generate(block) {
+    var code;
+    if (this.expression.generate)
+      code = `while (${this.expression.generate(block)}) \n`;
+    else
+      code = `while (${this.expression}) \n`;      
+
+    code = code + this.statement.generate(block);
 
   return code;
   }

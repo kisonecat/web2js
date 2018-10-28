@@ -4,7 +4,11 @@ module.exports = class BreakStatement {
   constructor() {
   }
 
-  toString() {
+  gotos() {
+    return [];
+  }
+  
+  generate(block) {
     return "break;";
   }
 };

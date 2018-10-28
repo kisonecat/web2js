@@ -7,12 +7,23 @@ module.exports = class ProcedureDeclaration {
     this.block = block;
   }
 
-  toString() {
+  generate(block) {
     var code  = "";
+    var params = [];
 
-    code = code + `function ${this.identifier}(${this.params}) {\n`;
+    for( var i in this.params ) {
+      var param = this.params[i];
 
-    code = code + this.block.toString();
+      for( var j in param.names ) {
+        var name = param.names[j];
+        params.push( name );
+      }
+    }
+    
+    code = code + `function ${this.identifier}(${params.join(',')}) {\n`;
+    code = code + `trace("${this.identifier}");\n`;
+    
+    code = code + this.block.generate(block);
     code = code + "}\n";
     
     return code;

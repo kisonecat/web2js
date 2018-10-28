@@ -7,7 +7,18 @@ module.exports = class Operation {
     this.operand2 = operand2;    
   }
 
-  toString() {
-    return `((${this.operand1}) ${this.operator} (${this.operand2}))`;
+  generate(block) {
+    var a, b;
+
+    a = this.operand1.generate(block);
+    b = this.operand2.generate(block);    
+    
+    // BADBAD
+    if (this.operator === 'div') {
+      return `((${a}) / (${b}))`;
+    }
+    
+    return `((${a}) ${this.operator} (${b}))`;
   }
-}
+  
+};

@@ -5,7 +5,12 @@ module.exports = class ArrayIndex {
     this.index = index;
   }
 
-  toString() {
-    return this.index.toString();
+  generate(block) {
+    if (Array.isArray(this.index)) {
+      return "???";
+    } else {
+      console.log("this.index=",this.index);
+      return this.index.generate(block);
+    }
   }
 };

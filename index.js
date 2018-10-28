@@ -46,8 +46,6 @@ lexer.addDefinition('REAL', /([0-9]+\.[0-9]+|[0-9]+\.[0-9]+e(\+|-)?[0-9]+|[0-9]+
 lexer.addDefinition('COMMENT', /(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))/);
 lexer.addDefinition('W', /([ \n\t]+|packed )+/);
 lexer.addDefinition('WW', /([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*/);
-lexer.addDefinition('HHB0', /hh([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*\.([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*b0/);
-lexer.addDefinition('HHB1', /hh([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*\.([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*b1/);
 
 lexer.addRule('{', function (lexer) {
   while (lexer.input() != '}')
@@ -85,8 +83,6 @@ lexer.addRule("procedure"	, function(lexer) { return 'procedure'; } );
 lexer.addRule("program"	, function(lexer) { return 'program'; } );
 lexer.addRule("record"	, function(lexer) { return 'record'; } );
 lexer.addRule("repeat"	, function(lexer) { return 'repeat'; } );
-lexer.addRule(/{HHB0}/		, function(lexer) { return 'hhb0'; } );
-lexer.addRule(/{HHB1}/		, function(lexer) { return 'hhb1'; } );
 lexer.addRule("then"		, function(lexer) { return 'then'; } );
 lexer.addRule("to"		, function(lexer) { return 'to'; } );
 lexer.addRule("type"		, function(lexer) { return 'type'; } );
@@ -95,9 +91,16 @@ lexer.addRule("var"		, function(lexer) { return 'var'; } );
 lexer.addRule("while"		, function(lexer) { return 'while'; } );
 lexer.addRule("others"	, function(lexer) { return 'others'; } );
 
-lexer.addRule(/('([^']|'')')/		, function(lexer) { return 'single_char'; } );
+lexer.addRule(/'([^']|'')'/		, function(lexer) {
+  return 'single_char';
+});
 
-lexer.addRule(/('([^']|'')*')/		, function(lexer) { return 'string_literal'; } );
+lexer.addRule(/'([^']|'')+'/		, function(lexer) {
+  if ((lexer.text == "''''") || (lexer.text.length == 3)) {
+    lexer.reject();
+  } else
+    return 'string_literal';
+});
 
 lexer.addRule('+'		, function(lexer) {
   if ((last_token == 'undef_id') ||
@@ -106,8 +109,6 @@ lexer.addRule('+'		, function(lexer) {
       (last_token == 'var_id') ||
       (last_token == 'const_id') ||      
       (last_token == 'i_num') ||
-      (last_token == 'hhb1') ||
-      (last_token == 'hhb0') ||            
       (last_token == 'r_num') ||
       (last_token == ')') ||
       (last_token == ']'))
@@ -122,8 +123,6 @@ lexer.addRule('-'		, function(lexer) {
       (last_token == 'type_id') ||
      (last_token == 'var_id') ||
      (last_token == 'const_id') ||
-      (last_token == 'hhb1') ||
-      (last_token == 'hhb0') ||                 
       (last_token == 'i_num') ||
       (last_token == 'r_num') ||
       (last_token == ')') ||
@@ -149,8 +148,6 @@ lexer.addRule(/-?{NUMBER}/		, function(lexer) {
       (last_token == 'type_id') ||
       (last_token == 'var_id') ||
      (last_token == 'i_num') ||
-      (last_token == 'hhb1') ||
-      (last_token == 'hhb0') ||                 
       (last_token == 'const_id') ||           
       (last_token == 'r_num') ||
       (last_token == ')') ||
@@ -213,8 +210,9 @@ parser.lexer = {
 
 var program = parser.parse();
 
-console.log( program.toString() );
+var Environment = require('./pascal/environment.js');
 
+var environment = new Environment(program);
 
-
-
+//console.log( program.generate(environment) );
+program.generate(environment);

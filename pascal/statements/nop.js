@@ -4,7 +4,12 @@ module.exports = class Nop {
   constructor() {
   }
 
-  toString() {
+  gotos() {
+    return [];
+  }
+
+  
+  generate(block) {
     return "/*nop*/;";
   }
 };

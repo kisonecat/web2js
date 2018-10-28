@@ -5,7 +5,7 @@ module.exports = class FieldIdentifier {
     this.name = name;
   }
 
-  toString() {
+  generate(environment) {
     return this.name;
   }
 };

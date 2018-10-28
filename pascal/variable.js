@@ -5,7 +5,9 @@ module.exports = class Variable {
     this.name = name;
   }
 
-  toString() {
-    return this.name;
+  generate(environment) {
+    var v = environment.resolveVariable( this );
+    
+    return `${this.name}/*type=${v.type}*/`;
   }
 };

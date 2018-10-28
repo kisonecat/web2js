@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = class Case {
+module.exports = class LabeledStatement {
   constructor(label, statement) {
     this.label = label;
     this.statement = statement;
@@ -11,18 +11,12 @@ module.exports = class Case {
   }
   
   generate(block) {
-    var code = "";
+    block.labels[this.label] = `continue label${this.label}`;
 
-    for (var i in this.label) {
-      if (this.label[i] === true) {
-        code = code + `default:\n`;
-      } else {
-        code = code + `case ${this.label[i]}:\n`;
-      }
-    }
-
+    var code = "{";
+    code = code + `label${this.label}: while(true) {\n`;
     code = code + this.statement.generate(block);
-    code = code + "\nbreak;";
+    code = code + `break label${this.label}; } }\n`;
     
     return code;
   }

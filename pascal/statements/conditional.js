@@ -7,15 +7,35 @@ module.exports = class Conditional {
     this.otherwise = otherwise;    
   }
 
-  toString() {
-    var code = `if (${this.expression}) {\n`;
+  gotos() {
+    var g = this.result.gotos();
+    
+    if (this.otherwise) {
+      g = g.concat( this.otherwise.gotos() );
+    }
+    
+    return g;
+  }
 
-    code = code + this.result.toString();
+  
+  toString() {
+    this.generate(undefined);
+  }
+  
+  generate(block) {
+    var code;
+    if (this.expression.generate)
+      code = `if (${this.expression.generate(block)}) {\n`;
+    else
+      code = `if (${this.expression}) {\n`;      
+
+    code = code + this.result.generate(block);
 
     code = code + "}";
+    
     if (this.otherwise) {
       code = code + "else {\n";
-      code = code + this.otherwise.toString();
+      code = code + this.otherwise.generate(block);
       code = code + "}";      
     }
     

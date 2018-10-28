@@ -8,13 +8,29 @@ module.exports = class FunctionDeclaration {
     this.block = block;
   }
 
-  toString() {
+  generate(environment) {
     var code  = "";
+    var params = [];
 
-    code = code + `function ${this.identifier}(${this.params}) {\n`;
+    for( var i in this.params ) {
+      var param = this.params[i];
 
-    code = code + this.block.toString();
+      for( var j in param.names ) {
+        var name = param.names[j];
+        params.push( name );
+      }
+    }
+
+    environment.functionIdentifier = this.identifier;
+    
+    code = code + `function ${this.identifier}(${params.join(',')}) {\n`;
+    code = code + `trace("${this.identifier}");\n`;
+    code = code + `var _${this.identifier}; /* has result type ${this.resultType} */\n`;
+    code = code + this.block.generate(environment);
+    code = code + `return _${this.identifier};\n`;
     code = code + "}\n";
+
+    environment.functionIdentifier = undefined;
     
     return code;
   }

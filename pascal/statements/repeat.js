@@ -1,20 +1,25 @@
 'use strict';
 
 module.exports = class Repeat {
-  constructor(expression, statements) {
+  constructor(expression, statement) {
     this.expression = expression;
-    this.statements = statements;
+    this.statement = statement;
   }
 
-  toString() {
+  gotos() {
+    return this.statement.gotos();
+  }
+  
+  generate(block) {
     var code = `do {\n`;
 
-    this.statements.forEach( function(v) {
-      code = code + v.toString();
-      code = code + "\n";      
-    });
-    
-    code = code + `} while (${this.expression});`;
+    code = code + this.statement.generate(block);
+    code = code + "\n";      
+
+    if (this.expression.generate)
+      code = code + `} while (${this.expression.generate(block)});`;
+    else
+      code = code + `} while (${this.expression});`;
     
 
   return code;

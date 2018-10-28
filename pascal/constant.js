@@ -5,7 +5,7 @@ module.exports = class Constant {
     this.name = name;
   }
 
-  toString() {
+  generate() {
     return this.name;
   }
 }
