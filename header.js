@@ -16,7 +16,7 @@ function trace_exit(s) {
 //var inputBuffer = "plain.tex\n" + fs.readFileSync("plain.tex");
 //var inputBuffer = "\\message{Preloading the plain format: codes,}";
 //var inputBuffer = "plain\n\\bye\n";
-var inputBuffer = "plain\n\\input first";
+var inputBuffer = "plain\n\\input sample";
 
 var round = Math.round;
 var abs = Math.abs;
