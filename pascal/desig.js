@@ -7,119 +7,89 @@ module.exports = class Desig {
   }
 
   generate(block) {
-    var v = block.resolveVariable( this.variable );
+    // Split a desig into individual desigs
+    var v = this.variable;
+    if (this.variable.referent) v = this.variable.referent;
+    var vv = block.resolveVariable( v );
+    var t = block.resolveType( vv );
+    
+    var factor = "1";
+    var offset = "0";
+
+    //var code = this.variable.generate(block);
+    var code = this.variable.name;
 
     var desig = this.desig;
 
-    var factor = 1;
-    var offset = 0;
-
-    return this.variable.generate(block);
-    
-    // Handle arrays of twohalves in a special way
-    if (v.type && v.type.componentType && v.type.componentType.name == "twohalves") {
-      if (desig.length == 1) {
-        desig.push( "int" );
-      }
-
-      desig.push(desig.shift());
-
-      if (desig.length == 2) {
-        if (desig[0].toString() == "lh") {
-          factor = 2; offset = 0;
-          desig.shift();
-          desig.unshift("hh");            
-        }
-        else if (desig[0].toString() == "rh") {
-          factor = 2; offset = 1;
-          desig.shift();
-          desig.unshift("hh");
-        }
-      }
-    }
-    else
-    // Handle arrays of memorywords in a special way
-    if (v.type && v.type.componentType && v.type.componentType.name == "memoryword") {
-      if (desig.length == 1) {
-        desig.push( "int" );
-      }
-
-      desig.push(desig.shift());
+    var theType = vv;
+    var index = "0";
+    var shift = "0";    
+    if (t.componentType) {
+      index = desig.shift().generate(block);
+      if (t.index.lower)
+        shift = t.index.lower.generate(block);      
       
-      if (desig.length == 3) {
-        if (desig[0].toString() == "hh") {
-          if (desig[1].toString() == "lh") {
-            factor = 2; offset = 0;
-            desig.shift();
-            desig.shift();
-            desig.unshift("hh");            
-          }
-          else if (desig[1].toString() == "rh") {
-            factor = 2; offset = 1;
-            desig.shift();
-            desig.shift();
-            desig.unshift("hh");
-          }
-          else if (desig[1].toString() == "b0") {
-            factor = 4; offset = 0;
-            desig.shift();
-            desig.shift();
-            desig.unshift("qqqq");
-          }
-          else if (desig[1].toString() == "b1") {
-            factor = 4; offset = 1;
-            desig.shift();
-            desig.shift();
-            desig.unshift("qqqq");              
-          }            
-        }
-        else if (desig[0].toString() == "qqqq") {
-          if (desig[1].toString() == "b0") {
-            factor = 4; offset = 0;
-            desig.shift();
-          }
-          else if (desig[1].toString() == "b1") {
-            factor = 4; offset = 1;
-            desig.shift();
-          }            
-          else if (desig[1].toString() == "b2") {
-            factor = 4; offset = 2;
-            desig.shift();
-          }            
-          else if (desig[1].toString() == "b3") {
-            factor = 4; offset = 3;
-            desig.shift();
-          }            
-        }
+      t = t.componentType;
+      theType = vv.componentType;
+
+    }
+
+    if ((theType.name == "memoryword") || (theType.name == "liststaterecord")) {
+      var fields = "_" + desig.map( function(d) { return d.name; } ).join('_');
+      if (desig.length == 0) fields = "";
+
+      var auxfield = false;
+      if (fields.match(/^_auxfield/)) {
+	fields = fields.replace(/^_auxfield/, '');
+	var auxfield = true;
       }
-    }
-    else
-    if (v.type && v.type.componentType) {
-      desig.push(desig.shift());      
+      
+      if (fields == "_hh") { fields = ""; }
+      if (fields == "_qqqq") { fields = ""; }
+      if (fields == "_qqqq_b0") { fields = "_qqqq"; factor=4; offset=0; }
+      if (fields == "_qqqq_b1") { fields = "_qqqq"; factor=4; offset=1; }
+      if (fields == "_qqqq_b2") { fields = "_qqqq"; factor=4; offset=2; }
+      if (fields == "_qqqq_b3") { fields = "_qqqq"; factor=4; offset=3; }
+      if (fields == "_hh_lh") { fields = "_hh"; factor=2; offset=0; }
+      if (fields == "_hh_rh") { fields = "_hh"; factor=2; offset=1; }
+      if (fields == "_hh_b0") { fields = "_qqqq"; factor=4; offset=0; }
+      if (fields == "_hh_b1") { fields = "_qqqq"; factor=4; offset=1; }
+
+      if (auxfield)
+	fields = "_auxfield" + fields;
+
+      return `${code}${fields}[${factor}*((${index})-(${shift}))+${offset}]`;
     }
     
-    var code = this.variable;
-    
+    if (theType.name == "twohalves") {
+      var fields = "_" + desig.map( function(d) { return d.name; } ).join('_');
+      if (desig.length == 0) fields = "";
+      if (fields == "_lh") { fields = "_hh"; factor=2; offset=0;}
+      if (fields == "_rh") { fields = "_hh"; factor=2; offset=1;}
+      if (fields == "_b0") { fields = "_qqqq"; factor=4; offset=0;}
+      if (fields == "_b1") { fields = "_qqqq"; factor=4; offset=1;}      
+      
+      return `${code}${fields}[${factor}*((${index})-(${shift}))+${offset}]`;
+    }
+
+    if (theType.name == "fourquarters") {
+      var fields = "_" + desig.map( function(d) { return d.name; } ).join('_');
+      if (desig.length == 0) fields = "";
+      if (fields == "_b0") { fields = "_qqqq"; factor=4; offset=0;}
+      if (fields == "_b1") { fields = "_qqqq"; factor=4; offset=1;}
+      if (fields == "_b2") { fields = "_qqqq"; factor=4; offset=2;}
+      if (fields == "_b3") { fields = "_qqqq"; factor=4; offset=3;}      
+      
+      return `${code}${fields}[${factor}*((${index})-(${shift}))+${offset}]`;
+    }
+
     for(var i in desig) {
       var d = desig[i];
-      if (d.index !== undefined) {
-        if (v.type && v.type.componentType)
-          if (v.type.index.lower) {
-            code = code + `[${factor}*((${d.generate(block)})-(${v.type.index.lower}))+${offset}]`;
-          } else {
-            var indexingType = block.resolveType(v.type.index);
-            if (indexingType.lower)
-              code = code + `[${factor}*((${d.generate(block)})-(${indexingType.lower}))+${offset}]`;
-            else
-              code = code + `[${factor}*((${d.generate(block)}))+${offset}]`;         
-          }
-        else
-          code = code + `[${d.generate(block)}]`;
-      } else {
-        code = code + `.${d.generate(block)}`;
-      }
+      code = code + `_${d.name}`;
     }
-    
+
+    code = code + `[${factor}*((${index})-(${shift}))+${offset}]`;
+
     return code;    
   }
   

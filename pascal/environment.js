@@ -1,29 +1,67 @@
 'use strict';
 
+var ArrayType = require('./array-type');
+
 module.exports = class Environment {
   constructor(parent) {
     this.parent = parent;
+    if (parent)
+      this.functionIdentifier = parent.functionIdentifier;
     this.labels = {};
     this.constants = {};
-    this.variables = {};    
+    this.variables = {};
+    this.types = {};        
   }   
 
   resolveLabel( label ) {
     return this.labels[label];
   }
   
-  resolveType( typeIdentifier ) {
-    for(var i in this.block.types) {
-      if (this.block.types[i].name == typeIdentifier.name)
-        return this.block.types[i].expression;
+  resolveTypeOnce( typeIdentifier ) {
+    var e = this;
+    
+    while( e ) {
+      if (e.types[typeIdentifier.name])
+        return e.types[typeIdentifier.name];
+
+      e = e.parent;
     }
 
-    if (this.block.parent)
-      return this.block.parent.resolveType( typeIdentifier );
-    else
-      return typeIdentifier;
+    return typeIdentifier;
   }
 
+  resolveType( typeIdentifier ) {
+    var old = undefined;
+    var resolved = typeIdentifier;
+
+    do {
+      old = resolved;
+      resolved = this.resolveTypeOnce( resolved );
+    } while (old != resolved );
+
+    if (resolved.componentType) {
+      var component = this.resolveType( resolved.componentType );
+      var index = this.resolveType( resolved.index );
+      return new ArrayType( index, component );
+    }
+
+    return resolved;
+  }
+
+  resolveConstant( c ) {
+    var e = this;
+    
+    while( e ) {
+      if (e.constants[c.name])
+        return e.constants[c.name];
+
+      e = e.parent;
+    }
+
+    return undefined;
+  }
+
+  
   resolveVariable( variableIdentifier ) {
     var e = this;
     

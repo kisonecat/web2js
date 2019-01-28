@@ -10,7 +10,10 @@ module.exports = class Variable {
     var t = "";
 
     if (v) t = v.generate(environment);
+
+    if (v && ((v.name == "memoryword") || (v.name == "twohalves")  || (v.name == "fourquarters")))
+      return `/*${t}*/${this.name}[0]`;
     
-    return `${this.name}/*${t}*/`;
+    return `/*${t}*/${this.name}`;
   }
 };

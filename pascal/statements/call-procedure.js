@@ -13,18 +13,13 @@ module.exports = class CallProcedure {
   generate(block) {
     var prefix = "";
     
-    if ((this.procedure == "reset") || (this.procedure == "rewrite") || (this.procedure == "writeln") || (this.procedure == "readln") || (this.procedure == "write")) {
-      var handle = this.params.shift().generate(block);
-      prefix = `${handle}.`;
-    }
-
-    if (this.procedure == "read") {
+    if (this.procedure.name == "read") {
       var handle = this.params.shift().generate(block);
       var code = "";
 
       for( var i in this.params ) {
         var v = this.params[i];
-        code = code + `${v} = ${handle}.${this.procedure}();\n`
+        code = code + `${v.generate(block)} = ${handle}.${this.procedure.generate(block)}();\n`
       }
       return code;
     }    

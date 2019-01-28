@@ -4,10 +4,6 @@ var lexer = new Lexer();
 
 var sym_table = {};
 
-function def_type(name) {
-  sym_table[name] = {type: 'type_id'};
-}
-
 var last_token;
 
 var symbols = require('./symbols.json');
@@ -34,11 +30,9 @@ lexer.addDefinition('IDENTIFIER', /[a-zA-Z]([0-9]|[a-zA-Z]|_)*/ );
 lexer.addDefinition('NUMBER', /[0-9]+/);
 lexer.addDefinition('SIGN', /(\+|-)/);
 lexer.addDefinition('SIGNED', /(\+|-)?[0-9]+/);
-lexer.addDefinition('WHITE', /[ \n\t]+/);
 lexer.addDefinition('REAL', /([0-9]+\.[0-9]+|[0-9]+\.[0-9]+e(\+|-)?[0-9]+|[0-9]+e(\+|-)?[0-9]+)/);
 lexer.addDefinition('COMMENT', /(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))/);
-lexer.addDefinition('W', /([ \n\t]+|packed )+/);
-lexer.addDefinition('WW', /([ \n\t]+|(({[^}]*})|(\(\*([^*]|\*[^)])*\*\)))|packed )*/);
+lexer.addDefinition('W', /([ \n\t]+)+/);
 
 lexer.addRule('{', function (lexer) {
   while (lexer.input() != '}')
@@ -195,7 +189,7 @@ parser.lexer = {
     var token = lexer.lex();
     last_token = token;
     this.yytext = lexer.text;
-    console.log(lexer.text,token);
+    //console.log(lexer.text,token);
     return token;
     },
   setInput: function (str) {
@@ -206,4 +200,5 @@ var program = parser.parse();
 
 var Environment = require('./pascal/environment.js');
 
-fs.writeFile( "tex.js", program.generate() );
+var header = fs.readFileSync("header.js").toString();
+fs.writeFileSync( "tex.js", header + program.generate() );

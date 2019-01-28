@@ -270,7 +270,7 @@ FIELD_LIST:		RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
  		| FIELD_LIST ';' RECORD_SECTION  { if ($3) { $$ = $1.concat( [$3] ); } else { $$ = $1; } }
  		;
 
-RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $2 ); }
+RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $3 ); }
           	| case type_id of RECORD_CASES { $$ = $4; }
  		| /* empty */ { $$ = undefined; }
  		;

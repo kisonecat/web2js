@@ -15,7 +15,7 @@ module.exports = class Operation {
     
     // BADBAD
     if (this.operator === 'div') {
-      return `((${a}) / (${b}))`;
+      return `(((${a}) / (${b}))|0)`;
     }
     
     return `((${a}) ${this.operator} (${b}))`;

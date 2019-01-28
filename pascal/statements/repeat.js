@@ -17,9 +17,9 @@ module.exports = class Repeat {
     code = code + "\n";      
 
     if (this.expression.generate)
-      code = code + `} while (${this.expression.generate(block)});`;
+      code = code + `} while (!(${this.expression.generate(block)}));`;
     else
-      code = code + `} while (${this.expression});`;
+      code = code + `} while (!(${this.expression}));`;
     
 
   return code;

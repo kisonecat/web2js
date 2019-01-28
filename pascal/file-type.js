@@ -6,7 +6,11 @@ module.exports = class FileType {
     this.type = type;
   }
 
-  toString() {
-    return `file of type ${this.type}`;
+  initializer(e) {
+    return `new FileHandle()`;
+  }
+  
+  generate(e) {
+    return `file of type ${this.type.generate(e)}`;
   }
 };

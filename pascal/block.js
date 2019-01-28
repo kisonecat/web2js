@@ -21,6 +21,10 @@ module.exports = class Block {
     this.consts.forEach( function(v) {
       environment.constants[v.name] = v.expression;
     });
+
+    this.types.forEach( function(t) {
+      environment.types[t.name] = t.expression;
+    });
     
     this.vars.forEach( function(v) {
       for (var i in v.names) {

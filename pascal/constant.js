@@ -6,10 +6,12 @@ module.exports = class Constant {
   }
 
   generate(environment) {
-    if (environment.constants[this.name] == undefined) {
-      return `${this.name}`;
+    var c = environment.resolveConstant(this);
+
+    if (c) {
+      return `${c.generate(environment)}`;
     } else {
-      return `${environment.constants[this.name].generate(environment)}`;
-    } 
+      throw `Could not resolve the constant ${this.name}`;
+    }
   }
 };

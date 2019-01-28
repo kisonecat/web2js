@@ -17,137 +17,86 @@ module.exports = class VariableDeclaration {
       }
       return code;
     }
+    
+    //var varName = this.names[0].generate(block);
+    var varName = this.names[0].name;
 
-    var varName = this.names[0].generate(block);
+    var t = block.resolveType(this.type);
 
-    var code = `var ${varName}; /* has type ${this.type.generate(block)} */`;
+    var code = `var ${varName} = ${t.initializer(block)}; /* has type ${t.generate(block)} */`;
+    
+    if (t.componentType == undefined && t.fields == undefined)
+      return code;
 
+    var theType = this.type;
+    var range = 1;
+    if (t.componentType) {
+      range = t.index.range(block);
+      t = t.componentType;
+      theType = this.type.componentType;
+
+      if (t.intish)
+        code = `var ${varName} = new ${t.intish(block)}Array(${range});`;
+    }
+
+    if (theType.name == "alphafile") {
+      code = `var ${varName} = [];\n`;
+      code = code + `for( var ${varName}_i = 0; ${varName}_i <= ${range}; ${varName}_i++ )\n`;
+      code = code + `  ${varName}[${varName}_i] = new FileHandle();\n`;
+      return code;      
+    }
+    
+    if (theType.name == "twohalves") {
+      code = `var ${varName} = new Uint32Array(${range});\n`;
+      code = code + `var ${varName}_hh = new Int16Array(${varName}.buffer);`;
+      code = code + `var ${varName}_qqqq = new Uint8Array(${varName}.buffer);`;
+      return code;
+    }
+
+    if (theType.name == "fourquarters") {    
+      code = `var ${varName} = new Uint32Array(${range});\n`;
+      code = code + `var ${varName}_qqqq = new Uint8Array(${varName}.buffer);`;
+      return code;
+    }
+
+    if (theType.name == "memoryword") {        
+      code = `var ${varName} = new Uint32Array(${range});\n`;
+      code = code + `var ${varName}_int = new Int32Array(${varName}.buffer);\n`;      
+      code = code + `var ${varName}_gr = new Float32Array(${varName}.buffer);\n`;
+      code = code + `var ${varName}_hh = new Uint16Array(${varName}.buffer);\n`;
+      code = code + `var ${varName}_qqqq = new Uint8Array(${varName}.buffer);`;
+      return code;
+    }
+    
+    
+    if (t.fields) {
+      code = "";
+      
+      for(var i in t.fields) {
+        var f = t.fields[i];
+        for(var j in t.fields[i].names) {
+          var n = t.fields[i].names[j];
+
+          var fieldType = block.resolveType(f.type);
+
+          if (fieldType.fields == undefined) {
+            code = code + `var ${varName}_${n.generate(block)} = new ${fieldType.intish(block)}Array(${range});`;
+          } else {
+            if (f.type.name == "memoryword") {
+              code = code + `var ${varName}_${n.generate(block)} = new Uint32Array(${range});\n`;
+              code = code + `var ${varName}_${n.generate(block)}_int = new Int32Array(${varName}_${n.generate(block)}.buffer);\n`;              
+              code = code + `var ${varName}_${n.generate(block)}_gr = new Float32Array(${varName}_${n.generate(block)}.buffer);\n`;
+              code = code + `var ${varName}_${n.generate(block)}_hh = new Int16Array(${varName}_${n.generate(block)}.buffer);\n`;
+              code = code + `var ${varName}_${n.generate(block)}_qqqq = new Int8Array(${varName}_${n.generate(block)}.buffer);`;
+            } else {
+              throw "Records of records are not generally supported.";
+            }
+          }
+        }
+      }      
+    }
+    
     return code;
-    
-    if (this.type.componentType && this.type.componentType.name == "memoryword") {
-      var code = `var ${varName} = {}; /* has type ${this.type} */\n`;
-
-      var words;
-      if (this.type.index.lower)
-        //words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
-        words = `SOBROKEN`;
-      else {
-        var indexingType = block.resolveType(this.type.index);
-        //words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;
-        words = `SOBROKEN`;        
-      }
-
-      code = code + `${varName}.int = new Int32Array(${words});\n`;
-      code = code + `${varName}.sc = new Int32Array(${varName}.int);\n`;
-      code = code + `${varName}.gr = new Float32Array(${varName}.int);\n`;
-      code = code + `${varName}.hh = new Int16Array(${varName}.int);\n`;
-      code = code + `${varName}.qqqq = new Int8Array(${varName}.int);\n`;
-
-      return code;
-    }
-
-    if (this.type.componentType && this.type.componentType.name == "twohalves") {
-      var code = `var ${varName} = {}; /* has type ${this.type} */\n`;
-
-      var words;
-      if (this.type.index.lower)
-        words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
-      else {
-        var indexingType = block.resolveType(this.type.index);
-        words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;        
-      }
-
-      code = code + `${varName}.int = new Int32Array(${words});\n`;
-      code = code + `${varName}.hh = new Int16Array(${varName}.int);\n`;
-
-      return code;
-    }
-
-    if (this.type.componentType) {
-      var c = block.resolveType(this.type.componentType);
-
-      var words;
-      if (this.type.index.lower)
-        //words = `(${this.type.index.upper.generate(block)}) - (${this.type.index.lower.generate(block)})`;
-        words = `ALSOBAD`;
-      else {
-        var indexingType = block.resolveType(this.type.index);
-        words = "BROKEN";
-        //words = `(${indexingType.upper.generate(block)}) - (${indexingType.lower.generate(block)})`;        
-      }
-
-      if (c.fields) {
-        var code = `var ${varName} = {}; /* has ${c.fields.length} */\n`;
-        var v = varName;
-        
-        for( var i in c.fields ) {
-          var f = c.fields[i];
-          f.names.forEach( function(name) {
-            code = code + `${v}.${name} = new Int32Array(${words});\n`;
-          });
-        }
-        
-        return code;
-      }
-    }    
-    
-    t = block.resolveType(t);
-
-    if (t.fileType)
-      return `var ${varName} = new FileHandle("${varName}"); /* has type ${this.type} */`;
-    
-    if ((this.type.name == "integer") || (this.type.name == "halfword"))
-      return `var ${varName} = 0; /* has type ${this.type} */`;
-
-    if (this.type.name == "twohalves")
-      return `var ${varName} = {rh:0,lh:0}; /* has type ${this.type} */`;
-
-    if (this.type.name == "fourquarters")
-      return `var ${varName} = {b0:0,b1:0,b2:0,b3:0}; /* has type ${this.type} */`;    
-
-    if ((this.type.name == "boolean"))
-      return `var ${varName} = false; /* has type ${this.type} */`;    
-
-    if (t.index) {
-      var index = t.index;
-      if (index.lower == undefined)
-        index = block.resolveType(index);  
-
-      if (index.name == "char") {
-        index = {upper: 255, lower:0};
-      }
-      
-      var intType = "Int32";
-      if (t.componentType.name == "char")
-        intType = "Uint8";
-
-      if (t.componentType.name == "ASCIIcode")
-        intType = "Uint8";
-
-      if (t.componentType.name == "packedASCIIcode")
-        intType = "Uint8";            
-        
-      //var constructor = `new ${intType}Array((${index.upper.generate(block)}) - (${index.lower.generate(block)}));`;
-      var constructor = `new ${intType}Array(BAD);`;
-      
-      return `var ${varName} = ${constructor}; /* has type ${this.type} */`;
-    } else {
-      if (t.fields) {
-        var code = `var ${varName} = {`
-
-        for(var i in t.fields) {
-          var f = t.fields[i];
-          code = code + f.toString();
-        }
-        
-        code = code + `}; /* has type ${this.type} */`;
-        return code;
-      } else {
-        if ((this.type.name == "integer") ||(this.type.name == "halfword"))
-          return `var ${varName}; /* has type ${this.type} */`;
-        
-        return `var ${varName}; /* has type ${this.type} */`;
-      }
-    }
   }
+
 };
