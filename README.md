@@ -2,7 +2,7 @@
 
 ```
 npm install
-jison parser.json
+jison parser.jison
 node index.js
 node tex.js
 ```
