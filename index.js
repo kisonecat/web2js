@@ -201,7 +201,7 @@ var module = program.generate();
 
 //module.optimize();
 
-//fs.writeFileSync( "tex.wast", module.emitText() );
+fs.writeFileSync( "tex.wast", module.emitText() );
 
 // Get the binary in typed array form
 var binary = module.emitBinary();

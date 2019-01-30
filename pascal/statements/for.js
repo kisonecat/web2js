@@ -1,4 +1,9 @@
 'use strict';
+var Assignment = require('./assignment');
+var Operation = require('../operation');
+var NumericLiteral = require('../numeric-literal');
+
+var count = 1;
 
 module.exports = class For {
   constructor(variable, start, end, skip, statement) {
@@ -14,40 +19,38 @@ module.exports = class For {
   }
 
   
-  generate(block) {
-    var v = this.variable;
-    if (v.generate)
-      v = v.generate(block);
-    else
-      v = v.toString();
-
-    var start;
-    if (this.start.generate)
-      start = this.start.generate(block);
-    else
-      start = this.start.toString();
-
-    var end;
-    if (this.end.generate)
-      end = this.end.generate(block);
-    else
-      end = this.end.toString();
+  generate(environment) {
+    var module = environment.module;
     
-    
-    var code;
+    var loopLabel = `for${count}`;
+    var blockLabel = `for${count}-done`;
+    count = count + 1;
 
-    if (this.skip == 1) {
-      code = `for (${v}=${start}; ${v} <= ${end}; ${v}++) \n`;
+    var end = this.end.generate(environment);
+
+    var assignment = new Assignment( this.variable, this.start );
+
+    var condition = module.nop();
+    var increment = module.nop();
+
+    if (this.skip > 0) {
+      condition = module.i32.le_s( this.variable.generate( environment ), end );
+      increment = new Assignment( this.variable, new Operation( "+", this.variable, new NumericLiteral(1, true) ) );
     } else {
-      code = `for (${v}=${start}; ${v} >= ${end}; ${v}--) \n`;
+      condition = module.i32.ge_s( this.variable.generate( environment ), end );
+      increment = new Assignment( this.variable, new Operation( "-", this.variable, new NumericLiteral(1, true) ) );      
     }
-
-    if (this.statement.generate)
-      code = code + this.statement.generate(block);
-    else
-      code = code + this.statement.toString();
-
-    return code;
     
+    var loop = module.block( blockLabel,
+                             [ assignment.generate(environment),
+                               module.loop( loopLabel,
+                                            module.if( condition,
+                                                       module.block( null, [ this.statement.generate(environment),
+                                                                             increment.generate( environment ),
+                                                                             module.break( loopLabel ) ] ),
+                                                       module.break( blockLabel ) )
+                                          ) ] );
+
+    return loop;
   }
 };

@@ -14,21 +14,21 @@ module.exports = class Switch {
     return g;
   }
   
-  generate(block) {
-    var code;
-    if(this.expression.generate)
-      code = `switch(${this.expression.generate(block)}) {\n`;
-    else
-      code = `switch(${this.expression}) {\n`;
+  generate(environment) {
+    var m = environment.module;
 
-    for (var i in this.cases) {
-      var c = this.cases[i];
+    var previous = m.nop();
 
-      code = code + c.generate(block) + "\n";
+    var selector = this.expression.generate(environment);
+    
+    for (var i in this.cases.reverse()) {
+      var c = this.cases[i].generate(environment, selector);
+      var condition = c[0];
+      var result = c[1];
+      
+      previous = m.if( condition, result, previous );
     }
 
-    code = code + "}";
-    
-    return code;
+    return previous;
   }
 };

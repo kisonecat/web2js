@@ -17,7 +17,6 @@ module.exports = class Compound {
   }
   
   generate(environment) {
-    var code = "{\n";
     var module = environment.module;
     /*
     var labelCount = 0;
@@ -47,7 +46,7 @@ module.exports = class Compound {
       return v.generate(environment);
     });
 
-    return module.block(null, commands );
+    return module.block (null, commands );
     
     /*
     this.statements.forEach( function(v) {

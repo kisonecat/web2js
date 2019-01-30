@@ -10,20 +10,25 @@ module.exports = class Case {
     return this.statement.gotos();
   }
   
-  generate(block) {
-    var code = "";
+  generate(environment, selector) {
+    var m = environment.module;
 
-    for (var i in this.label) {
-      if (this.label[i] === true) {
-        code = code + `default:\n`;
-      } else {
-        code = code + `case ${this.label[i]}:\n`;
-      }
+    var condition;
+
+    var isDefault = this.label.some( function(l) { return l === true; } );
+
+    if (isDefault) {
+      condition = m.i32.const(1);
+    } else {
+      var conditions = this.label.map( function (l) {
+        return m.i32.eq( selector, m.i32.const(l) );
+      });
+
+      condition = conditions.reduceRight( function(acc, current) {
+        return m.i32.or( acc, current );
+      });
     }
 
-    code = code + this.statement.generate(block);
-    code = code + "\nbreak;";
-    
-    return code;
+    return [condition, this.statement.generate(environment)];
   }
 };

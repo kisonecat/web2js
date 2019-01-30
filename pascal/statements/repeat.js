@@ -1,5 +1,7 @@
 'use strict';
 
+var count = 1;
+
 module.exports = class Repeat {
   constructor(expression, statement) {
     this.expression = expression;
@@ -9,20 +11,24 @@ module.exports = class Repeat {
   gotos() {
     return this.statement.gotos();
   }
-  
-  generate(block) {
-    var code = `do {\n`;
 
-    code = code + this.statement.generate(block);
-    code = code + "\n";      
+  generate(environment) {
+    var module = environment.module;
 
-    if (this.expression.generate)
-      code = code + `} while (!(${this.expression.generate(block)}));`;
-    else
-      code = code + `} while (!(${this.expression}));`;
-    
+    var loopLabel = `repeat${count}`;
+    var blockLabel = `repeat${count}-done`;
+    count = count + 1;
 
-  return code;
+    var loop = module.block( blockLabel,
+                             [ module.loop( loopLabel,
+                                            module.block( null, [ this.statement.generate(environment),
+                                                                  module.if( this.expression.generate(environment),
+                                                                             module.break( blockLabel ),
+                                                                             module.break( loopLabel )
+                                                                           ) ] )
+                                          )
+                             ] );
 
+    return loop;
   }
 };

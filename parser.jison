@@ -600,7 +600,7 @@ CASE_LAB:		i_num      { $$ = parseInt(yytext); }
 		| others  { $$ = true; }
 		;
 
-END_CASE:		end
+END_CASE:	   end
 		| ';' end
 		;
 
