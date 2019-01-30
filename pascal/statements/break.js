@@ -9,6 +9,6 @@ module.exports = class BreakStatement {
   }
   
   generate(block) {
-    return "break;";
+    throw "No support for break.";
   }
 };

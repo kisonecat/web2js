@@ -7,6 +7,10 @@ module.exports = class Variable {
 
   generate(environment) {
     var v = environment.resolveVariable( this );
+
+    return v.get();
+    
+    return;
     var t = "";
 
     if (v) t = v.generate(environment);

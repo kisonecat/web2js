@@ -1,5 +1,5 @@
 'use strict';
-
+var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
 
 module.exports = class Block {
@@ -14,10 +14,8 @@ module.exports = class Block {
   }
   
   generate(environment) {
-    var code = "";
-
     environment = new Environment(environment);
-    
+
     this.consts.forEach( function(v) {
       environment.constants[v.name] = v.expression;
     });
@@ -31,17 +29,17 @@ module.exports = class Block {
         var name = v.names[i].name;
         environment.variables[name] = v.type;
       }
-      code = code + v.generate(environment);
-      code = code + "\n";      
+      //code = code + v.generate(environment);
+      //code = code + "\n";      
     });
     
     this.pfs.forEach( function(v) {
-      code = code + v.generate(environment);
-      code = code + "\n";      
+      //code = code + v.generate(environment);
+      //code = code + "\n";      
     });
 
-    code = code + this.compound.generate(environment);
+    this.compound.generate(environment);
 
-    return code;
+    return environment.module;
    }
 }

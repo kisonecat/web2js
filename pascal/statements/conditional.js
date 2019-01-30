@@ -22,23 +22,16 @@ module.exports = class Conditional {
     this.generate(undefined);
   }
   
-  generate(block) {
-    var code;
-    if (this.expression.generate)
-      code = `if (${this.expression.generate(block)}) {\n`;
-    else
-      code = `if (${this.expression}) {\n`;      
+  generate(environment) {
+    var module = environment.module;
 
-    code = code + this.result.generate(block);
-
-    code = code + "}";
-    
     if (this.otherwise) {
-      code = code + "else {\n";
-      code = code + this.otherwise.generate(block);
-      code = code + "}";      
+      return module.if( this.expression.generate(environment),
+                        this.result.generate(environment),
+                        this.otherwise.generate(environment) );
+    } else {
+      return module.if( this.expression.generate(environment),
+                        this.result.generate(environment) );
     }
-    
-    return code;
   }
 };

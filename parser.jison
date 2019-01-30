@@ -11,6 +11,7 @@
 
 %{
 
+var Program = require('./pascal/program.js');
 var Block = require('./pascal/block.js');
 var ConstantDeclaration = require('./pascal/constant-declaration.js');
 var TypeDeclaration = require('./pascal/type-declaration.js');
@@ -64,15 +65,8 @@ PROGRAM:
   	LABEL_DEC_PART CONST_DEC_PART TYPE_DEC_PART
   	VAR_DEC_PART
   	P_F_DEC_PART
-  	BODY
-  	  {
-	  theProgram.labels = $2;
-	  theProgram.consts = $3;
-	  theProgram.types = $4;
-	  theProgram.vars = $5;
-	  theProgram.pfs = $6;
-	  theProgram.compound = new Compound($7);
-	  return theProgram; }
+        BODY
+        { return new Program($2,$3,$4,$5,$6, new Compound($7)); }
           ;
 
 /* program statement.  Ignore any files.  */
@@ -136,8 +130,8 @@ CONST_ID_DEF: undef_id { yy.sym_table[yytext] = { type: "const_id" }; $$ = yytex
          ;
 
 CONSTANT:
-         i_num  { $$ = new NumericLiteral(parseInt( yytext )); }
-         | r_num  { $$ = new NumericLiteral(parseFloat( yytext )); }
+           i_num  { $$ = new NumericLiteral(parseInt( yytext ), true); }
+         | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), false); }
          | STRING     { $$ = $1; }
          | CONSTANT_ID  { $$ = new Constant( $1 ); }
          ;
@@ -327,7 +321,8 @@ BODY:
 	;
 
 P_F_DEC_PART:
-	  P_F_DEC { $$ = [$1]; }
+{ $$ = []; }
+	|  P_F_DEC { $$ = [$1]; }
 	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
 	;
 

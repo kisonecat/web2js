@@ -5,10 +5,11 @@ module.exports = class SingleCharacter {
     this.character = character.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'");
   }
 
-  generate() {
+  generate(environment) {
+    var m = environment.module;
     var c = this.character;
     if (c === "\\") { c = "\\\\"; }
     if (c === "'") { c = '\\\''; }    
-    return `'${c}'.charCodeAt(0)`;
+    return m.i32.const( c.charCodeAt(0) );
   }
 };

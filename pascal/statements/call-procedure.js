@@ -1,4 +1,6 @@
 'use strict';
+var Binaryen = require('binaryen');
+var Environment = require('../environment.js');
 
 module.exports = class CallProcedure {
   constructor(procedure,params) {
@@ -10,9 +12,15 @@ module.exports = class CallProcedure {
     return [];
   }
   
-  generate(block) {
-    var prefix = "";
+  generate(environment) {
+    module = environment.module;
     
+    var prefix = "";
+
+    if (this.procedure.name == "writeln") {
+      return module.call( "log", [this.params[0].generate(environment)], Binaryen.none );
+    }
+    /*
     if (this.procedure.name == "read") {
       var handle = this.params.shift().generate(block);
       var code = "";
@@ -25,5 +33,6 @@ module.exports = class CallProcedure {
     }    
     
     return `${prefix}${this.procedure.generate(block)}(${this.params.map( function(p) { if (p.generate) return p.generate(block); else return p.toString() })});`
+    */
   }
 };

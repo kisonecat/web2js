@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 var Desig = require('../desig');
 
@@ -14,8 +15,15 @@ module.exports = class Assignment {
   
   generate(environment) {
     var lhs, rhs;
-    var code = "";
+    var module = environment.module;
 
+    var rhs = this.rhs.generate(environment);
+
+    // FIXME:  handle arrays and records
+    return environment.resolveVariable(this.lhs).set( rhs );
+
+    return;
+    
     var v = undefined;
     if (this.lhs.name) {
       v = environment.resolveVariable( this.lhs );

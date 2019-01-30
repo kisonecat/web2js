@@ -31,7 +31,6 @@ module.exports = class Type {
     throw "Cannot intish by unknown type";    
   }
 
-  
   initializer(e) {
     if (this.name == "integer")
       return "0";

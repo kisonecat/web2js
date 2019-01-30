@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 var trampoline = 1;
 
@@ -17,7 +18,8 @@ module.exports = class Compound {
   
   generate(environment) {
     var code = "{\n";
-
+    var module = environment.module;
+    /*
     var labelCount = 0;
     this.statements.forEach( function(v) {
       if (v.label && v.statement) {
@@ -39,11 +41,18 @@ module.exports = class Compound {
           environment.labels[v.label] = `goto${theTrampoline} = ${v.label}; continue trampoline${theTrampoline};`;
         }
       });
-    }
+    }*/
 
+    var commands = this.statements.map( function(v) {
+      return v.generate(environment);
+    });
+
+    return module.block(null, commands );
+    
+    /*
     this.statements.forEach( function(v) {
       if (v.label && v.statement) {
-        code = code + `case /*label*/${v.label}:`;
+        code = code + `case ${v.label}:`;
         v = v.statement;
       }
       
@@ -64,6 +73,7 @@ module.exports = class Compound {
     code = code + "}\n";
 
   return code;
+*/
   }
 
 };

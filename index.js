@@ -175,9 +175,8 @@ lexer.addRule(/{IDENTIFIER}/		, function(lexer) {
 
 lexer.addRule(/./		, function(lexer) { return '..'; } );
 
-
 var fs = require('fs');
-var code = fs.readFileSync("tex.p").toString();
+var code = fs.readFileSync(process.argv[2]).toString();
 lexer.setSource(code);
 
 var parser = require('./parser').parser;
@@ -198,7 +197,30 @@ parser.lexer = {
 
 var program = parser.parse();
 
-var Environment = require('./pascal/environment.js');
+var module = program.generate();
 
-var header = fs.readFileSync("header.js").toString();
-fs.writeFileSync( "tex.js", header + program.generate() );
+//module.optimize();
+
+//fs.writeFileSync( "tex.wast", module.emitText() );
+
+// Get the binary in typed array form
+var binary = module.emitBinary();
+//console.log('binary size: ' + binary.length);
+//console.log();
+
+// We don't need the Binaryen module anymore, so we can tell it to
+// clean itself up
+module.dispose();
+
+// Compile the binary and create an instance
+var wasm = new WebAssembly.Instance(new WebAssembly.Module(binary), { console: { log: console.log } });
+
+//console.log("exports: " + Object.keys(wasm.exports).sort().join(","));
+//console.log();
+
+// Call the code!
+//console.log( wasm.exports );
+//console.log('an addition: ' + wasm.exports.adder(40, 2));
+
+//var header = fs.readFileSync("header.js").toString();
+//fs.writeFileSync( "tex.js", header + program.generate() );

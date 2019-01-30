@@ -1,6 +1,7 @@
 'use strict';
 
 var ArrayType = require('./array-type');
+var binaryen = require('binaryen');
 
 module.exports = class Environment {
   constructor(parent) {
@@ -10,7 +11,15 @@ module.exports = class Environment {
     this.labels = {};
     this.constants = {};
     this.variables = {};
-    this.types = {};        
+    this.types = {};
+    
+    this.setVariable = {};
+    this.getVariable = {};
+    
+    if (parent)
+      this.module = parent.module;
+    else
+      this.module = new binaryen.Module();
   }   
 
   resolveLabel( label ) {
@@ -60,7 +69,6 @@ module.exports = class Environment {
 
     return undefined;
   }
-
   
   resolveVariable( variableIdentifier ) {
     var e = this;

@@ -1,5 +1,6 @@
 'use strict';
 
+var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
 
 module.exports = class FunctionDeclaration {
@@ -15,6 +16,7 @@ module.exports = class FunctionDeclaration {
     var params = [];
 
     environment = new Environment(environment);
+    var module = environment.module;
     
     for( var i in this.params ) {
       var param = this.params[i];
@@ -33,8 +35,8 @@ module.exports = class FunctionDeclaration {
 
     var id = this.identifier.generate(environment);
     
-    code = code + `function ${id}(${params.join(',')}) {\n`;
-    code = code + `trace("${id}");\n`;
+    //code = code + `function ${id}(${params.join(',')}) {\n`;
+    //code = code + `trace("${id}");\n`;
 
     for( var i in this.params ) {
       var param = this.params[i];
@@ -42,26 +44,32 @@ module.exports = class FunctionDeclaration {
       for( var j in param.names ) {
 	if (param.type.name == "memoryword") {
 	  var n = param.names[j].name;
-	  code = code + `/*BADBAD*/var ${n}_int = new Int32Array(${n}.buffer);\n`;      
-	  code = code + `var ${n}_gr = new Float32Array(${n}.buffer);\n`;
-	  code = code + `var ${n}_hh = new Uint16Array(${n}.buffer);\n`;
-	  code = code + `var ${n}_qqqq = new Uint8Array(${n}.buffer);`;	  
+	  //code = code + `/*BADBAD*/var ${n}_int = new Int32Array(${n}.buffer);\n`;      
+
+	  //code = code + `var ${n}_gr = new Float32Array(${n}.buffer);\n`;
+	  //code = code + `var ${n}_hh = new Uint16Array(${n}.buffer);\n`;
+	  //code = code + `var ${n}_qqqq = new Uint8Array(${n}.buffer);`;	  
 	  
 	}
       }
     }
 
-    
     if (this.resultType) {
       code = code + `var _${id}; /* has result type ${this.resultType.generate(environment)} */\n`;
     }
+    
     code = code + this.block.generate(environment);
-    code = code + `trace_exit("${id}");\n`;    
+
+    //code = code + `trace_exit("${id}");\n`;
+    
     if (this.resultType) {
       code = code + `return _${id};\n`;
     }
     code = code + "}\n";
-
+    
+    var iii = module.addFunctionType('iii', Binaryen.i32, [Binaryen.i32, Binaryen.i32]);
+    module.addFunction(this.identifier, iii, locals, ret);
+    
     if (this.resultType) {
       environment.functionIdentifier = undefined;
     }

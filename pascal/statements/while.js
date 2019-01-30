@@ -1,5 +1,7 @@
 'use strict';
 
+var count = 1;
+
 module.exports = class While {
   constructor(expression, statement) {
     this.expression = expression;
@@ -10,16 +12,22 @@ module.exports = class While {
     return this.statement.gotos();
   }
 
-  generate(block) {
-    var code;
-    if (this.expression.generate)
-      code = `while (${this.expression.generate(block)}) \n`;
-    else
-      code = `while (${this.expression}) \n`;      
+  generate(environment) {
+    var module = environment.module;
 
-    code = code + this.statement.generate(block);
+    var loopLabel = `while${count}`;
+    var blockLabel = `while${count}-done`;
+    count = count + 1;
+    
+    var loop = module.block( blockLabel,
+                             [ module.loop( loopLabel,
+                                            module.if( this.expression.generate(environment),
+                                                       module.block( null, [ this.statement.generate(environment),
+                                                                             module.break( loopLabel ) ] ),
+                                                       module.break( blockLabel ) )
+                                          ) ] );
 
-  return code;
+    return loop;
   }
 
 };

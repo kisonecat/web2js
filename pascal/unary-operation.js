@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 module.exports = class UnaryOperation {
   constructor(operator, operand) {
@@ -6,13 +7,25 @@ module.exports = class UnaryOperation {
     this.operand = operand;
   }
 
-  generate(block) {
-    var a;
-
-    a = this.operand.generate(block);
+  generate(environment) {
+    var module = environment.module;
+    var a = this.operand.generate(environment);
     
-    return `(${this.operator} (${a}))`;
+    if (this.operator == "+")
+      return a;
+
+    if (this.operator == "-") {
+      if (Binaryen.getExpressionType(a) == Binaryen.i32) {
+        return module.i32.mul( module.i32.const(-1), a );
+      }
+
+      if (Binaryen.getExpressionType(a) == Binaryen.f64) {
+        return module.f64.neg(a);
+      }
+    }
+
+    throw "Unknown unary operator " + this.operator;
+    return module.nop();
   }
-  
 
 };
