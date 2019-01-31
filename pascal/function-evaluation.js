@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 module.exports = class FunctionEvaluation {
   constructor(f,xs) {
@@ -7,19 +8,21 @@ module.exports = class FunctionEvaluation {
   }
 
   generate(environment) {
-    var m = environment.module;
+    var module = environment.module;
 
     if (this.f.name.toLowerCase() == "trunc") {
-      return m.i32.trunc_s.f64(this.xs[0].generate(environment));
+      return module.i32.trunc_s.f64(this.xs[0].generate(environment));
     }
 
     if (this.f.name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
-      return m.i32.trunc_s.f64(m.f64.nearest(this.xs[0].generate(environment)))
+      return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)))
     }    
+
+    var compiledParams = this.xs.map( function(p) { return p.generate(environment); } );
+
+    var result = environment.resolveFunction( this.f ).resultType.binaryen();
     
-    return m.nop();
-    
-    //return `${this.f.generate(block)}(${this.xs.map( function(p) { return p.generate(block); } ).join(',')})`;
+    return module.call( this.f.name, compiledParams, result );
   }
 };

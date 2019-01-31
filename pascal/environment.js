@@ -12,6 +12,7 @@ module.exports = class Environment {
     this.constants = {};
     this.variables = {};
     this.types = {};
+    this.functions = {};
     
     this.setVariable = {};
     this.getVariable = {};
@@ -69,6 +70,19 @@ module.exports = class Environment {
 
     return undefined;
   }
+
+  resolveFunction( c ) {
+    var e = this;
+    
+    while( e ) {
+      if (e.functions[c.name])
+        return e.functions[c.name];
+
+      e = e.parent;
+    }
+
+    return undefined;
+  }  
   
   resolveVariable( variableIdentifier ) {
     var e = this;

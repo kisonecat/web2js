@@ -7,6 +7,7 @@ module.exports = class ExpressionWithWidth {
   }
 
   generate(e) {
-    return this.expression.generate(e) + `/*with width ${this.width}*/`;
+    // FIXME: ignore width specification
+    return this.expression.generate(e);
   }
 };

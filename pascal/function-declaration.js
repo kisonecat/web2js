@@ -12,13 +12,14 @@ module.exports = class FunctionDeclaration {
   }
 
   generate(environment) {
+    var parentEnvironment = environment;
     environment = new Environment(environment);
     var module = environment.module;
 
     var params = [];
     var inputs = [];
     var index = 0;
-    
+
     for( var i in this.params ) {
       var param = this.params[i];
 
@@ -40,36 +41,54 @@ module.exports = class FunctionDeclaration {
         index = index + 1;
       }
     }
-    
-    var result = Binaryen.none;
-    if (this.resultType)
-      result = this.resultType.binaryen();
 
     var locals = [];
+
+    function addVariable( name, type ) {
+      environment.variables[name] = {
+        index: index,
+        type: type,
+        set: function(expression) {
+          return module.local.set( this.index, expression );
+        },
+        get: function() {
+          return module.local.get( this.index, type.binaryen() );
+        }          
+      };
+
+      locals.push( type.binaryen() );
+      index = index + 1;      
+    }
+    
+    var result = Binaryen.none;
+    var resultVariable;
+
+    if (this.resultType) {
+      result = this.resultType.binaryen();
+      addVariable( this.identifier.name, this.resultType );
+      resultVariable = environment.variables[this.identifier.name];
+    }
     
     this.block.vars.forEach( function(v) {
       for (var i in v.names) {
-        environment.variables[v.names[j].name] = {
-          index: index,
-          type: v.type,
-          set: function(expression) {
-            return module.local.set( this.index, expression );
-          },
-          get: function() {
-            return module.local.get( this.index, v.type.binaryen() );
-          }          
-        };
-        
-        locals.push( v.type.binaryen() );
-        index = index + 1;
+        addVariable( v.names[j].name, v.type );
       }
     });
 
     var functionType = module.addFunctionType(null, result, inputs);
     
     var code = this.block.generate(environment);
+
+    if (resultVariable) {
+      code = module.block( null, [ code,
+                                  module.return( resultVariable.get() )] );
+    }
     
     module.addFunction(this.identifier.name, functionType, locals, code);
+
+    parentEnvironment.functions[this.identifier.name] = {
+      resultType: this.resultType
+    };
     
     return;
     
@@ -80,9 +99,6 @@ module.exports = class FunctionDeclaration {
 
     var id = this.identifier.generate(environment);
     
-    //code = code + `function ${id}(${params.join(',')}) {\n`;
-    //code = code + `trace("${id}");\n`;
-
     for( var i in this.params ) {
       var param = this.params[i];
 
