@@ -11,7 +11,8 @@
      "erstat",
      "eof",
      "eoln",
-     "round",                         
+     "round",
+     "trunc",
      "odd"
    ],
    "field" : [

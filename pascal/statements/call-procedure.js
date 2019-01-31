@@ -13,26 +13,21 @@ module.exports = class CallProcedure {
   }
   
   generate(environment) {
-    module = environment.module;
+    var module = environment.module;
     
-    var prefix = "";
-
     if (this.procedure.name == "writeln") {
-      return module.call( "log", [this.params[0].generate(environment)], Binaryen.none );
+      var params = this.params.map( function(p) { return p.generate(environment); } );
+      var types = params.map( function(p) {
+        if (Binaryen.getExpressionType(p) == Binaryen.i32)
+          return 'i';
+        else
+          return 'f';
+      } ).join('');
+      return module.call( "log-" + types, params, Binaryen.none );
     }
-    /*
-    if (this.procedure.name == "read") {
-      var handle = this.params.shift().generate(block);
-      var code = "";
 
-      for( var i in this.params ) {
-        var v = this.params[i];
-        code = code + `${v.generate(block)} = ${handle}.${this.procedure.generate(block)}();\n`
-      }
-      return code;
-    }    
-    
-    return `${prefix}${this.procedure.generate(block)}(${this.params.map( function(p) { if (p.generate) return p.generate(block); else return p.toString() })});`
-    */
+    var compiledParams = this.params.map( function(p) { return p.generate(environment); } );
+
+    return module.call( this.procedure.name, compiledParams, Binaryen.none );
   }
 };

@@ -12,22 +12,67 @@ module.exports = class FunctionDeclaration {
   }
 
   generate(environment) {
-    var code  = "";
-    var params = [];
-
     environment = new Environment(environment);
     var module = environment.module;
+
+    var params = [];
+    var inputs = [];
+    var index = 0;
     
     for( var i in this.params ) {
       var param = this.params[i];
 
       for( var j in param.names ) {
-        environment.variables[param.names[j].name] = this.params[i].type;
-        //var name = param.names[j].generate(environment);
+        environment.variables[param.names[j].name] = {
+          index: index,
+          type: this.params[i].type,
+          set: function(expression) {
+            return module.local.set( this.index, expression );
+          },
+          get: function() {
+            return module.local.get( this.index, param.type.binaryen() );
+          }          
+        };
+        
 	var name = param.names[j].name;
         params.push( name );
+        inputs.push( param.type.binaryen() );
+        index = index + 1;
       }
     }
+    
+    var result = Binaryen.none;
+    if (this.resultType)
+      result = this.resultType.binaryen();
+
+    var locals = [];
+    
+    this.block.vars.forEach( function(v) {
+      for (var i in v.names) {
+        environment.variables[v.names[j].name] = {
+          index: index,
+          type: v.type,
+          set: function(expression) {
+            return module.local.set( this.index, expression );
+          },
+          get: function() {
+            return module.local.get( this.index, v.type.binaryen() );
+          }          
+        };
+        
+        locals.push( v.type.binaryen() );
+        index = index + 1;
+      }
+    });
+
+    var functionType = module.addFunctionType(null, result, inputs);
+    
+    var code = this.block.generate(environment);
+    
+    module.addFunction(this.identifier.name, functionType, locals, code);
+    
+    return;
+    
     
     if (this.resultType) {
       environment.functionIdentifier = this.identifier;

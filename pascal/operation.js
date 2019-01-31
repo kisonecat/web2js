@@ -18,24 +18,18 @@ module.exports = class Operation {
     a = this.operand1.generate(environment);
     b = this.operand2.generate(environment);
     
-    // BADBAD
-    //if (this.operator === 'div') {
-    //return `(((${a}) / (${b}))|0)`;
-    //}
-
     var family = undefined;
 
     if ((Binaryen.getExpressionType(a) == Binaryen.i32) && (Binaryen.getExpressionType(b) == Binaryen.i32)) {
       family = m.i32;
     } else if ((Binaryen.getExpressionType(a) == Binaryen.f64) && (Binaryen.getExpressionType(b) == Binaryen.i32)) {
       b = m.f64.convert_s.i32(b);
-      family = m.i64;
-    }
-    else if ((Binaryen.getExpressionType(a) == Binaryen.i32) && (Binaryen.getExpressionType(b) == Binaryen.f64)) {
+      family = m.f64;
+    } else if ((Binaryen.getExpressionType(a) == Binaryen.i32) && (Binaryen.getExpressionType(b) == Binaryen.f64)) {
       a = m.f64.convert_s.i32(a);
-      family = m.i64;
+      family = m.f64;
     } else if ((Binaryen.getExpressionType(a) == Binaryen.f64) && (Binaryen.getExpressionType(b) == Binaryen.f64)) {
-      family = m.i64;
+      family = m.f64;
     }
 
     if (family === undefined) {
@@ -64,7 +58,7 @@ module.exports = class Operation {
       if (Binaryen.getExpressionType(a) == Binaryen.i32)
         a = m.f64.convert_s.i32(a);      
         
-      return m.f64.div_s( a, b );
+      return m.f64.div( a, b );
     }
 
     if (this.operator === "==") {
@@ -74,23 +68,21 @@ module.exports = class Operation {
     if (this.operator === "!=") {
       return family.ne(a,b);
     }
+
+    if (family === m.i32) {
+      if (this.operator === "<") return family.lt_s(a,b);
+      if (this.operator === ">") return family.gt_s(a,b);
+      if (this.operator === ">=") return family.ge_s(a,b);
+      if (this.operator === "<=") return family.le_s(a,b);
+    }
+
+    if (family === m.f64) {
+      if (this.operator === "<") return family.lt(a,b);
+      if (this.operator === ">") return family.gt(a,b);
+      if (this.operator === ">=") return family.ge(a,b);
+      if (this.operator === "<=") return family.le(a,b);
+    }
     
-    if (this.operator === "<") {
-      return family.lt_s(a,b);
-    }
-
-    if (this.operator === ">") {
-      return family.gt_s(a,b);
-    }
-
-    if (this.operator === ">=") {
-      return family.ge_s(a,b);
-    }
-
-    if (this.operator === "<=") {
-      return family.le_s(a,b);
-    }
-
     if (this.operator === "&&") {
       return family.and(a,b);
     }
@@ -103,9 +95,8 @@ module.exports = class Operation {
       return family.rem_s(a,b);
     }
 
-    throw "Could not parse.";
+    throw `Could not parse operator ${this.operator}`;
     return;
-    //return `((${a}) ${this.operator} (${b}))`;
   }
   
 };

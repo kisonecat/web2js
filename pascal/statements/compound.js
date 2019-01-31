@@ -1,7 +1,9 @@
 'use strict';
+var Environment = require('../environment.js');
 var Binaryen = require('binaryen');
 
 var trampoline = 1;
+var targets = 1;
 
 module.exports = class Compound {
   constructor(statements) {
@@ -17,64 +19,71 @@ module.exports = class Compound {
   }
   
   generate(environment) {
+    environment = new Environment(environment);    
     var module = environment.module;
-    /*
+
     var labelCount = 0;
+
+    var labels = [];
+    var target = {};
     this.statements.forEach( function(v) {
       if (v.label && v.statement) {
         labelCount = labelCount + 1;
+        labels.push( v.label );
+        target[v.label] = `target${targets}`;
+        targets++;
       }
     });
 
-    if (labelCount > 0) {
-      var theTrampoline = trampoline;
-      trampoline = trampoline + 1;
-
-      code = code + `var goto${theTrampoline} = 0;\n`;
-      code = code + `trampoline${theTrampoline}: while (true) {`;
-      code = code + `switch(goto${theTrampoline}) {`;
-      code = code + `case 0:`;
-
-      this.statements.forEach( function(v) {
-        if (v.label && v.statement) {
-          environment.labels[v.label] = `goto${theTrampoline} = ${v.label}; continue trampoline${theTrampoline};`;
-        }
+    if (labelCount == 0) {
+      var commands = this.statements.map( function(v) {
+        return v.generate(environment);
       });
-    }*/
+      return module.block (null, commands );
+    }
 
-    var commands = this.statements.map( function(v) {
-      return v.generate(environment);
-    });
+    var trampolineLabel = `trampoline${trampoline}`;
+    trampoline = trampoline + 1;
 
-    return module.block (null, commands );
-    
-    /*
     this.statements.forEach( function(v) {
       if (v.label && v.statement) {
-        code = code + `case ${v.label}:`;
-        v = v.statement;
+        environment.labels[v.label] = {
+          label: trampolineLabel,
+          index: labels.indexOf( v.label ),
+          generate: function( environment ) {
+            var m = environment.module;
+            return m.block( null, [
+              m.global.set( "trampoline", m.i32.const( this.index ) ),
+              m.break( this.label )
+            ]);
+          }
+        };
+      }
+    });    
+
+    
+    var branch = [
+      module.if( module.i32.ge_s( module.global.get( "trampoline", Binaryen.i32 ),
+                                  module.i32.const( 0 ) ),
+                 module.switch( labels.map( function(l) { return target[l]; } ),
+                                trampolineLabel,
+                                module.global.get( "trampoline", Binaryen.i32 )
+                              )
+           )
+    ];
+
+    this.statements.forEach( function(v) {
+      if (v.label) {
+        branch = [ module.block( target[v.label], branch ) ];
       }
       
-      if (v.generate) {
-        code = code + v.generate(environment);
-      } else {
-        code = code + v.toString();
-      }
-      code = code + "\n";      
+      branch.push( v.generate( environment ) );
     });
 
-    if (labelCount > 0) {
-      code = code + `}\n`;
-      code = code + `break trampoline${theTrampoline};`;
-      code = code + `}\n`;      
-    }
-    
-    code = code + "}\n";
-
-  return code;
-*/
+    return module.block( null, [
+      module.global.set( "trampoline", module.i32.const( -1 ) ),
+      module.loop(trampolineLabel, module.block( null, branch ) ) ] );
   }
-
 };
 
 

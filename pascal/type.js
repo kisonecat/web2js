@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 module.exports = class Type {
   constructor(name) {
@@ -16,6 +17,22 @@ module.exports = class Type {
       return "2";
 
     throw "Cannot index by unknown type";    
+  }
+
+  binaryen(e) {
+    if (this.name == "integer")
+      return Binaryen.i32;
+
+    if (this.name == "char")
+      return Binaryen.i32;      
+
+    if (this.name == "boolean")
+      return Binaryen.i32;            
+
+    if (this.name == "real")
+      return Binaryen.f64;
+
+    throw "Cannot identify binaryen type";
   }
 
   intish(e) {

@@ -93,7 +93,7 @@ BLOCK: LABEL_DEC_PART
        CONST_DEC_PART TYPE_DEC_PART
        VAR_DEC_PART
        STAT_PART
-  	  { $$ = new Block($1,$2,$3,$4,[],new Compound($5), theProgram); }
+  	  { $$ = new Block($1,$2,$3$4,new Compound($5), theProgram); }
  	;
 
  LABEL_DEC_PART:		/* empty */  { $$ = []; }
@@ -516,8 +516,7 @@ FACTOR:
 	;
 
 PARAM_LIST:
-	'('               
-	ACTUAL_PARAM_L ')' { $$ = $2; }
+	'(' ACTUAL_PARAM_L ')' { $$ = $2; }
 	;
 
 ACTUAL_PARAM_L:

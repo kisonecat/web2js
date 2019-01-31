@@ -1,4 +1,7 @@
 'use strict';
+var Environment = require('../environment.js');
+
+var count = 1;
 
 module.exports = class LabeledStatement {
   constructor(label, statement) {
@@ -10,14 +13,24 @@ module.exports = class LabeledStatement {
     return this.statement.gotos();
   }
   
-  generate(block) {
-    block.labels[this.label] = `continue label${this.label}`;
-
-    var code = "{";
-    code = code + `label${this.label}: while(true) {\n`;
-    code = code + this.statement.generate(block);
-    code = code + `break label${this.label}; } }\n`;
+  generate(environment) {
+    environment = new Environment(environment);
     
-    return code;
+    var module = environment.module;
+
+    var loopLabel = `goto${count}`;
+    count = count + 1;
+    
+    environment.labels[ this.label ] = {
+      label: loopLabel,
+      generate: function(environment) {
+        var module = environment.module;
+        return module.break( this.label );
+      }
+    };
+    
+    return module.loop( loopLabel,
+                        this.statement.generate( environment ) );
+    
   }
 };

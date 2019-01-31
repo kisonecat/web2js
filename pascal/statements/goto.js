@@ -9,19 +9,20 @@ module.exports = class Goto {
     return [this.label];
   }
   
-  generate(block){
-    var label = block.resolveLabel( this.label );
+  generate(environment){
+    var module = environment.module;
+    
+    var label = environment.resolveLabel( this.label );
 
     if ((this.label == 9999) || (this.label == 9998)) {
-      return "process.exit();\n";
+      return module.unreachable();
     }
 
-    if (label)
-      return block.resolveLabel( this.label ) + `/* goto ${this.label} */;`;
-    else {
-      return `return /* missing goto ${this.label} */;`;      
+    if (label) {
+      return label.generate( environment );
     }
-       
-    //return `return /* ${this.label} */;`;
+
+    throw `Could not find label ${this.label}`;
+    return module.return();
   }
 };
