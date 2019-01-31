@@ -61,7 +61,6 @@ module.exports = class Compound {
       }
     });    
 
-    
     var branch = [
       module.if( module.i32.ge_s( module.global.get( "trampoline", Binaryen.i32 ),
                                   module.i32.const( 0 ) ),
