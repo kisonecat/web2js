@@ -309,7 +309,7 @@ RECORD_CASE: i_num ':' '(' FIELD_LIST ')' ';' { $$ = $4; } ;
  		| VAR_ID_DEC_LIST ',' VAR_ID  { $$ = $1.concat( [$3] ); }
  		;
 
-VAR_ID:			undef_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
+VAR_ID:		  undef_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
 		| var_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
 		| field_id { yy.sym_table[yytext] = { type: "var_id" }; $$ = new Variable(yytext); } 
 		;
@@ -320,8 +320,7 @@ BODY:
 	  STAT_LIST end '.' { $$ = $2; }
 	;
 
-P_F_DEC_PART:
-{ $$ = []; }
+P_F_DEC_PART: { $$ = []; }
 	|  P_F_DEC { $$ = [$1]; }
 	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
 	;
@@ -437,8 +436,6 @@ POINTER: {$$ = false;}
        | '^' { $$ = true;}
        ;
 
-VAR_ID: var_id { $$ = new Variable( yytext ); } ;
-
 VARP: VAR_ID POINTER { if ($2) { $$ = new Pointer( $1 ); } else { $$ = $1; } } ;
 
 VARIABLE:	VARP VAR_DESIG_LIST { $$ = new Desig( $1, $2 ); }
@@ -541,7 +538,7 @@ WIDTH_FIELD:
 PROC_PARAM: proc_param { $$ = new ProcedureIdentifier(yytext); } ;
 
 PROC_STAT:	proc_id { $$ = new CallProcedure( new ProcedureIdentifier( yytext ), [] ); }
-		| undef_id { $$ = new CallProcedure( new ProcedureIdentifier( yytext ), [] ); }
+  // | undef_id { $$ = new CallProcedure( new ProcedureIdentifier( yytext ), [] ); }
 		| break PARAM_LIST { $$ = new CallProcedure( new ProcedureIdentifier( 'break' ), $2 ); }
 		| PROC_PARAM
 			PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
