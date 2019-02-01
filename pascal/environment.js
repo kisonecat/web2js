@@ -6,8 +6,11 @@ var binaryen = require('binaryen');
 module.exports = class Environment {
   constructor(parent) {
     this.parent = parent;
-    if (parent)
+    if (parent) {
       this.functionIdentifier = parent.functionIdentifier;
+      this.program = parent.program;
+    }
+    
     this.labels = {};
     this.constants = {};
     this.variables = {};

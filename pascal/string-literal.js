@@ -1,14 +1,16 @@
 'use strict';
+var Type = require('./type.js');
 
 module.exports = class StringLiteral {
   constructor(text) {
     this.text = text.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'");
+    this.type = new Type('string');    
   }
 
-  generate() {
+  generate(environment) {
     var t = this.text;
-    t = t.replace(/\\/g,'\\\\');  
-    t = t.replace(/'/g,'\\\'');
-    return `'${t}'`;
+    var module = environment.module;
+    
+    return module.i32.const( environment.program.allocateString( t ) );
   }
 };

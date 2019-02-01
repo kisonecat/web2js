@@ -204,6 +204,8 @@ var module = program.generate();
 
 fs.writeFileSync( "tex.wast", module.emitText() );
 
+fs.writeFileSync( "tex.wabt", module.emitBinary() );
+
 // Get the binary in typed array form
 var binary = module.emitBinary();
 //console.log('binary size: ' + binary.length);
@@ -213,9 +215,17 @@ var binary = module.emitBinary();
 // clean itself up
 module.dispose();
 
+var code = new WebAssembly.Module(binary);
+
+var pages = 1;
+var memory = new WebAssembly.Memory({initial: pages, maximum: pages});
+
 var library = {
   printString: function(x) {
-    process.stdout.write(x);
+    var length = new Uint8Array( memory.buffer, x, 1 )[0];
+    var buffer = new Uint8Array( memory.buffer, x+1, length );
+    var string = String.fromCharCode.apply(null, buffer);
+    process.stdout.write(string);
   },
   printInteger: function(x) {
     process.stdout.write(x.toString());
@@ -229,7 +239,8 @@ var library = {
 };
 
 // Compile the binary and create an instance
-var wasm = new WebAssembly.Instance(new WebAssembly.Module(binary), { library: library } );
+var wasm = new WebAssembly.Instance(code, { library: library,
+                                            env: { memory: memory } } );
 
 //console.log("exports: " + Object.keys(wasm.exports).sort().join(","));
 //console.log();

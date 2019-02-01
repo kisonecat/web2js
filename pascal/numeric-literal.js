@@ -1,15 +1,20 @@
 'use strict';
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
+var Type = require('./type.js');
 
 module.exports = class NumericLiteral {
   constructor(n, isInteger) {
     this.number = n;
     this.isInteger = isInteger;
+    if (isInteger) 
+      this.type = new Type('integer');
+    else
+      this.type = new Type('real');      
   }
 
   generate(environment) {
-    var environment = new Environment(environment);
+    environment = new Environment(environment);
     var m = environment.module;
 
     if (this.isInteger)

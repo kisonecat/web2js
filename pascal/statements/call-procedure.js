@@ -17,15 +17,18 @@ module.exports = class CallProcedure {
     
     if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
       var printers = this.params.map( function(p) {
-        p = p.generate(environment);
+        var q = p.generate(environment);
         
         var printer = "print";
-        if (Binaryen.getExpressionType(p) == Binaryen.i32)
+        if (Binaryen.getExpressionType(q) == Binaryen.i32)
           printer = "printInteger";
         else
           printer = "printFloat";
-        
-        return module.call( printer, [p], Binaryen.none );
+
+        if (p.type && (p.type.name === "string"))
+          printer = "printString";
+          
+        return module.call( printer, [q], Binaryen.none );
       });
 
       if (this.procedure.name == "writeln")
