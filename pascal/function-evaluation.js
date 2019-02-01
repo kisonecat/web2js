@@ -21,6 +21,10 @@ module.exports = class FunctionEvaluation {
 
     var compiledParams = this.xs.map( function(p) { return p.generate(environment); } );
 
+    if (environment.resolveFunction( this.f ) === undefined) {
+      throw `Function ${this.f.name} is not defined.`;
+    }
+
     var result = environment.resolveFunction( this.f ).resultType.binaryen();
     
     return module.call( this.f.name, compiledParams, result );

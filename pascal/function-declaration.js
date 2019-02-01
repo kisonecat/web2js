@@ -68,6 +68,14 @@ module.exports = class FunctionDeclaration {
       addVariable( this.identifier.name, this.resultType );
       resultVariable = environment.variables[this.identifier.name];
     }
+
+    parentEnvironment.functions[this.identifier.name] = {
+      resultType: this.resultType
+    };
+
+    if (this.block === null) {
+      return;
+    }
     
     this.block.vars.forEach( function(v) {
       for (var i in v.names) {
@@ -76,19 +84,15 @@ module.exports = class FunctionDeclaration {
     });
 
     var functionType = module.addFunctionType(null, result, inputs);
-    
+
     var code = this.block.generate(environment);
 
     if (resultVariable) {
       code = module.block( null, [ code,
-                                  module.return( resultVariable.get() )] );
+                                   module.return( resultVariable.get() )] );
     }
     
     module.addFunction(this.identifier.name, functionType, locals, code);
-
-    parentEnvironment.functions[this.identifier.name] = {
-      resultType: this.resultType
-    };
     
     return;
     

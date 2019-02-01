@@ -1,5 +1,5 @@
 
-%token	array begin case const do downto else	end file for function goto if label	of procedure program record repeat then	to type until var while noreturn	others r_num i_num string_literal single_char	assign  undef_id var_id	proc_id proc_param fun_id fun_param const_id	type_id hhb0 hhb1 field_id define field	break
+%token	array begin case const do downto else	end file for function goto if label	of procedure program record repeat then	to type until var while noreturn	others r_num i_num string_literal single_char	assign  undef_id var_id	proc_id proc_param fun_id fun_param const_id	type_id hhb0 hhb1 field_id define field	break forward
 
 %nonassoc '=' '<>' '<' '>' '<=' '>='
 %left '+' '-' or
@@ -93,7 +93,7 @@ BLOCK: LABEL_DEC_PART
        CONST_DEC_PART TYPE_DEC_PART
        VAR_DEC_PART
        STAT_PART
-  	  { $$ = new Block($1,$2,$3$4,new Compound($5), theProgram); }
+       { $$ = new Block($1,$2,$3,$4,new Compound($5), theProgram); }
  	;
 
  LABEL_DEC_PART:		/* empty */  { $$ = []; }
@@ -326,12 +326,13 @@ P_F_DEC_PART:
 	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
 	;
 
-P_F_DEC:		PROCEDURE_DEC ';' { $$ = $1; }
-		| FUNCTION_DEC ';' { $$ = $1; }
-		;
+P_F_DEC: PROCEDURE_DEC ';' { $$ = $1; }
+  | FUNCTION_DEC ';' { $$ = $1; }
+  ;
 
 PROCEDURE_DEC:
-	PROCEDURE_HEAD BLOCK  { $$ = new FunctionDeclaration( $1[0], $1[1], undefined, $2 ); }
+          PROCEDURE_HEAD BLOCK  { $$ = new FunctionDeclaration( $1[0], $1[1], undefined, $2 ); }
+ 	| PROCEDURE_HEAD forward  { $$ = new FunctionDeclaration( $1[0], $1[1], undefined, null ); }
 	;
 
 PROCEDURE:
@@ -371,7 +372,9 @@ DECLARED_PROC:
 	| proc_param  { $$ = new ProcedureIdentifier( yytext ); }
 	;
 
-FUNCTION_DEC: FUNCTION_HEAD BLOCK { $$ = new FunctionDeclaration( $1[0], $1[1], $1[2], $2 ); };
+FUNCTION_DEC: FUNCTION_HEAD BLOCK { $$ = new FunctionDeclaration( $1[0], $1[1], $1[2], $2 ); }
+  | FUNCTION_HEAD forward { $$ = new FunctionDeclaration( $1[0], $1[1], $1[2], null ); }
+  ;
 
 FUN_ID_DEF: undef_id { $$ = new FunctionIdentifier( yytext ); } ;
 

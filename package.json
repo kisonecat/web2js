@@ -4,7 +4,8 @@
   "description": "Convert \"Pascal\" output of WEB into JavaScript",
   "main": "index.js",
   "scripts": {
-    "test": "node spec/run-tests.js"
+    "test": "node spec/run-tests.js",
+    "build": "jison parser.jison"
   },
   "author": "Jim Fowler",
   "license": "GPL-3.0",
