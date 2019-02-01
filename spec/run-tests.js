@@ -30,7 +30,9 @@ function runTest( filename ) {
     desiredOutput = fs.readFileSync( `.cache/${hash}` );
   } catch (err) {
     child_process.execSync(`fpc -Mdelphi ${filename} 2> /dev/null`);
-    desiredOutput = child_process.execSync("./" + filename.replace(/\.p$/, ''));
+    var executable = "./" + filename.replace(/\.p$/, '');
+    desiredOutput = child_process.execSync(executable);
+    fs.unlinkSync( executable );
     fs.writeFileSync( `.cache/${hash}`, desiredOutput );
   }
 

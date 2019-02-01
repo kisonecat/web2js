@@ -203,7 +203,6 @@ var module = program.generate();
 //module.optimize();
 
 fs.writeFileSync( "tex.wast", module.emitText() );
-
 fs.writeFileSync( "tex.wabt", module.emitBinary() );
 
 // Get the binary in typed array form
