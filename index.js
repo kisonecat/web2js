@@ -213,8 +213,23 @@ var binary = module.emitBinary();
 // clean itself up
 module.dispose();
 
+var library = {
+  printString: function(x) {
+    process.stdout.write(x);
+  },
+  printInteger: function(x) {
+    process.stdout.write(x.toString());
+  },
+  printFloat: function(x) {
+    process.stdout.write(x.toString());
+  },
+  printNewline: function(x) {
+    process.stdout.write("\n");
+  },      
+};
+
 // Compile the binary and create an instance
-var wasm = new WebAssembly.Instance(new WebAssembly.Module(binary), { console: { log: console.log } });
+var wasm = new WebAssembly.Instance(new WebAssembly.Module(binary), { library: library } );
 
 //console.log("exports: " + Object.keys(wasm.exports).sort().join(","));
 //console.log();

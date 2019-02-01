@@ -15,15 +15,23 @@ module.exports = class CallProcedure {
   generate(environment) {
     var module = environment.module;
     
-    if (this.procedure.name == "writeln") {
-      var params = this.params.map( function(p) { return p.generate(environment); } );
-      var types = params.map( function(p) {
+    if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
+      var printers = this.params.map( function(p) {
+        p = p.generate(environment);
+        
+        var printer = "print";
         if (Binaryen.getExpressionType(p) == Binaryen.i32)
-          return 'i';
+          printer = "printInteger";
         else
-          return 'f';
-      } ).join('');
-      return module.call( "log-" + types, params, Binaryen.none );
+          printer = "printFloat";
+        
+        return module.call( printer, [p], Binaryen.none );
+      });
+
+      if (this.procedure.name == "writeln")
+        printers.push( module.call( "printNewline", [], Binaryen.none ) );
+      
+      return module.block( null, printers );
     }
 
     var compiledParams = this.params.map( function(p) { return p.generate(environment); } );
