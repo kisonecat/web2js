@@ -227,6 +227,9 @@ var library = {
     var string = String.fromCharCode.apply(null, buffer);
     process.stdout.write(string);
   },
+  printChar: function(x) {
+    process.stdout.write(String.fromCharCode(x));
+  },
   printInteger: function(x) {
     process.stdout.write(x.toString());
   },

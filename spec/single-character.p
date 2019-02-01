@@ -1,8 +1,11 @@
 program TEST;
 var
-  i : char;
-  j : integer;
-   
+  a, b : char;
+   c   :  char;
+  
 begin
-   i := 'A';
+   a := 'A';
+   b := 'b';
+   c := 'C';
+   writeln(a,b,a,a,a,a,b,b,b,c);
 end.

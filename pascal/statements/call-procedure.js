@@ -27,7 +27,10 @@ module.exports = class CallProcedure {
 
         if (p.type && (p.type.name === "string"))
           printer = "printString";
-          
+
+        if (p.type && (p.type.name === "char"))
+          printer = "printChar";        
+
         return module.call( printer, [q], Binaryen.none );
       });
 

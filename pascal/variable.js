@@ -7,17 +7,8 @@ module.exports = class Variable {
 
   generate(environment) {
     var v = environment.resolveVariable( this );
-
+    this.type = v.type;
+    
     return v.get();
-    
-    return;
-    var t = "";
-
-    if (v) t = v.generate(environment);
-
-    if (v && ((v.name == "memoryword") || (v.name == "twohalves")  || (v.name == "fourquarters")))
-      return `/*${t}*/${this.name}[0]`;
-    
-    return `/*${t}*/${this.name}`;
   }
 };
