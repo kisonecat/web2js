@@ -1,4 +1,4 @@
-  %token	array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field break forward packed identifier true false
+  %token	array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field forward packed identifier true false
 
 %nonassoc '=' '<>' '<' '>' '<=' '>='
 %left '+' '-' or
@@ -38,7 +38,6 @@ var FunctionEvaluation = require('./pascal/function-evaluation.js');
 var ExpressionWithWidth = require('./pascal/expression-with-width.js');
 
 var LabeledStatement = require('./pascal/statements/labeled-statement.js');
-var BreakStatement = require('./pascal/statements/break.js');
 var Nop = require('./pascal/statements/nop.js');
 var Assignment = require('./pascal/statements/assignment.js');
 var Goto = require('./pascal/statements/goto.js');
@@ -332,7 +331,6 @@ SIMPLE_STAT:	  VARIABLE assign EXPRESS  { $$ = new Assignment( $1, $3 ); }
 		| PROC_STAT { $$ = $1; }
 		| goto INTEGER  { $$ = new Goto( $2 ); }
 		| /* empty */  { $$ = new Nop(); }
-		| break	{ $$ = new BreakStatement(); }
 ;
 
 POINTER:
