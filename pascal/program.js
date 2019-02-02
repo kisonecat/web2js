@@ -37,43 +37,60 @@ module.exports = class Program {
     this.types.forEach( function(t) {
       environment.types[t.name] = t.expression;
     });
-    
-    this.vars.forEach( function(v) {
+
+    for(var j in this.vars) {
+      var v = this.vars[j];
       for (var i in v.names) {
         var name = v.names[i].name;
         var type = environment.resolveType( v.type );
-
-        //type.bytes()
+        var pointer = this.memorySize;
+        this.memorySize += type.bytes();
         
         environment.variables[name] = {
           name: name,
           type: type,
-          
-          set: function(expression) {
-            if (Binaryen.getExpressionType( expression ) == this.type.binaryen())
-              return module.global.set( this.name, expression );
-            else {
-              if ((Binaryen.getExpressionType( expression ) === Binaryen.f64) && (this.type.binaryen() === Binaryen.i32)) {
-                return module.global.set( this.name, module.i32.trunc_s.f64( expression ) );
-              }
-              if ((Binaryen.getExpressionType( expression ) === Binaryen.i32) && (this.type.binaryen() === Binaryen.f64)) {
-                return module.global.set( this.name, module.f64.convert_s.i32( expression ) );
-              }
+          pointer: module.i32.const(pointer),
+
+          set: function(expression, offset) {
+            if (offset === undefined) offset = 0;
+
+            if (this.type.name === "real") {
+              if (Binaryen.getExpressionType(expression) == Binaryen.f64)
+                return module.f64.store( offset, 0, this.pointer, expression );
+              else
+                return module.f64.store( offset, 0, this.pointer, module.f64.convert_s.i32 ( expression ) );
             }
+
+            if (this.type.bytes() == 1)
+              return module.i32.store8( offset, 0, this.pointer, expression );
+
+            if (this.type.bytes() == 2)
+              return module.i32.store16( offset, 0, this.pointer );
+
+            if (this.type.bytes() == 4)
+              return module.i32.store( offset, 0, this.pointer, expression );
+
             return module.nop();
           },
           
-          get: function() {
-            return module.global.get( this.name, this.type.binaryen() );
+          get: function(offset) {
+            if (offset === undefined) offset = 0;
+
+            if (this.type.name === "real")
+              return module.f64.load( offset, 0, this.pointer );              
+            
+            if (this.type.bytes() == 1)
+              return module.i32.load8_u( offset, 0, this.pointer );
+
+            if (this.type.bytes() == 2)
+              return module.i32.load16_s( offset, 0, this.pointer );
+
+            if (this.type.bytes() == 4)
+              return module.i32.load( offset, 0, this.pointer );              
           }
         };
-
-        if (type.binaryen() == Binaryen.i32)
-          module.addGlobal( name, type.binaryen(), true, module.i32.const(0) );
-        else
-          module.addGlobal( name, type.binaryen(), true, module.f64.const(0) );
       }
-    });
+    };
     
     this.pfs.forEach( function(v) {
       v.generate(environment);

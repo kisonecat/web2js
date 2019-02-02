@@ -79,6 +79,7 @@ module.exports = class Operation {
     }
 
     if (this.operator === "*") {
+
       return family.mul( a, b );
     }
 

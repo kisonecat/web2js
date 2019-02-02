@@ -8,6 +8,7 @@
 
 %start PROGRAM
 
+/* Deal with dangling else */
 %right "then" "else"
 
 %{
