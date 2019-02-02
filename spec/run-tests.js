@@ -36,7 +36,12 @@ function runTest( filename ) {
     fs.writeFileSync( `.cache/${hash}`, desiredOutput );
   }
 
-  var output = child_process.execSync(`node ../index.js ${filename}`).toString();
+  var output;
+  try {
+    output = child_process.execSync(`node ../index.js ${filename} 2> /dev/null`).toString();
+  } catch (e) {
+    output = undefined;
+  }
 
   if (output == desiredOutput)  {
     process.stdout.write("  " + logSymbols.success.green + " " + filename.cyan + "\n");

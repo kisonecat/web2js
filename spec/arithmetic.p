@@ -1,7 +1,9 @@
 program TEST;
+type
+   number=integer;
 var
-   i : integer;
-   j : integer;
+   i : number;
+   j : number;
    r : real;
 begin
    i := 17;
