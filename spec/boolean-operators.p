@@ -13,4 +13,5 @@ begin
    writeln(1 > 2);
    writeln(t);
    writeln(2 > 1);
+   writeln(not (2 > 1));
 end.

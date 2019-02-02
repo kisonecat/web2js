@@ -1,5 +1,6 @@
 'use strict';
 var Binaryen = require('binaryen');
+var Type = require('./type.js');
 
 module.exports = class FunctionEvaluation {
   constructor(f,xs) {
@@ -11,11 +12,13 @@ module.exports = class FunctionEvaluation {
     var module = environment.module;
 
     if (this.f.name.toLowerCase() == "trunc") {
+      this.type = new Type("real");
       return module.i32.trunc_s.f64(this.xs[0].generate(environment));
     }
 
     if (this.f.name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
+      this.type = new Type("integer");
       return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)))
     }    
 
@@ -25,8 +28,8 @@ module.exports = class FunctionEvaluation {
       throw `Function ${this.f.name} is not defined.`;
     }
 
-    var result = environment.resolveFunction( this.f ).resultType.binaryen();
+    this.type = environment.resolveFunction( this.f ).resultType;
     
-    return module.call( this.f.name, compiledParams, result );
+    return module.call( this.f.name, compiledParams, this.type.binaryen() );
   }
 };

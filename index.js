@@ -2,25 +2,7 @@ var Lexer = require('flex-js');
 
 var lexer = new Lexer();
 
-var sym_table = {};
-
 var last_token;
-
-var symbols = require('./symbols.json');
-
-for( var key in symbols ) {
-  symbols[key].forEach( function(s) {
-    if (key == "fun") {
-      sym_table[s] = { type: 'fun_param' };
-    } else {
-      if (key == "proc") {
-        sym_table[s] = { type: 'proc_param' };
-      } else {
-        sym_table[s] = { type: key + '_id' };
-      }
-    } 
-  });
-}
 
 // definitions
 lexer.addDefinition('DIGIT', /[0-9]/);
@@ -44,7 +26,7 @@ lexer.addRule(/{W}/);
 //lexer.addRule(/procedure [a-z_]+;[ \n\t]*forward;/);
 //lexer.addRule(/function [(),:a-z_]+;[ \n\t]*forward;/);
 
-lexer.addRule("packed");
+lexer.addRule("packed"		, function(lexer) { return 'packed'; } );
 lexer.addRule("forward"		, function(lexer) { return 'forward'; } );
 lexer.addRule("and"		, function(lexer) { return 'and'; } );
 lexer.addRule("array"		, function(lexer) { return 'array'; } );
@@ -64,7 +46,6 @@ lexer.addRule("goto"		, function(lexer) { return 'goto'; } );
 lexer.addRule("if"		, function(lexer) { return 'if'; } );
 lexer.addRule("label"		, function(lexer) { return 'label'; } );
 lexer.addRule("mod"		, function(lexer) { return 'mod'; } );
-lexer.addRule("noreturn"	, function(lexer) { return 'noreturn'; } );
 lexer.addRule("not"		, function(lexer) { return 'not'; } );
 lexer.addRule("of"		, function(lexer) { return 'of'; } );
 lexer.addRule("or"		, function(lexer) { return 'or'; } );
@@ -92,11 +73,7 @@ lexer.addRule(/'([^']|'')+'/		, function(lexer) {
 });
 
 lexer.addRule('+'		, function(lexer) {
-  if ((last_token == 'undef_id') ||
-      (last_token == 'field_id') ||
-      (last_token == 'type_id') ||
-      (last_token == 'var_id') ||
-      (last_token == 'const_id') ||      
+  if ((last_token == 'identifier') ||
       (last_token == 'i_num') ||
       (last_token == 'r_num') ||
       (last_token == ')') ||
@@ -107,11 +84,7 @@ lexer.addRule('+'		, function(lexer) {
 });
 
 lexer.addRule('-'		, function(lexer) {
- if ((last_token == 'undef_id') ||
-      (last_token == 'field_id') ||
-      (last_token == 'type_id') ||
-     (last_token == 'var_id') ||
-     (last_token == 'const_id') ||
+ if ((last_token == 'identifier') ||
       (last_token == 'i_num') ||
       (last_token == 'r_num') ||
       (last_token == ')') ||
@@ -132,12 +105,8 @@ lexer.addRule('-'		, function(lexer) {
 lexer.addRule(/-?{REAL}/		, function(lexer) { return 'r_num'; } );
 
 lexer.addRule(/-?{NUMBER}/		, function(lexer) {
- if ((last_token == 'undef_id') ||
-      (last_token == 'field_id') ||
-      (last_token == 'type_id') ||
-      (last_token == 'var_id') ||
+ if ((last_token == 'identifier') ||
      (last_token == 'i_num') ||
-      (last_token == 'const_id') ||           
       (last_token == 'r_num') ||
       (last_token == ')') ||
       (last_token == ']'))
@@ -167,10 +136,7 @@ lexer.addRule(":"		, function(lexer) { return ':'; } );
 lexer.addRule("^"		, function(lexer) { return '^'; } );
 
 lexer.addRule(/{IDENTIFIER}/		, function(lexer) {
-  if (sym_table[lexer.text])
-    return sym_table[lexer.text].type;
-  else
-    return 'undef_id';
+  return 'identifier';
 } );
 
 
@@ -181,8 +147,6 @@ var code = fs.readFileSync(process.argv[2]).toString();
 lexer.setSource(code);
 
 var parser = require('./parser').parser;
-
-parser.yy.sym_table = sym_table;
 
 parser.lexer = {
   lex: function () {
@@ -225,6 +189,12 @@ var library = {
     var buffer = new Uint8Array( memory.buffer, x+1, length );
     var string = String.fromCharCode.apply(null, buffer);
     process.stdout.write(string);
+  },
+  printBoolean: function(x) {
+    if (x)
+      process.stdout.write("TRUE");
+    else
+      process.stdout.write("FALSE");      
   },
   printChar: function(x) {
     process.stdout.write(String.fromCharCode(x));

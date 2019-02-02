@@ -3,6 +3,7 @@
 module.exports = class RecordType {
   constructor(fields) {
     this.fields = fields;
+    console.log("RECORD=",this.fields);
   }
 
   initializer(e) {

@@ -6,10 +6,6 @@ module.exports = class ArrayIndex {
   }
 
   generate(block) {
-    if (Array.isArray(this.index)) {
-      return "???";
-    } else {
-      return this.index.generate(block);
-    }
+    return this.index.generate(block);
   }
 };

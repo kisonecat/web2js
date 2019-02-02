@@ -7,7 +7,7 @@ module.exports = class SubrangeType {
   }
 
   range(e) {
-    return `(${this.upper.generate(e)})-(${this.lower.generate(e)})+1`;
+    return this.upper.number - this.lower.number;
   }
   
   intish(e) {

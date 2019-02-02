@@ -8,6 +8,7 @@ module.exports = class Desig {
 
   generate(block) {
     // Split a desig into individual desigs
+
     var v = this.variable;
     if (this.variable.referent) v = this.variable.referent;
     var vv = block.resolveVariable( v );

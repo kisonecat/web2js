@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = class TypeDeclaration {
-  constructor(name,expression) {
-    this.name = name;
+  constructor(identifier,expression) {
+    this.name = identifier.name;
     this.expression = expression;
   }
 

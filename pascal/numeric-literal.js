@@ -7,6 +7,7 @@ module.exports = class NumericLiteral {
   constructor(n, isInteger) {
     this.number = n;
     this.isInteger = isInteger;
+    
     if (isInteger) 
       this.type = new Type('integer');
     else

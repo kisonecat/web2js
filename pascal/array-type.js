@@ -6,6 +6,11 @@ module.exports = class ArrayType {
     this.componentType = componentType;
   }
 
+  bytes(e) {
+    var bytesPerEntry = this.componentType.bytes();
+    return this.index.range(e) * bytesPerEntry;
+  }
+  
   initializer(e) {
     if (this.componentType.intish) {
       var intish = this.componentType.intish();
