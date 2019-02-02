@@ -52,10 +52,7 @@ var CallProcedure = require('./pascal/statements/call-procedure.js');
 var Compound = require('./pascal/statements/compound.js');
 
 var Identifier = require('./pascal/identifier.js');
-
   
-var theProgram = new Block();
-
 %}
 
 %%
@@ -101,7 +98,7 @@ BLOCK:
     CONST_DEC_PART TYPE_DEC_PART
     VAR_DEC_PART
     COMPOUND_STAT
-    { $$ = new Block($1,$2,$3,$4,new Compound($5), theProgram); }
+    { $$ = new Block($1,$2,$3,$4,new Compound($5)); }
 ;
 
 LABEL_DEC_PART:

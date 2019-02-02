@@ -18,7 +18,6 @@ module.exports = class For {
   gotos() {
     return this.statement.gotos();
   }
-
   
   generate(environment) {
     var module = environment.module;

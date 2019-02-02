@@ -3,13 +3,12 @@ var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
 
 module.exports = class Block {
-  constructor(labels,consts,types,vars,compound, parent) {
+  constructor(labels,consts,types,vars,compound) {
     this.labels = labels;
     this.consts = consts;
     this.types = types;
     this.vars = vars;
     this.compound = compound;
-    this.parent = parent;
   }
   
   generate(environment) {
