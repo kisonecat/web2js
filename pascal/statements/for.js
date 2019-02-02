@@ -2,6 +2,7 @@
 var Assignment = require('./assignment');
 var Operation = require('../operation');
 var NumericLiteral = require('../numeric-literal');
+var Type = require('../type');
 
 var count = 1;
 
@@ -35,10 +36,10 @@ module.exports = class For {
 
     if (this.skip > 0) {
       condition = module.i32.le_s( this.variable.generate( environment ), end );
-      increment = new Assignment( this.variable, new Operation( "+", this.variable, new NumericLiteral(1, true) ) );
+      increment = new Assignment( this.variable, new Operation( "+", this.variable, new NumericLiteral(1, new Type("integer")) ) );
     } else {
       condition = module.i32.ge_s( this.variable.generate( environment ), end );
-      increment = new Assignment( this.variable, new Operation( "-", this.variable, new NumericLiteral(1, true) ) );      
+      increment = new Assignment( this.variable, new Operation( "-", this.variable, new NumericLiteral(1, new Type("integer")) ) );      
     }
     
     var loop = module.block( blockLabel,

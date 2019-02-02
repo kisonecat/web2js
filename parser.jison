@@ -1,4 +1,4 @@
-  %token	array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field break forward packed identifier
+  %token	array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field break forward packed identifier true false
 
 %nonassoc '=' '<>' '<' '>' '<=' '>='
 %left '+' '-' or
@@ -79,67 +79,64 @@ P_F_DEC:
 ;
 
 /* program statement.  Ignore any files.  */
-PROGRAM_HEAD:
- 	  program identifier PROGRAM_FILE_PART ';'
- 	;
+PROGRAM_HEAD: program identifier PROGRAM_FILE_PART ';'
+;
 
 PROGRAM_FILE_PART:
- 	  '(' PROGRAM_FILE_LIST ')'
- 	| /* empty */
- 	;
+    '(' PROGRAM_FILE_LIST ')'
+  | /* empty */
+;
 
 PROGRAM_FILE_LIST:
- 	  PROGRAM_FILE
- 	| PROGRAM_FILE_LIST ',' PROGRAM_FILE
- 	;
+    PROGRAM_FILE
+  | PROGRAM_FILE_LIST ',' PROGRAM_FILE
+;
 
 PROGRAM_FILE: identifier /* input and output are constants */
- 	;
+;
 
-BLOCK: forward { $$ = null; }
-     | LABEL_DEC_PART
-       CONST_DEC_PART TYPE_DEC_PART
-       VAR_DEC_PART
-       STAT_PART
-       { $$ = new Block($1,$2,$3,$4,new Compound($5), theProgram); }
- 	;
+BLOCK:
+    forward { $$ = null; }
+  | LABEL_DEC_PART
+    CONST_DEC_PART TYPE_DEC_PART
+    VAR_DEC_PART
+    COMPOUND_STAT
+    { $$ = new Block($1,$2,$3,$4,new Compound($5), theProgram); }
+;
 
- LABEL_DEC_PART:		/* empty */  { $$ = []; }
-         |	label
-                 LABEL_LIST ';'   { $$ = $2; }
-         ;
+LABEL_DEC_PART:
+    /* empty */  { $$ = []; }
+  |	label LABEL_LIST ';'   { $$ = $2; }
+;
 
- LABEL_LIST:		LABEL  { $$ = [$1]; }
-         |	LABEL_LIST ',' LABEL  { $$ = $1.concat( $3 ); }
-         ;
+LABEL_LIST:
+    LABEL  { $$ = [$1]; }
+  | LABEL_LIST ',' LABEL  { $$ = $1.concat( $3 ); }
+;
 
- LABEL:
- 	INTEGER { $$ = $1; }
- 	;
+LABEL: INTEGER { $$ = $1; }
+;
 
- CONST_DEC_PART:
-                 /* empty */ { $$ = []; }
-         |	const CONST_DEC_LIST
-                         { $$ = $2; }
-         ;
+CONST_DEC_PART:
+        /* empty */ { $$ = []; }
+      |	const CONST_DEC_LIST { $$ = $2; }
+;
 
- CONST_DEC_LIST:
- 	  CONST_DEC { $$ = [$1]; }
-         | CONST_DEC_LIST CONST_DEC  { $$ = $1.concat( $2 ); }
-         ;
+CONST_DEC_LIST:
+        CONST_DEC { $$ = [$1]; }
+      | CONST_DEC_LIST CONST_DEC  { $$ = $1.concat( $2 ); }
+;
 
- CONST_DEC:
- 	IDENTIFIER
- 	'='		  
-         CONSTANT_EXPRESS 
-';'		  { $$ = new ConstantDeclaration( $1, $3 ); }
-         ;
+CONST_DEC: IDENTIFIER '=' CONSTANT_EXPRESS ';'  { $$ = new ConstantDeclaration( $1, $3 ); }
+;
 
 CONSTANT:
-           INTEGER  { $$ = new NumericLiteral($1, true); }
-         | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), false); }
-         | STRING     { $$ = $1; }
-         ;
+    INTEGER  { $$ = new NumericLiteral($1, new Type("integer")); }
+  | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), new Type("real")); }
+  | true  { $$ = new NumericLiteral(true, new Type("boolean")); }
+  | false  { $$ = new NumericLiteral(false, new Type("boolean")); }
+  | STRING     { $$ = $1; }
+;
 
  CONSTANT_EXPRESS:
  	  UNARY_OP CONSTANT_EXPRESS %prec '*'
@@ -213,9 +210,9 @@ SIMPLE_TYPE:
 INTEGER: i_num { $$ = parseInt(yytext); } ;
 
 SUBRANGE_CONSTANT:
-    INTEGER { $$ = new NumericLiteral($1); }
-  | unary_plus INTEGER { $$ = new NumericLiteral($2); }
-  | unary_minus INTEGER { $$ = new NumericLiteral(-$2); }
+INTEGER { $$ = new NumericLiteral($1, new Type("integer")); }
+  | unary_plus INTEGER { $$ = new NumericLiteral($2, new Type("integer")); }
+  | unary_minus INTEGER { $$ = new NumericLiteral(-$2, new Type("integer")); }
   | IDENTIFIER { $$ = $1; }
   | unary_plus IDENTIFIER { $$ = $2; }
   | unary_minus IDENTIFIER { $$ = new UnaryOperation( '-', $2 ); }
@@ -259,51 +256,46 @@ RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $3 ); 
  		| /* empty */ { $$ = undefined; }
  		;
 
-RECORD_CASES: RECORD_CASE { $$ = [$1]; }
-	      | RECORD_CASES RECORD_CASE { $$ = $1.concat( $2 ); }
-	      ;
+RECORD_CASES:
+    RECORD_CASE { $$ = [$1]; }
+  | RECORD_CASES RECORD_CASE { $$ = $1.concat( $2 ); }
+;
 
 RECORD_CASE: i_num ':' '(' FIELD_LIST ')' ';' { $$ = $4; } ;
 
- FIELD_ID_LIST:		IDENTIFIER { $$ = [$1]; }
- 		| FIELD_ID_LIST ',' IDENTIFIER  { $$ = $1.concat( [$3] ); }
- 		;
+FIELD_ID_LIST:
+    IDENTIFIER { $$ = [$1]; }
+  | FIELD_ID_LIST ',' IDENTIFIER  { $$ = $1.concat( [$3] ); }
+;
 
 IDENTIFIER: identifier { $$ = new Identifier(yytext); }
 ;
 
- FILE_TYPE:
-         file of
-         TYPE
-{  $$ = new FileType( $3 ); }
- 	;
+FILE_TYPE: file of TYPE {  $$ = new FileType( $3 ); }
+;
 
- VAR_DEC_PART:
- 	  /* empty */ { $$ = []; }
- 	| var VAR_DEC_LIST  { $$ = $2; }
- 	;
+VAR_DEC_PART:
+    /* empty */ { $$ = []; }
+  | var VAR_DEC_LIST  { $$ = $2; }
+;
 
  VAR_DEC_LIST:
  	  VAR_DEC   { $$ = [$1]; }
  	| VAR_DEC_LIST VAR_DEC  { $$ = $1.concat( [$2] ); }
  	;
 
- VAR_DEC:
-         VAR_ID_DEC_LIST ':'
-         TYPE ';'
-{  $$ = new VariableDeclaration( $1, $3 ); }
- 	;
+VAR_DEC: VAR_ID_DEC_LIST ':' TYPE ';' {  $$ = new VariableDeclaration( $1, $3 ); }
+;
 
- VAR_ID_DEC_LIST:	IDENTIFIER    { $$ = [$1]; }
- 		| VAR_ID_DEC_LIST ',' IDENTIFIER  { $$ = $1.concat( [$3] ); }
- 		;
+VAR_ID_DEC_LIST:	IDENTIFIER    { $$ = [$1]; }
+    | VAR_ID_DEC_LIST ',' IDENTIFIER  { $$ = $1.concat( [$3] ); }
+;
 
 BODY:
 	  /* empty */ { $$ = []; }
 	| begin
 	  STAT_LIST end '.' { $$ = $2; }
 	;
-
 
 PARAM:  { $$ = []; } |
 	'('
@@ -322,43 +314,34 @@ FORM_PAR_SEC:	FORM_PAR_SEC1 { $$ = $1; }
 		| var FORM_PAR_SEC1  { $$ = $2; }
 		;
 
-
-
-STAT_PART:		begin STAT_LIST end { $$ = $2; }
-;
-
 COMPOUND_STAT: begin STAT_LIST end  { $$ = $2; }
 ;
 
-STAT_LIST:		STATEMENT  { $$ = [$1]; }
-		| STAT_LIST ';' STATEMENT  { $$ = $1.concat( [$3] ); }
-		;
+STAT_LIST:
+    STATEMENT  { $$ = [$1]; }
+  | STAT_LIST ';' STATEMENT  { $$ = $1.concat( [$3] ); }
+;
 
-STATEMENT:		UNLAB_STAT { $$ = $1; }
-		| S_LABEL ':'
-			UNLAB_STAT { $$ = new LabeledStatement( $1, $3 ); }
-		;
-
-S_LABEL:	  INTEGER { $$ = $1; }
-		;
+STATEMENT:
+    UNLAB_STAT { $$ = $1; }
+  | INTEGER ':' UNLAB_STAT { $$ = new LabeledStatement( $1, $3 ); }
+;
 
 UNLAB_STAT:	  SIMPLE_STAT { $$ = $1; }
 		| STRUCT_STAT  { $$ = $1; }
 		;
 
-SIMPLE_STAT:	  ASSIGN_STAT  { $$ = $1; }
+SIMPLE_STAT:	  VARIABLE assign EXPRESS  { $$ = new Assignment( $1, $3 ); }
 		| PROC_STAT { $$ = $1; }
 		| goto INTEGER  { $$ = new Goto( $2 ); }
-		| EMPTY_STAT { $$ = $1; }
+		| /* empty */  { $$ = new Nop(); }
 		| break	{ $$ = new BreakStatement(); }
 ;
 
-ASSIGN_STAT:	  VARIABLE assign EXPRESS  { $$ = new Assignment( $1, $3 ); }
-		;
-
-POINTER: {$$ = false;}
-       | '^' { $$ = true;}
-       ;
+POINTER:
+        {$$ = false;}
+  | '^' { $$ = true;}
+;
 
 VARP: IDENTIFIER POINTER { if ($2) { $$ = new Pointer( $1 ); } else { $$ = $1; } } ;
 
@@ -366,7 +349,7 @@ VARIABLE:	VARP VAR_DESIG_LIST { $$ = new Desig( $1, $2 ); }
 		| VARP  { $$ = $1; }
 		;
 
-VAR_DESIG_LIST:		VAR_DESIG { $$ = [$1]; }
+VAR_DESIG_LIST: 	VAR_DESIG { $$ = [$1]; }
 		| VAR_DESIG_LIST VAR_DESIG { $$ = $1.concat( [$2] ); }
 		;
 
@@ -380,64 +363,45 @@ VAR_DESIG1:		']'  { $$ = false; }
 			EXPRESS	']' {$$ = $2; }
 		;
 
-EXPRESS:		UNARY_OP EXPRESS	%prec '*'
-				{ $$ = new UnaryOperation( $1, $2 ); }
-		| EXPRESS '+'  EXPRESS
-				{ $$ = new Operation( '+', $1, $3 ); }
-		| EXPRESS '-'  EXPRESS
-				{ $$ = new Operation( '-', $1, $3 ); }
-		| EXPRESS '*' EXPRESS
-				{ $$ = new Operation( '*', $1, $3 ); }
-		| EXPRESS div EXPRESS
-				{ $$ = new Operation( 'div', $1, $3 ); }
-		| EXPRESS '='  EXPRESS
-				{ $$ = new Operation( '==', $1, $3 ); }
-		| EXPRESS '<>' EXPRESS
-				{ $$ = new Operation( '!=', $1, $3 ); }
-		| EXPRESS mod  EXPRESS
-				{ $$ = new Operation( '%', $1, $3 ); }
-		| EXPRESS '<'  EXPRESS
-				{ $$ = new Operation( '<', $1, $3 ); }
-		| EXPRESS '>'  EXPRESS
-				{ $$ = new Operation( '>', $1, $3 ); }		
-		| EXPRESS '<=' EXPRESS
-				{ $$ = new Operation( '<=', $1, $3 ); }		
-		| EXPRESS '>='  EXPRESS
-				{ $$ = new Operation( '>=', $1, $3 ); }
-		| EXPRESS and  EXPRESS
-				{ $$ = new Operation( '&&', $1, $3 ); }
-		| EXPRESS or  EXPRESS
-				{ $$ = new Operation( '||', $1, $3 ); }
-		| EXPRESS '/'
-			EXPRESS
-				{ $$ = new Operation( '/', $1, $3 ); }						
-		| FACTOR { $$ = $1; }
-		;
+EXPRESS:
+    UNARY_OP EXPRESS	%prec '*' { $$ = new UnaryOperation( $1, $2 ); }
+  | EXPRESS '+'  EXPRESS { $$ = new Operation( '+', $1, $3 ); }
+  | EXPRESS '-'  EXPRESS { $$ = new Operation( '-', $1, $3 ); }
+  | EXPRESS '*' EXPRESS { $$ = new Operation( '*', $1, $3 ); }
+  | EXPRESS div EXPRESS { $$ = new Operation( 'div', $1, $3 ); }
+  | EXPRESS '='  EXPRESS { $$ = new Operation( '==', $1, $3 ); }
+  | EXPRESS '<>' EXPRESS { $$ = new Operation( '!=', $1, $3 ); }
+  | EXPRESS mod  EXPRESS { $$ = new Operation( '%', $1, $3 ); }
+  | EXPRESS '<'  EXPRESS { $$ = new Operation( '<', $1, $3 ); }
+  | EXPRESS '>'  EXPRESS { $$ = new Operation( '>', $1, $3 ); }		
+  | EXPRESS '<=' EXPRESS { $$ = new Operation( '<=', $1, $3 ); }		
+  | EXPRESS '>='  EXPRESS { $$ = new Operation( '>=', $1, $3 ); }
+  | EXPRESS and  EXPRESS { $$ = new Operation( '&&', $1, $3 ); }
+  | EXPRESS or  EXPRESS { $$ = new Operation( '||', $1, $3 ); }
+  | EXPRESS '/' EXPRESS { $$ = new Operation( '/', $1, $3 ); }						
+  | FACTOR { $$ = $1; }
+;
 
 UNARY_OP:
-	  unary_plus { $$ = "+"; }
-	| unary_minus { $$ = "-"; }
-	| not  { $$ = "!"; }
-	;
+    unary_plus { $$ = "+"; }
+  | unary_minus { $$ = "-"; }
+  | not  { $$ = "!"; }
+;
 
 FACTOR:
-	  '('
-	  EXPRESS ')' { $$ = $2; }
-	| VARIABLE { $$ = $1; }
+    '(' EXPRESS ')' { $$ = $2; }
+  | VARIABLE { $$ = $1; }
   | CONSTANT { $$ = $1; }
-|        IDENTIFIER
-	  PARAM_LIST  { $$ = new FunctionEvaluation($1, $2 ); }
-	;
+  | IDENTIFIER PARAM_LIST  { $$ = new FunctionEvaluation($1, $2 ); }
+;
 
-PARAM_LIST:
-	'(' ACTUAL_PARAM_L ')' { $$ = $2; }
-	;
+PARAM_LIST: '(' ACTUAL_PARAM_L ')' { $$ = $2; }
+;
 
 ACTUAL_PARAM_L:
-	  ACTUAL_PARAM  { $$ = [$1]; }
-	| ACTUAL_PARAM_L ','    
-	  ACTUAL_PARAM   { $$ = $1.concat( [$3] ); }
-	;
+    ACTUAL_PARAM  { $$ = [$1]; }
+  | ACTUAL_PARAM_L ',' ACTUAL_PARAM   { $$ = $1.concat( [$3] ); }
+;
 
 ACTUAL_PARAM:
 EXPRESS WIDTH_FIELD  { if ($2 === undefined) { $$ = $1; } else { $$ = new ExpressionWithWidth( $1, $2 ); } }
@@ -446,77 +410,65 @@ EXPRESS WIDTH_FIELD  { if ($2 === undefined) { $$ = $1; } else { $$ = new Expres
 	;
 
 WIDTH_FIELD:
-	  ':' INTEGER { $$ = $2; }
-	| /* empty */ { $$ = undefined; }
-	;
+    ':' INTEGER { $$ = $2; }
+  | /* empty */ { $$ = undefined; }
+;
 
-PROC_STAT:	IDENTIFIER { $$ = new CallProcedure( $1, [] ); }
-		| IDENTIFIER PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
-		;
+PROC_STAT:
+    IDENTIFIER { $$ = new CallProcedure( $1, [] ); }
+  | IDENTIFIER PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
+;
 
-EMPTY_STAT:		/* empty */  { $$ = new Nop(); }
-		;
-
-STRUCT_STAT:	  COMPOUND_STAT { $$ = new Compound($1); }
-                | IF_STATEMENT { $$ = $1; }
-		| CASE_STATEMENT { $$ = $1; }
-                | WHILE_STATEMENT { $$ = $1; }
-		| REP_STATEMENT { $$ = $1; }
-		| FOR_STATEMENT { $$ = $1; }
-		;
+STRUCT_STAT:
+    COMPOUND_STAT { $$ = new Compound($1); }
+  | IF_STATEMENT { $$ = $1; }
+  | CASE_STATEMENT { $$ = $1; }
+  | WHILE_STATEMENT { $$ = $1; }
+  | REP_STATEMENT { $$ = $1; }
+  | FOR_STATEMENT { $$ = $1; }
+;
 
 IF_STATEMENT:	if EXPRESS then STATEMENT %prec "then"  { $$ = new Conditional($2, $4, undefined); }
 | if EXPRESS then STATEMENT else STATEMENT %prec "else"  { $$ = new Conditional($2, $4, $6); }
 ;
 
-CASE_STATEMENT:		case
-			EXPRESS of
-			CASE_EL_LIST END_CASE { $$ = new Switch( $2, $4 ); }
-		;
+CASE_STATEMENT:	case EXPRESS of CASE_EL_LIST END_CASE { $$ = new Switch( $2, $4 ); }
+;
 
-CASE_EL_LIST:		CASE_ELEMENT       { $$ = [$1]; }
-		| CASE_EL_LIST ';' CASE_ELEMENT  { $$ = $1.concat( [$3] ); }
-		;
+CASE_EL_LIST:
+    CASE_ELEMENT       { $$ = [$1]; }
+  | CASE_EL_LIST ';' CASE_ELEMENT  { $$ = $1.concat( [$3] ); }
+;
 
-CASE_ELEMENT:		CASE_LAB_LIST ':' UNLAB_STAT { $$ = new Case($1,$3); }
-		;
+CASE_ELEMENT: CASE_LAB_LIST ':' UNLAB_STAT { $$ = new Case($1,$3); }
+;
 
-CASE_LAB_LIST:		CASE_LAB      { $$ = [$1]; }
-		| CASE_LAB_LIST ',' CASE_LAB  { $$ = $1.concat([$3]); }
-		;
+CASE_LAB_LIST:
+    CASE_LAB      { $$ = [$1]; }
+  | CASE_LAB_LIST ',' CASE_LAB  { $$ = $1.concat([$3]); }
+;
 
-CASE_LAB:		INTEGER      { $$ = $1; }
-		| others  { $$ = true; }
-		;
+CASE_LAB:
+    INTEGER      { $$ = $1; }
+  | others  { $$ = true; }
+;
 
-END_CASE:	   end
-		| ';' end
-		;
+END_CASE:
+    end
+  | ';' end
+;
 
-WHILE_STATEMENT:	while
-			EXPRESS
-			do STATEMENT { $$ = new While( $2, $4 ); }
-		;
+WHILE_STATEMENT: while EXPRESS do STATEMENT { $$ = new While( $2, $4 ); }
+;
 
-REP_STATEMENT:		repeat
-			STAT_LIST until
-			EXPRESS { $$ = new Repeat( $4, new Compound($2) ); }
-		;
+REP_STATEMENT: repeat STAT_LIST until EXPRESS { $$ = new Repeat( $4, new Compound($2) ); }
+;
 
-FOR_STATEMENT:		for
-			CONTROL_VAR assign
-			FOR_LIST do
-			STATEMENT  { $$ = new For( $2, $4[0], $4[1], $4[2], $6 ); }
-		;
+FOR_STATEMENT: for IDENTIFIER assign FOR_LIST do STATEMENT  { $$ = new For( $2, $4[0], $4[1], $4[2], $6 ); }
+;
 
-CONTROL_VAR:		identifier { $$ = new Identifier(yytext); }
-		;
-
-FOR_LIST:		EXPRESS
-			to
-			EXPRESS  { $$ = [$1,$3,1]; }
-		| EXPRESS
-			downto
-			EXPRESS   { $$ = [$1,$3,-1]; }
-		;
+FOR_LIST:
+    EXPRESS to EXPRESS  { $$ = [$1,$3,1]; }
+  | EXPRESS downto EXPRESS   { $$ = [$1,$3,-1]; }
+;
 

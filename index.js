@@ -60,6 +60,8 @@ lexer.addRule("until"		, function(lexer) { return 'until'; } );
 lexer.addRule("var"		, function(lexer) { return 'var'; } );
 lexer.addRule("while"		, function(lexer) { return 'while'; } );
 lexer.addRule("others"	, function(lexer) { return 'others'; } );
+lexer.addRule("true"		, function(lexer) { return 'true'; } );
+lexer.addRule("false"		, function(lexer) { return 'false'; } );
 
 lexer.addRule(/'([^']|'')'/		, function(lexer) {
   return 'single_char';
