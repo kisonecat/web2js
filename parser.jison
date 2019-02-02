@@ -69,6 +69,15 @@ PROGRAM:
         { return new Program($2,$3,$4,$5,$6, new Compound($7)); }
           ;
 
+P_F_DEC_PART: { $$ = []; }
+	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
+	;
+
+P_F_DEC:
+    procedure IDENTIFIER PARAM ';' BLOCK ';' { $$ = new FunctionDeclaration( $2, $3, undefined, $5 ); }
+  | function IDENTIFIER PARAM ':' TYPE ';' BLOCK ';' { $$ = new FunctionDeclaration( $2, $3, $5, $7 ); }
+;
+
 /* program statement.  Ignore any files.  */
 PROGRAM_HEAD:
  	  program identifier PROGRAM_FILE_PART ';'
@@ -295,24 +304,6 @@ BODY:
 	  STAT_LIST end '.' { $$ = $2; }
 	;
 
-P_F_DEC_PART: { $$ = []; }
-	| P_F_DEC { $$ = [$1]; }
-	| P_F_DEC_PART P_F_DEC  { $$ = $1.concat( [$2] ); }
-	;
-
-P_F_DEC:
-    PROCEDURE_DEC ';' { $$ = $1; }
-  | FUNCTION_DEC ';' { $$ = $1; }
-  ;
-
-PROCEDURE_DEC:
-          PROCEDURE_HEAD BLOCK  { $$ = new FunctionDeclaration( $1[0], $1[1], undefined, $2 ); }
-	;
-
-PROCEDURE_HEAD:
-	  procedure IDENTIFIER
-	  PARAM ';' { $$ = [$2, $3]; }
-	;
 
 PARAM:  { $$ = []; } |
 	'('
@@ -332,15 +323,6 @@ FORM_PAR_SEC:	FORM_PAR_SEC1 { $$ = $1; }
 		;
 
 
-FUNCTION_DEC: FUNCTION_HEAD BLOCK { $$ = new FunctionDeclaration( $1[0], $1[1], $1[2], $2 ); }
-  ;
-
-FUNCTION_HEAD:
-	  function IDENTIFIER
-	  PARAM ':'
-          TYPE
-          ';' { $$ = [$2, $3, $5]; }
-	;
 
 STAT_PART:		begin STAT_LIST end { $$ = $2; }
 ;
