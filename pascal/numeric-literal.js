@@ -21,5 +21,8 @@ module.exports = class NumericLiteral {
 
     if (this.type.name == "real")
       return m.f64.const( this.number );
+
+    throw `Could not create numeric constant for ${this.number} with ${this.type}`;
+    return m.nop();
   }
 };

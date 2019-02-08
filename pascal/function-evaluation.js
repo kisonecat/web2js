@@ -73,8 +73,9 @@ module.exports = class FunctionEvaluation {
       */
       
       exp = p.generate(environment);
-      
-      commands.push( stack.byType(type).store( -offset, exp ) );
+
+      var v = stack.variable( null, type, -offset );
+      commands.push( v.set( exp ) );
     } );
     
     stack.shift( -offset );

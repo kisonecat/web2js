@@ -27,16 +27,7 @@ module.exports = class FunctionDeclaration {
     function addVariable( name, type ) {
       type = environment.resolveType(type);
 
-      environment.variables[name] = {
-        offset: offset,
-        type: type,
-        set: function(expression) {
-          return environment.program.stack.byType(this.type).store( this.offset, expression );
-        },
-        get: function() {
-          return environment.program.stack.byType(this.type).load( this.offset );
-        }          
-      };
+      environment.variables[name] = environment.program.stack.variable( name, type, offset );
 
       offset = offset + type.bytes();
     }
@@ -80,16 +71,8 @@ module.exports = class FunctionDeclaration {
       for( var j in param.names ) {
         paramOffset += type.bytes();
         
-        environment.variables[param.names[j].name] = {
-          offset: offset - paramOffset,
-          type: type,
-          set: function(expression) {
-            return environment.program.stack.byType(this.type).store( this.offset, expression );
-          },
-          get: function() {
-            return environment.program.stack.byType(this.type).load( this.offset );
-          }          
-        };
+        environment.variables[param.names[j].name] =
+          environment.program.stack.variable( param.names[j].name, type, offset - paramOffset );
       }
     }
 

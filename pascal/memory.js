@@ -1,25 +1,24 @@
 'use strict';
 var Binaryen = require('binaryen');
 
-function commands( stack, bytes, loader, storer ) {
+function commands( memory, bytes, loader, storer ) {
   return {
     width: bytes,
     loader: loader,
     storer: storer,
-    stack: stack,
+    memory: memory,
 
-    load: function( offset ) {
-      var module = this.stack.module;
-      return this.loader( offset + this.stack.offset, 0,
-                          module.global.get( "stack", Binaryen.i32 ) );
+    load: function( offset, base ) {
+      var module = this.memory.module;
+      if (base === undefined) base = module.i32.const(0);      
+      return this.loader( offset, 0, base );
     },
     
-    store: function( offset, expression ) {
-      var module = this.stack.module;
+    store: function( offset, expression, base ) {
+      var module = this.memory.module;
+      if (base === undefined) base = module.i32.const(0);            
 
-      return this.storer( offset + this.stack.offset, 0,
-                          module.global.get( "stack", Binaryen.i32 ),
-                          expression );
+      return this.storer( offset, 0, base, expression );
     },
   };
 }
@@ -41,12 +40,13 @@ module.exports = class Memory {
 
   setup() {
     var pages = Math.ceil(this.memorySize / 65536);
+    var module = this.module;
     
     // FIXME: should compute this
     pages = 1;
-    this.module.addMemoryImport( "0", "env", "memory" );
-    this.module.setMemory(pages, pages, "0", this.strings.map ( function(s) {
-      return {offset: this.module.i32.const(s.offset), data: s.data};
+    module.addMemoryImport( "0", "env", "memory" );
+    module.setMemory(pages, pages, "0", this.strings.map ( function(s) {
+      return {offset: module.i32.const(s.offset), data: s.data};
     }));    
   }
 
@@ -58,59 +58,28 @@ module.exports = class Memory {
     return pointer;
   }
 
-  allocateGlobal( name, type ) {
+  variable( name, type, offset ) {
+    var memory = this;
+    
+    return {
+        name: name,
+        offset: offset,
+        type: type,
+        set: function(expression) {
+          return memory.byType(this.type).store( this.offset, expression );
+        },
+        get: function() {
+          return memory.byType(this.type).load( this.offset );
+        }
+    };
+  }
+  
+  allocateVariable( name, type ) {
     var pointer = this.memorySize;    
     this.memorySize += type.bytes();
     var module = this.module;
     
-    return {
-          name: name,
-          type: type,
-          pointer: module.i32.const(pointer),
-
-          set: function(expression, offset) {
-            if (offset === undefined) offset = 0;
-
-            if (this.type.name === "real") {
-              if (Binaryen.getExpressionType(expression) == Binaryen.f64)
-                return module.f64.store( offset, 0, this.pointer, expression );
-              else
-                return module.f64.store( offset, 0, this.pointer, module.f64.convert_s.i32 ( expression ) );
-            }
-
-            if (this.type.bytes() == 1)
-              return module.i32.store8( offset, 0, this.pointer, expression );
-
-            if (this.type.bytes() == 2)
-              return module.i32.store16( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 4)
-              return module.i32.store( offset, 0, this.pointer, expression );
-
-            throw "Could not set variable.";
-            return module.nop();
-          },
-          
-          get: function(offset) {
-            if (offset === undefined) offset = 0;
-
-            if (this.type.name === "real")
-              return module.f64.load( offset, 0, this.pointer );              
-            
-            if (this.type.bytes() == 1)
-              return module.i32.load8_u( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 2)
-              return module.i32.load16_s( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 4)
-              return module.i32.load( offset, 0, this.pointer );
-
-            throw "Could not get variable.";
-            return module.nop();
-          }
-        };
-    
+    return this.variable( name, type, pointer );
   }
   
   byType(type) {
@@ -126,23 +95,9 @@ module.exports = class Memory {
     if (type.name == "real")
       return this.f64;
 
-    throw "Unknown type for stack";
+    throw "Unknown type for memory";
   }
 
-  shift(offset) {
-    this.offset = this.offset + offset;
-  }
-  
-  extend(bytes) {
-    return this.shrink(-bytes);
-  }
-  
-  shrink(bytes) {
-    return this.module.global.set( "stack", 
-                            this.module.i32.add( this.module.global.get( "stack", Binaryen.i32 ),
-                                                 this.module.i32.const( bytes ) )
-                          );
-  }
 
 };
 

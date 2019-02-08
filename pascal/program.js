@@ -22,8 +22,8 @@ module.exports = class Program {
     environment.program = this;
     
     var module = environment.module;
-    this.stack = new Stack(module);
     this.memory = new Memory(module);
+    this.stack = new Stack(module, this.memory);
     
     this.consts.forEach( function(v) {
       environment.constants[v.name] = v.expression;
@@ -39,7 +39,7 @@ module.exports = class Program {
         var name = v.names[i].name;
         var type = environment.resolveType( v.type );
         
-        environment.variables[name] = this.memory.allocateGlobal( name, type );
+        environment.variables[name] = this.memory.allocateVariable( name, type );
       }
     };
     

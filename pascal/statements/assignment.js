@@ -14,10 +14,17 @@ module.exports = class Assignment {
   }
   
   generate(environment) {
-    var lhs, rhs;
     var module = environment.module;
 
     var rhs = this.rhs.generate(environment);
+    var rhsType = environment.resolveType( this.rhs.type );
+    var lhs = this.lhs.generate(environment);
+    var lhsType = environment.resolveType( this.lhs.type );
+
+    if ((this.rhs.type.name == "integer") && (this.lhs.type.name == "real")) {
+      return environment.resolveVariable(this.lhs).set(
+        module.f64.convert_s.i32(rhs) );      
+    }
 
     // FIXME:  handle arrays and records
     return environment.resolveVariable(this.lhs).set( rhs );

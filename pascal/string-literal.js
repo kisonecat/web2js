@@ -11,6 +11,6 @@ module.exports = class StringLiteral {
     var t = this.text;
     var module = environment.module;
     
-    return module.i32.const( environment.program.allocateString( t ) );
+    return module.i32.const( environment.program.memory.allocateString( t ) );
   }
 };

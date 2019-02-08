@@ -50,12 +50,14 @@ module.exports = class Operation {
 
     if ((typeA.name == "real") && (typeB.name == "integer")) {
       b = m.f64.convert_s.i32(b);
+      typeB = new Type("real");
       family = m.f64;
       this.type = new Type("real");
     }
 
     if ((typeA.name == "integer") && (typeB.name == "real")) {    
       a = m.f64.convert_s.i32(a);
+      typeA = new Type("real");      
       family = m.f64;
       this.type = new Type("real");            
     }
@@ -88,11 +90,13 @@ module.exports = class Operation {
     }
 
     if (this.operator === "/") {
-      if (Binaryen.getExpressionType(b) == Binaryen.i32)
+      if (typeB.name != "real")
         b = m.f64.convert_s.i32(b);
-      if (Binaryen.getExpressionType(a) == Binaryen.i32)
-        a = m.f64.convert_s.i32(a);      
-        
+      
+      if (typeA.name != "real")
+        a = m.f64.convert_s.i32(a);
+      
+      this.type = new Type("real");            
       return m.f64.div( a, b );
     }
 
