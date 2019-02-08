@@ -76,6 +76,17 @@ module.exports = class Type {
 
     return "undefined";
   }
+
+  matches(other) {
+    if (this.name == other.name)
+      return true;
+
+    return false;
+  }
+
+  toString() {
+    return this.name;
+  }
   
   generate(e) {
     return this.name;

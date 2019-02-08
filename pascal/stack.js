@@ -10,13 +10,15 @@ function commands( stack, bytes, loader, storer ) {
 
     load: function( offset ) {
       var module = this.stack.module;
-      return this.loader( offset + this.stack.offset, 0, module.global.get( "stack", Binaryen.i32 ) );
+      return this.loader( offset + this.stack.offset, 0,
+                          module.global.get( "stack", Binaryen.i32 ) );
     },
     
     store: function( offset, expression ) {
       var module = this.stack.module;
 
-      return this.storer( offset + this.stack.offset, 0, module.global.get( "stack", Binaryen.i32 ),
+      return this.storer( offset + this.stack.offset, 0,
+                          module.global.get( "stack", Binaryen.i32 ),
                           expression );
     },
   };
@@ -25,13 +27,13 @@ function commands( stack, bytes, loader, storer ) {
 module.exports = class Stack {
   constructor(m) {
     this.module = m;
-    this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(65535-1000) );
+    this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(65535) );
 
     this.offset = 0;
     
     this.i32 = commands( this, 4, this.module.i32.load, this.module.i32.store );
-    this.u8 = commands( this, 1, this.module.i32.load8_u, this.module.i32.store8_u );
-    this.s8 = commands( this, 1, this.module.i32.load8_s, this.module.i32.store8_s );
+    this.u8  = commands( this, 1, this.module.i32.load8_u, this.module.i32.store8 );
+    this.s8  = commands( this, 1, this.module.i32.load8_s, this.module.i32.store8 );
     this.s16 = commands( this, 2, this.module.i32.load16_s, this.module.i32.store16_s );                
     this.u16 = commands( this, 2, this.module.i32.load16_u, this.module.i32.store16_u );
     this.f32 = commands( this, 4, this.module.f32.load, this.module.f32.store );

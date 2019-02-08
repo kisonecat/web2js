@@ -48,7 +48,8 @@ module.exports = class FunctionDeclaration {
     }
 
     parentEnvironment.functions[this.identifier.name] = {
-      resultType: this.resultType
+      resultType: this.resultType,
+      params: this.params
     };
 
     if (this.block === null) {

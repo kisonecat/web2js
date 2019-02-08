@@ -25,6 +25,7 @@ begin
       writeln(i);
       i := f(i);
    end;
+
    for i := 0 to 10 do begin
       writeln(g(i,3));
       writeln(g(4*i,3-i));

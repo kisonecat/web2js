@@ -32,7 +32,7 @@ module.exports = class Environment {
   
   resolveTypeOnce( typeIdentifier ) {
     var e = this;
-    
+
     while( e ) {
       if (e.types[typeIdentifier.name])
         return e.types[typeIdentifier.name];
@@ -50,7 +50,7 @@ module.exports = class Environment {
     do {
       old = resolved;
       resolved = this.resolveTypeOnce( resolved );
-    } while (old != resolved );
+    } while (old != resolved);
 
     if (resolved.componentType) {
       var component = this.resolveType( resolved.componentType );

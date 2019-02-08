@@ -200,9 +200,13 @@ TYPE:
  	;
 
 SIMPLE_TYPE:
-    SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT  { $$ = new SubrangeType($1,$3); }
+    SUBRANGE_TYPE  { $$ = $1; }
   | TYPE_ID { $$ = $1; }
- 	;
+;
+
+SUBRANGE_TYPE:
+    SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT  { $$ = new SubrangeType($1,$3); }
+;
 
 INTEGER: i_num { $$ = parseInt(yytext); } ;
 
@@ -307,9 +311,10 @@ FORM_PAR_SEC1:  VAR_ID_DEC_LIST ':' TYPE_ID  {  $$ = new VariableDeclaration( $1
 	;
 
 // FIXME: this should permit me to pass by value!
-FORM_PAR_SEC:	FORM_PAR_SEC1 { $$ = $1; }
-		| var FORM_PAR_SEC1  { $$ = $2; }
-		;
+FORM_PAR_SEC:
+    FORM_PAR_SEC1 { $$ = $1; }
+  | var FORM_PAR_SEC1  { $2.reference = true; $$ = $2; }
+;
 
 COMPOUND_STAT: begin STAT_LIST end  { $$ = $2; }
 ;
@@ -412,6 +417,7 @@ WIDTH_FIELD:
 
 PROC_STAT:
     IDENTIFIER { $$ = new CallProcedure( $1, [] ); }
+  | IDENTIFIER '(' ')' { $$ = new CallProcedure( $1, [] ); }
   | IDENTIFIER PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
 ;
 

@@ -4,6 +4,7 @@ module.exports = class VariableDeclaration {
   constructor(names,type) {
     this.names = names;
     this.type = type;
+    this.reference = false;
   }
 
   generate(block) {

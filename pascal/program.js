@@ -2,6 +2,7 @@
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
 var Stack = require('./stack.js');
+var Memory = require('./memory.js');
 
 module.exports = class Program {
   constructor(labels,consts,types,vars,pfs,compound, parent) {
@@ -12,17 +13,8 @@ module.exports = class Program {
     this.pfs = pfs;
     this.compound = compound;
     this.parent = parent;
-    this.strings = [];
-    this.memorySize = 0;
+    this.memory = undefined;
     this.stack = undefined;
-  }
-
-  allocateString( string ) {
-    var buffer = Buffer.concat( [Buffer.from([string.length]), Buffer.from(string)] );
-    this.strings.push( {offset: this.memorySize, data: buffer} );
-    var pointer = this.memorySize;
-    this.memorySize += buffer.length;
-    return pointer;
   }
 
   generate(environment) {
@@ -31,6 +23,7 @@ module.exports = class Program {
     
     var module = environment.module;
     this.stack = new Stack(module);
+    this.memory = new Memory(module);
     
     this.consts.forEach( function(v) {
       environment.constants[v.name] = v.expression;
@@ -45,56 +38,8 @@ module.exports = class Program {
       for (var i in v.names) {
         var name = v.names[i].name;
         var type = environment.resolveType( v.type );
-        var pointer = this.memorySize;
-        this.memorySize += type.bytes();
         
-        environment.variables[name] = {
-          name: name,
-          type: type,
-          pointer: module.i32.const(pointer),
-
-          set: function(expression, offset) {
-            if (offset === undefined) offset = 0;
-
-            if (this.type.name === "real") {
-              if (Binaryen.getExpressionType(expression) == Binaryen.f64)
-                return module.f64.store( offset, 0, this.pointer, expression );
-              else
-                return module.f64.store( offset, 0, this.pointer, module.f64.convert_s.i32 ( expression ) );
-            }
-
-            if (this.type.bytes() == 1)
-              return module.i32.store8( offset, 0, this.pointer, expression );
-
-            if (this.type.bytes() == 2)
-              return module.i32.store16( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 4)
-              return module.i32.store( offset, 0, this.pointer, expression );
-
-            throw "Could not set variable.";
-            return module.nop();
-          },
-          
-          get: function(offset) {
-            if (offset === undefined) offset = 0;
-
-            if (this.type.name === "real")
-              return module.f64.load( offset, 0, this.pointer );              
-            
-            if (this.type.bytes() == 1)
-              return module.i32.load8_u( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 2)
-              return module.i32.load16_s( offset, 0, this.pointer );
-
-            if (this.type.bytes() == 4)
-              return module.i32.load( offset, 0, this.pointer );
-
-            throw "Could not get variable.";
-            return module.nop();
-          }
-        };
+        environment.variables[name] = this.memory.allocateGlobal( name, type );
       }
     };
     
@@ -117,13 +62,7 @@ module.exports = class Program {
     module.addFunctionImport( "printFloat", "library", "printFloat", module.addFunctionType(null, Binaryen.none, [Binaryen.f64] ) );
     module.addFunctionImport( "printNewline", "library", "printNewline", module.addFunctionType(null, Binaryen.none, [] ) );        
 
-    var pages = Math.ceil(this.memorySize / 65536);
-    // FIXME: should compute this
-    pages = 1;
-    module.addMemoryImport( "0", "env", "memory" );
-    module.setMemory(pages, pages, "0", this.strings.map ( function(s) {
-      return {offset: module.i32.const(s.offset), data: s.data};
-    }));
+    this.memory.setup();
     
     return module;
    }

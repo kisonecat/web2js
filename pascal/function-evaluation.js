@@ -11,31 +11,66 @@ module.exports = class FunctionEvaluation {
   generate(environment) {
     var module = environment.module;
 
-    if (this.f.name.toLowerCase() == "trunc") {
-      this.type = new Type("real");
+    var name = this.f.name;
+    
+    if (name.toLowerCase() == "trunc") {
+      this.type = new Type("integer");
       return module.i32.trunc_s.f64(this.xs[0].generate(environment));
     }
 
-    if (this.f.name.toLowerCase() == "round") {
+    if (name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
       this.type = new Type("integer");
       return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)));
     }
 
+    if (name.toLowerCase() == "chr") {
+      this.type = new Type("char");
+      return this.xs[0].generate(environment);
+    }
+
+    if (name.toLowerCase() == "ord") {
+      this.type = new Type("integer");
+      return this.xs[0].generate(environment);
+    }    
+    
     var offset = 0;
     var commands = [];
     var stack = environment.program.stack;
     
     this.type = environment.resolveFunction( this.f ).resultType;
+
+    var params = environment.resolveFunction( this.f ).params;
+    var byReference = [];
+    var types = [];
+    for( var i in params ) {
+      var param = params[i];
+      var type = environment.resolveType(param.type);
+
+      for( var j in param.names ) {
+        byReference.push( param.reference );
+        types.push( type );
+      }
+    }
     
     this.xs.forEach( function(p) {
       var exp = p.generate(environment);
       var type = environment.resolveType( p.type );
-
+      
       offset += type.bytes();
 
+      if (! type.matches( types.shift() ) ) {
+        throw `Type mismatch for ${type} in call to ${name}`;
+      }
+      
       commands.push( stack.extend( type.bytes() ) );
       stack.shift( type.bytes() );
+
+      /*
+      if (byReference.shift()) {
+        console.log(p);
+      }
+      */
       
       exp = p.generate(environment);
       
@@ -45,7 +80,7 @@ module.exports = class FunctionEvaluation {
     stack.shift( -offset );
     
     if (environment.resolveFunction( this.f ) === undefined) {
-      throw `Function ${this.f.name} is not defined.`;
+      throw `Function ${name} is not defined.`;
     }
 
     var resultType = Binaryen.none;
@@ -53,7 +88,7 @@ module.exports = class FunctionEvaluation {
     if (this.type !== undefined)
       resultType = this.type.binaryen();
     
-    commands.push( module.call( this.f.name, [], resultType ) );
+    commands.push( module.call( name, [], resultType ) );
     
     if (this.type !== undefined)
       return module.block( null, commands, resultType );

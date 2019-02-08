@@ -155,7 +155,6 @@ parser.lexer = {
     var token = lexer.lex();
     last_token = token;
     this.yytext = lexer.text;
-    //console.log(lexer.text,token);
     return token;
     },
   setInput: function (str) {
