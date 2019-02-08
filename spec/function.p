@@ -4,17 +4,19 @@ var
 
 function f(x : integer) : integer ;
 begin
+   writeln('f(',x,')');
    if x mod 2 = 0 then
       f := x div 2
    else
       f := 3*x + 1;
+   writeln('return');
 end;
 
 function g(x : integer ; y : integer) : integer ;
 begin
-   x := y+3*x;
-   y := x - y;
-   g := f(f(x+2*y) + y);
+   writeln('g(',x,',',y,')');   
+   writeln('x=',x,' and y=',y);
+   g := f(x+y) + y;
 end;
 
 begin

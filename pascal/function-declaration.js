@@ -16,52 +16,30 @@ module.exports = class FunctionDeclaration {
     environment = new Environment(environment);
     var module = environment.module;
 
-    var params = [];
     var inputs = [];
     var index = 0;
 
-    for( var i in this.params ) {
-      var param = this.params[i];
+    var result = Binaryen.none;
+    var resultVariable;
 
-      for( var j in param.names ) {
-        environment.variables[param.names[j].name] = {
-          index: index,
-          type: this.params[i].type,
-          set: function(expression) {
-            return module.local.set( this.index, expression );
-          },
-          get: function() {
-            return module.local.get( this.index, param.type.binaryen() );
-          }          
-        };
-        
-	var name = param.names[j].name;
-        params.push( name );
-        inputs.push( param.type.binaryen() );
-        index = index + 1;
-      }
-    }
-
-    var locals = [];
-
+    var offset = 0;
+    
     function addVariable( name, type ) {
+      type = environment.resolveType(type);
+
       environment.variables[name] = {
-        index: index,
+        offset: offset,
         type: type,
         set: function(expression) {
-          return module.local.set( this.index, expression );
+          return environment.program.stack.byType(this.type).store( this.offset, expression );
         },
         get: function() {
-          return module.local.get( this.index, type.binaryen() );
+          return environment.program.stack.byType(this.type).load( this.offset );
         }          
       };
 
-      locals.push( type.binaryen() );
-      index = index + 1;      
+      offset = offset + type.bytes();
     }
-    
-    var result = Binaryen.none;
-    var resultVariable;
 
     if (this.resultType) {
       result = this.resultType.binaryen();
@@ -79,68 +57,60 @@ module.exports = class FunctionDeclaration {
     
     this.block.vars.forEach( function(v) {
       for (var i in v.names) {
-        addVariable( v.names[j].name, v.type );
+        addVariable( v.names[i].name, v.type );
       }
     });
 
-    var functionType = module.addFunctionType(null, result, inputs);
+    for( var i in this.params ) {
+      var param = this.params[i];
+      var type = environment.resolveType(param.type);
+
+      for( var j in param.names ) {
+        offset += type.bytes();
+      }
+    }
+
+    var paramOffset = 0;
+    
+    for( var i in this.params ) {
+      var param = this.params[i];
+      var type = environment.resolveType(param.type);
+
+      for( var j in param.names ) {
+        paramOffset += type.bytes();
+        
+        environment.variables[param.names[j].name] = {
+          offset: offset - paramOffset,
+          type: type,
+          set: function(expression) {
+            return environment.program.stack.byType(this.type).store( this.offset, expression );
+          },
+          get: function() {
+            return environment.program.stack.byType(this.type).load( this.offset );
+          }          
+        };
+      }
+    }
+
+    var functionType = module.addFunctionType(null, result, []);
 
     var code = this.block.generate(environment);
 
     if (resultVariable) {
-      code = module.block( null, [ code,
-                                   module.return( resultVariable.get() )] );
+      code = module.block( null, [ environment.program.stack.extend( offset - paramOffset ),
+                                   code,
+                                   module.local.set(0, resultVariable.get() ),
+                                   environment.program.stack.shrink( offset ),
+                                   module.return( module.local.get( 0, result ) )] );
+      module.addFunction(this.identifier.name, functionType, [result], code);
+    } else {
+      code = module.block( null, [ environment.program.stack.extend( offset - paramOffset ),
+                                   code,
+                                   environment.program.stack.shrink( offset )] );
+      module.addFunction(this.identifier.name, functionType, [], code);
     }
-    
-    module.addFunction(this.identifier.name, functionType, locals, code);
     
     return;
-    
-    
-    if (this.resultType) {
-      environment.functionIdentifier = this.identifier;
-    }
-
-    var id = this.identifier.generate(environment);
-    
-    for( var i in this.params ) {
-      var param = this.params[i];
-
-      for( var j in param.names ) {
-	if (param.type.name == "memoryword") {
-	  var n = param.names[j].name;
-	  //code = code + `/*BADBAD*/var ${n}_int = new Int32Array(${n}.buffer);\n`;      
-
-	  //code = code + `var ${n}_gr = new Float32Array(${n}.buffer);\n`;
-	  //code = code + `var ${n}_hh = new Uint16Array(${n}.buffer);\n`;
-	  //code = code + `var ${n}_qqqq = new Uint8Array(${n}.buffer);`;	  
-	  
-	}
-      }
-    }
-
-    if (this.resultType) {
-      code = code + `var _${id}; /* has result type ${this.resultType.generate(environment)} */\n`;
-    }
-    
-    code = code + this.block.generate(environment);
-
-    //code = code + `trace_exit("${id}");\n`;
-    
-    if (this.resultType) {
-      code = code + `return _${id};\n`;
-    }
-    code = code + "}\n";
-    
-    var iii = module.addFunctionType('iii', Binaryen.i32, [Binaryen.i32, Binaryen.i32]);
-    module.addFunction(this.identifier, iii, locals, ret);
-    
-    if (this.resultType) {
-      environment.functionIdentifier = undefined;
-    }
-    
-    return code;
   }
   
 };
-

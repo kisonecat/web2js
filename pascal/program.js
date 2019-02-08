@@ -1,7 +1,7 @@
 'use strict';
 var Binaryen = require('binaryen');
-
 var Environment = require('./environment.js');
+var Stack = require('./stack.js');
 
 module.exports = class Program {
   constructor(labels,consts,types,vars,pfs,compound, parent) {
@@ -14,6 +14,7 @@ module.exports = class Program {
     this.parent = parent;
     this.strings = [];
     this.memorySize = 0;
+    this.stack = undefined;
   }
 
   allocateString( string ) {
@@ -29,6 +30,7 @@ module.exports = class Program {
     environment.program = this;
     
     var module = environment.module;
+    this.stack = new Stack(module);
     
     this.consts.forEach( function(v) {
       environment.constants[v.name] = v.expression;
@@ -70,6 +72,7 @@ module.exports = class Program {
             if (this.type.bytes() == 4)
               return module.i32.store( offset, 0, this.pointer, expression );
 
+            throw "Could not set variable.";
             return module.nop();
           },
           
@@ -86,7 +89,10 @@ module.exports = class Program {
               return module.i32.load16_s( offset, 0, this.pointer );
 
             if (this.type.bytes() == 4)
-              return module.i32.load( offset, 0, this.pointer );              
+              return module.i32.load( offset, 0, this.pointer );
+
+            throw "Could not get variable.";
+            return module.nop();
           }
         };
       }
@@ -100,7 +106,7 @@ module.exports = class Program {
     
     var e = this.compound.generate(environment);
     
-    var f = module.addFunctionType('main_type', Binaryen.none, []);
+    var f = module.addFunctionType(null, Binaryen.none, []);
     var main = module.addFunction("main", f, [], e);
     module.setStart(main);
 

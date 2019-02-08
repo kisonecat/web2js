@@ -19,17 +19,45 @@ module.exports = class FunctionEvaluation {
     if (this.f.name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
       this.type = new Type("integer");
-      return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)))
-    }    
+      return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)));
+    }
 
-    var compiledParams = this.xs.map( function(p) { return p.generate(environment); } );
+    var offset = 0;
+    var commands = [];
+    var stack = environment.program.stack;
+    
+    this.type = environment.resolveFunction( this.f ).resultType;
+    
+    this.xs.forEach( function(p) {
+      var exp = p.generate(environment);
+      var type = environment.resolveType( p.type );
 
+      offset += type.bytes();
+
+      commands.push( stack.extend( type.bytes() ) );
+      stack.shift( type.bytes() );
+      
+      exp = p.generate(environment);
+      
+      commands.push( stack.byType(type).store( -offset, exp ) );
+    } );
+    
+    stack.shift( -offset );
+    
     if (environment.resolveFunction( this.f ) === undefined) {
       throw `Function ${this.f.name} is not defined.`;
     }
 
-    this.type = environment.resolveFunction( this.f ).resultType;
+    var resultType = Binaryen.none;
+
+    if (this.type !== undefined)
+      resultType = this.type.binaryen();
     
-    return module.call( this.f.name, compiledParams, this.type.binaryen() );
+    commands.push( module.call( this.f.name, [], resultType ) );
+    
+    if (this.type !== undefined)
+      return module.block( null, commands, resultType );
+    else
+      return module.block( null, commands );      
   }
 };
