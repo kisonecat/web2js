@@ -14,8 +14,9 @@ module.exports = class Identifier {
     }
     
     var v = environment.resolveVariable( this );
+    this.variable = v;
     this.type = v.type;
-    
+
     return v.get();
   }
 };

@@ -6,19 +6,38 @@ module.exports = class Desig {
     this.desig = desig;
   }
 
-  generate(block) {
+  generate(environment) {
     // Split a desig into individual desigs
-    console.log( "DESIG");
+
+    this.variable.generate(environment);
+    var variable = this.variable.variable;
+    var type = environment.resolveType( this.variable.type );
+    var module = environment.module;
     
+    // Handle arrays
+    if (type.componentType) {
+      var index = this.desig.generate( environment );
+
+      var base = module.i32.mul( module.i32.const( type.componentType.bytes() ),
+                                 module.i32.sub( index,
+                                                 module.i32.const( type.index.lower.number ) ) );
+      this.variable = variable.rebase( type.componentType, base );
+      this.type = type.componentType;
+      return this.variable.get();
+    }
+
+    this.type = type;
+    return variable.get();
+    
+    /*
     var v = this.variable;
     if (this.variable.referent) v = this.variable.referent;
-    var vv = block.resolveVariable( v );
-    var t = block.resolveType( vv );
+    var vv = environment.resolveVariable( v );
+    var t = environment.resolveType( vv );
     
     var factor = "1";
     var offset = "0";
 
-    //var code = this.variable.generate(block);
     var code = this.variable.name;
 
     var desig = this.desig;
@@ -27,9 +46,9 @@ module.exports = class Desig {
     var index = "0";
     var shift = "0";    
     if (t.componentType) {
-      index = desig.shift().generate(block);
+      index = desig.shift().generate(environment);
       if (t.index.lower)
-        shift = t.index.lower.generate(block);      
+        shift = t.index.lower.generate(environment);      
       
       t = t.componentType;
       theType = vv.componentType;
@@ -93,6 +112,7 @@ module.exports = class Desig {
     code = code + `[${factor}*((${index})-(${shift}))+${offset}]`;
 
     return code;    
+*/
   }
   
 };

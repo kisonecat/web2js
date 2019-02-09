@@ -38,7 +38,7 @@ module.exports = class Program {
       for (var i in v.names) {
         var name = v.names[i].name;
         var type = environment.resolveType( v.type );
-        
+
         environment.variables[name] = this.memory.allocateVariable( name, type );
       }
     };

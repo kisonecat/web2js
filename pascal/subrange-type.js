@@ -7,8 +7,12 @@ module.exports = class SubrangeType {
   }
 
   range(e) {
-    return this.upper.number - this.lower.number;
+    return this.upper.number - this.lower.number + 1;
   }
+
+  bytes(e) {
+    return Math.log(this.range(e))/Math.log(256);
+  }  
   
   intish(e) {
     if ((typeof this.upper.number == "number") &&

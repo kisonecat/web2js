@@ -1,4 +1,4 @@
-  %token	array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field forward packed identifier true false
+%token array begin case const do downto else end file for function goto if label of procedure program record repeat then to type until var while  others r_num i_num string_literal single_char assign define field forward packed identifier true false
 
 %nonassoc '=' '<>' '<' '>' '<=' '>='
 %left '+' '-' or
@@ -19,6 +19,7 @@ var ConstantDeclaration = require('./pascal/constant-declaration.js');
 var TypeDeclaration = require('./pascal/type-declaration.js');
 var VariableDeclaration = require('./pascal/variable-declaration.js');
 var RecordDeclaration = require('./pascal/record-declaration.js');
+var VariantDeclaration = require('./pascal/variant-declaration.js');  
 
 var Type = require('./pascal/type.js');
 var Pointer = require('./pascal/pointer.js');
@@ -195,23 +196,21 @@ CONSTANT_EXPRESS              {$$ = new Operation('/', $1, $3);}
  	;
 
 TYPE:
- 	  SIMPLE_TYPE     { $$ = $1; }
- 	| STRUCTURED_TYPE  { $$ = $1; }
- 	;
-
-SIMPLE_TYPE:
-    SUBRANGE_TYPE  { $$ = $1; }
+   STRUCTURED_TYPE  { $$ = $1; }
+  | SUBRANGE_TYPE  { $$ = $1; }
   | TYPE_ID { $$ = $1; }
 ;
 
+TYPE_ID: identifier { $$ = new Type(yytext); } ;
+
 SUBRANGE_TYPE:
-    SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT  { $$ = new SubrangeType($1,$3); }
+    SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT { $$ = new SubrangeType($1,$3); }
 ;
 
 INTEGER: i_num { $$ = parseInt(yytext); } ;
 
 SUBRANGE_CONSTANT:
-INTEGER { $$ = new NumericLiteral($1, new Type("integer")); }
+    INTEGER { $$ = new NumericLiteral($1, new Type("integer")); }
   | unary_plus INTEGER { $$ = new NumericLiteral($2, new Type("integer")); }
   | unary_minus INTEGER { $$ = new NumericLiteral(-$2, new Type("integer")); }
   | IDENTIFIER { $$ = $1; }
@@ -226,17 +225,14 @@ STRUCTURED_TYPE:
  	| POINTER_TYPE { $$ = $1; }
  	;
 
-TYPE_ID: identifier { $$ = new Type(yytext); } ;
-
  POINTER_TYPE:
  	'^' TYPE_ID   { $$ = new PointerType( $2 ); }
  	;
 
  ARRAY_TYPE:
-           array '[' INDEX_TYPE ']' of COMPONENT_TYPE  { $$ = new ArrayType( $3, $6 ); }
-         | array '[' INDEX_TYPE ',' INDEX_TYPE ']' of COMPONENT_TYPE
-	 { $$ = new ArrayType( [$3,$5], $8 ); }
-         ;
+    array '[' INDEX_TYPE ']' of COMPONENT_TYPE  { $$ = new ArrayType( $3, $6, false ); }
+  | packed array '[' INDEX_TYPE ']' of COMPONENT_TYPE  { $$ = new ArrayType( $4, $7, true ); }
+;
 
  INDEX_TYPE:
  	  SUBRANGE_TYPE { $$ = $1; }
@@ -245,20 +241,23 @@ TYPE_ID: identifier { $$ = new Type(yytext); } ;
 
  COMPONENT_TYPE: TYPE { $$= $1; };
 
- RECORD_TYPE:   record FIELD_LIST end  { $$ = new RecordType( $2 ); }
-         ;
+RECORD_TYPE:
+    packed record FIELD_LIST end  { $$ = new RecordType( $3, true ); }
+  | record FIELD_LIST end  { $$ = new RecordType( $2, false ); }
+;
 
-FIELD_LIST:		RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
- 		| FIELD_LIST ';' RECORD_SECTION  { if ($3) { $$ = $1.concat( [$3] ); } else { $$ = $1; } }
- 		;
+FIELD_LIST:
+  RECORD_SECTION  { if ($1) { $$ = [$1]; } else { $$ = []; } }
+| FIELD_LIST ';' RECORD_SECTION  { if ($3) { $$ = $1.concat( $3 ); } else { $$ = $1; } }
+;
 
 RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $3 ); }
-          	| case identifier of RECORD_CASES { $$ = $4; }
- 		| /* empty */ { $$ = undefined; }
- 		;
+  | case identifier of RECORD_CASES { $$ = new VariantDeclaration( $4 ); }
+  | /* empty */ { $$ = undefined; }
+;
 
 RECORD_CASES:
-    RECORD_CASE { $$ = [$1]; }
+    RECORD_CASE { $$ = $1; }
   | RECORD_CASES RECORD_CASE { $$ = $1.concat( $2 ); }
 ;
 
@@ -266,13 +265,14 @@ RECORD_CASE: i_num ':' '(' FIELD_LIST ')' ';' { $$ = $4; } ;
 
 FIELD_ID_LIST:
     IDENTIFIER { $$ = [$1]; }
-  | FIELD_ID_LIST ',' IDENTIFIER  { $$ = $1.concat( [$3] ); }
+  | FIELD_ID_LIST ',' IDENTIFIER  { $$ = $1.concat( $3 ); }
 ;
 
 IDENTIFIER: identifier { $$ = new Identifier(yytext); }
 ;
 
-FILE_TYPE: file of TYPE {  $$ = new FileType( $3 ); }
+FILE_TYPE: file of TYPE {  $$ = new FileType( $3, false ); }
+  | packed file of TYPE {  $$ = new FileType( $4, true ); }
 ;
 
 VAR_DEC_PART:
@@ -339,30 +339,12 @@ SIMPLE_STAT:	  VARIABLE assign EXPRESS  { $$ = new Assignment( $1, $3 ); }
 		| /* empty */  { $$ = new Nop(); }
 ;
 
-POINTER:
-        {$$ = false;}
-  | '^' { $$ = true;}
+VARIABLE:
+    IDENTIFIER { $$ = $1; }
+  | VARIABLE '[' EXPRESS ']' { $$ = new Desig( $1, new ArrayIndex($3) ); }
+  | VARIABLE '.' IDENTIFIER { $$ = new Desig( $1, $3 ); }
+  | VARIABLE '^' { $$ = new Pointer($1); }
 ;
-
-VARP: IDENTIFIER POINTER { if ($2) { $$ = new Pointer( $1 ); } else { $$ = $1; } } ;
-
-VARIABLE:	VARP VAR_DESIG_LIST { $$ = new Desig( $1, $2 ); }
-		| VARP  { $$ = $1; }
-		;
-
-VAR_DESIG_LIST: 	VAR_DESIG { $$ = [$1]; }
-		| VAR_DESIG_LIST VAR_DESIG { $$ = $1.concat( [$2] ); }
-		;
-
-VAR_DESIG:		'['
-			EXPRESS VAR_DESIG1 { if ($3) { $$ = new ArrayIndex([$2, $3]); } else {$$ = new ArrayIndex($2); } }
-		| '.' IDENTIFIER { $$ = $2; }
-		;
-
-VAR_DESIG1:		']'  { $$ = false; }
-		| ','
-			EXPRESS	']' {$$ = $2; }
-		;
 
 EXPRESS:
     UNARY_OP EXPRESS	%prec '*' { $$ = new UnaryOperation( $1, $2 ); }
@@ -415,10 +397,11 @@ WIDTH_FIELD:
   | /* empty */ { $$ = undefined; }
 ;
 
+/* "variable" here really means "identifier" */
 PROC_STAT:
-    IDENTIFIER { $$ = new CallProcedure( $1, [] ); }
-  | IDENTIFIER '(' ')' { $$ = new CallProcedure( $1, [] ); }
-  | IDENTIFIER PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
+    VARIABLE { $$ = new CallProcedure( $1, [] ); }
+  | VARIABLE '(' ')' { $$ = new CallProcedure( $1, [] ); }
+  | VARIABLE PARAM_LIST  { $$ = new CallProcedure( $1, $2 ); }
 ;
 
 STRUCT_STAT:

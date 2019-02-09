@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = class FileType {
-  constructor(type) {
+  constructor(type, packed) {
     this.fileType = true;
     this.type = type;
   }

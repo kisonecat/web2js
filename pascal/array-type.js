@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = class ArrayType {
-  constructor(index, componentType) {
+  constructor(index, componentType, packed) {
     this.index = index;
     this.componentType = componentType;
   }

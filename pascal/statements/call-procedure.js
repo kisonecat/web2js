@@ -19,7 +19,7 @@ module.exports = class CallProcedure {
     if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
       var printers = this.params.map( function(p) {
         var q = p.generate(environment);
-        var type = environment.resolveType( p.type );        
+        var type = environment.resolveType( p.type );
         var printer = "print";
         
         if (type.name == "integer")

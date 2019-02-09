@@ -10,14 +10,11 @@ function commands( memory, bytes, loader, storer ) {
 
     load: function( offset, base ) {
       var module = this.memory.module;
-      if (base === undefined) base = module.i32.const(0);      
       return this.loader( offset, 0, base );
     },
     
     store: function( offset, expression, base ) {
       var module = this.memory.module;
-      if (base === undefined) base = module.i32.const(0);            
-
       return this.storer( offset, 0, base, expression );
     },
   };
@@ -36,6 +33,7 @@ module.exports = class Memory {
     this.u16 = commands( this, 2, this.module.i32.load16_u, this.module.i32.store16_u );
     this.f32 = commands( this, 4, this.module.f32.load, this.module.f32.store );
     this.f64 = commands( this, 8, this.module.f64.load, this.module.f64.store );
+    this.none = { load: function() { }, store: function() {} };
   }
 
   setup() {
@@ -58,19 +56,30 @@ module.exports = class Memory {
     return pointer;
   }
 
-  variable( name, type, offset ) {
+  variable( name, type, offset, base ) {
     var memory = this;
+    var module = this.module;
     
+    if (base === undefined)
+      base = module.i32.const(0);
+
     return {
-        name: name,
-        offset: offset,
-        type: type,
-        set: function(expression) {
-          return memory.byType(this.type).store( this.offset, expression );
-        },
-        get: function() {
-          return memory.byType(this.type).load( this.offset );
-        }
+      name: name,
+      offset: offset,
+      type: type,
+      base: base,
+      
+      set: function(expression) {
+        return memory.byType(this.type).store( this.offset, expression, this.base );
+      },
+      
+      get: function() {
+        return memory.byType(this.type).load( this.offset, this.base );
+      },
+      
+      rebase: function( type, base ) {
+        return memory.variable( this.name, type, this.offset, module.i32.add( this.base, base ) );
+      }
     };
   }
   
@@ -78,11 +87,31 @@ module.exports = class Memory {
     var pointer = this.memorySize;    
     this.memorySize += type.bytes();
     var module = this.module;
-    
+
     return this.variable( name, type, pointer );
   }
   
   byType(type) {
+    if (type.lower && type.upper) {
+      var min = type.lower.number;
+      var max = type.upper.number;
+
+      if ((min == 0) && (max == 255))
+        return this.u8;
+
+      if ((min == -127) && (max == 128))
+        return this.s8;
+
+      if ((min == 0) && (max == 65535))
+        return this.u16;      
+
+      if ((min == -32767) && (max == 32768))
+        return this.s16;
+
+      if (type.bytes() <= 4)
+        return this.i32;
+    }
+    
     if (type.name == "integer")
       return this.i32;
 
@@ -95,7 +124,7 @@ module.exports = class Memory {
     if (type.name == "real")
       return this.f64;
 
-    throw "Unknown type for memory";
+    return this.none;
   }
 
 

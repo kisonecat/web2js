@@ -68,7 +68,6 @@ module.exports = class Operation {
     }
 
     if (family === undefined) {
-      console.log(this.operand1);
       throw `Could not determine types for operator.`
     }
 

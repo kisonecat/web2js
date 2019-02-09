@@ -26,23 +26,32 @@ module.exports = class Stack {
                           );
   }
 
-  variable( name, type, offset ) {
+  variable( name, type, offset, base ) {
     var stack = this;
     var memory = this.memory;
     var module = this.module;
+
+    if (base === undefined)
+      base = module.i32.const(0);    
     
     return {
-        offset: offset,
-        type: type,
-        set: function(expression) {
-          return memory.byType(this.type).store( this.offset + stack.offset,
-                                                 expression,
-                                                 module.global.get( "stack", Binaryen.i32 ) );
-        },
-        get: function() {
-          return memory.byType(this.type).load( this.offset + stack.offset,
-                                                module.global.get( "stack", Binaryen.i32 ) );
-        }          
+      offset: offset,
+      type: type,
+      base: base,      
+      set: function(expression) {
+        return memory.byType(this.type).store( this.offset + stack.offset,
+                                               expression,
+                                               module.i32.add( this.base,
+                                                               module.global.get( "stack", Binaryen.i32 ) ) );
+      },
+      get: function() {
+        return memory.byType(this.type).load( this.offset + stack.offset,
+                                              module.i32.add( this.base,                                              
+                                                              module.global.get( "stack", Binaryen.i32 ) ) );
+      },
+      rebase: function( type, base ) {
+        return stack.variable( this.name, type, this.offset, module.i32.add( this.base, base ) );        
+      }
     };
   }
 

@@ -1,9 +1,12 @@
 'use strict';
 
 module.exports = class RecordType {
-  constructor(fields) {
+  constructor(fields, packed) {
     this.fields = fields;
     console.log("RECORD=",this.fields);
+
+    if (this.fields[1])
+      console.log("first",this.fields[1]);
   }
 
   initializer(e) {
