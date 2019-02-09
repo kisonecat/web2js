@@ -21,7 +21,6 @@ var VariableDeclaration = require('./pascal/variable-declaration.js');
 var RecordDeclaration = require('./pascal/record-declaration.js');
 var VariantDeclaration = require('./pascal/variant-declaration.js');  
 
-var Type = require('./pascal/type.js');
 var Pointer = require('./pascal/pointer.js');
 var Desig = require('./pascal/desig.js');
 var SubrangeType = require('./pascal/subrange-type.js');
@@ -129,10 +128,10 @@ CONST_DEC: IDENTIFIER '=' CONSTANT_EXPRESS ';'  { $$ = new ConstantDeclaration( 
 ;
 
 CONSTANT:
-    INTEGER  { $$ = new NumericLiteral($1, new Type("integer")); }
-  | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), new Type("real")); }
-  | true  { $$ = new NumericLiteral(true, new Type("boolean")); }
-  | false  { $$ = new NumericLiteral(false, new Type("boolean")); }
+    INTEGER  { $$ = new NumericLiteral($1, new Identifier("integer")); }
+  | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), new Identifier("real")); }
+  | true  { $$ = new NumericLiteral(true, new Identifier("boolean")); }
+  | false  { $$ = new NumericLiteral(false, new Identifier("boolean")); }
   | STRING     { $$ = $1; }
 ;
 
@@ -196,12 +195,13 @@ CONSTANT_EXPRESS              {$$ = new Operation('/', $1, $3);}
  	;
 
 TYPE:
-   STRUCTURED_TYPE  { $$ = $1; }
-  | SUBRANGE_TYPE  { $$ = $1; }
-  | TYPE_ID { $$ = $1; }
+    ARRAY_TYPE  { $$ = $1; }
+  | RECORD_TYPE { $$ = $1; }
+  | FILE_TYPE { $$ = $1; }
+  | POINTER_TYPE { $$ = $1; }
+  | SUBRANGE_TYPE { $$ = $1; }
+  | IDENTIFIER { $$ = $1; }
 ;
-
-TYPE_ID: identifier { $$ = new Type(yytext); } ;
 
 SUBRANGE_TYPE:
     SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT { $$ = new SubrangeType($1,$3); }
@@ -210,23 +210,16 @@ SUBRANGE_TYPE:
 INTEGER: i_num { $$ = parseInt(yytext); } ;
 
 SUBRANGE_CONSTANT:
-    INTEGER { $$ = new NumericLiteral($1, new Type("integer")); }
-  | unary_plus INTEGER { $$ = new NumericLiteral($2, new Type("integer")); }
-  | unary_minus INTEGER { $$ = new NumericLiteral(-$2, new Type("integer")); }
+    INTEGER { $$ = new NumericLiteral($1, new Identifier("integer")); }
+  | unary_plus INTEGER { $$ = new NumericLiteral($2, new Identifier("integer")); }
+  | unary_minus INTEGER { $$ = new NumericLiteral(-$2, new Identifier("integer")); }
   | IDENTIFIER { $$ = $1; }
   | unary_plus IDENTIFIER { $$ = $2; }
   | unary_minus IDENTIFIER { $$ = new UnaryOperation( '-', $2 ); }
 ;
 
-STRUCTURED_TYPE:
- 	  ARRAY_TYPE  { $$ = $1; }
- 	| RECORD_TYPE { $$ = $1; }
- 	| FILE_TYPE { $$ = $1; }
- 	| POINTER_TYPE { $$ = $1; }
- 	;
-
  POINTER_TYPE:
- 	'^' TYPE_ID   { $$ = new PointerType( $2 ); }
+ 	'^' IDENTIFIER   { $$ = new PointerType( $2 ); }
  	;
 
  ARRAY_TYPE:
@@ -236,7 +229,7 @@ STRUCTURED_TYPE:
 
  INDEX_TYPE:
  	  SUBRANGE_TYPE { $$ = $1; }
-         | TYPE_ID       { $$ = $1; }
+         | IDENTIFIER       { $$ = $1; }
          ;
 
  COMPONENT_TYPE: TYPE { $$= $1; };
@@ -307,7 +300,7 @@ FORM_PAR_SEC_L:		FORM_PAR_SEC  { $$ = [$1]; }
 		| FORM_PAR_SEC_L ';' FORM_PAR_SEC  { $$ = $1.concat( [$3] ); }
 		;
 
-FORM_PAR_SEC1:  VAR_ID_DEC_LIST ':' TYPE_ID  {  $$ = new VariableDeclaration( $1, $3 ); }
+FORM_PAR_SEC1:  VAR_ID_DEC_LIST ':' IDENTIFIER  {  $$ = new VariableDeclaration( $1, $3 ); }
 	;
 
 // FIXME: this should permit me to pass by value!

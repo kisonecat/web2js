@@ -1,7 +1,7 @@
 'use strict';
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
-var Type = require('./type.js');
+var Identifier = require('./identifier.js');
 
 module.exports = class NumericLiteral {
   constructor(n, type) {

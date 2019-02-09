@@ -1,10 +1,10 @@
 'use strict';
-var Type = require('./type.js');
+var Identifier = require('./identifier.js');
 
 module.exports = class SingleCharacter {
   constructor(character) {
     this.character = character.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'");
-    this.type = new Type('char');
+    this.type = new Identifier('char');
   }
 
   generate(environment) {

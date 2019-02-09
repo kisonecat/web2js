@@ -1,6 +1,6 @@
 'use strict';
 var Binaryen = require('binaryen');
-var Type = require('./type.js');
+var Identifier = require('./identifier.js');
 
 module.exports = class FunctionEvaluation {
   constructor(f,xs) {
@@ -14,23 +14,23 @@ module.exports = class FunctionEvaluation {
     var name = this.f.name;
     
     if (name.toLowerCase() == "trunc") {
-      this.type = new Type("integer");
+      this.type = new Identifier("integer");
       return module.i32.trunc_s.f64(this.xs[0].generate(environment));
     }
 
     if (name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
-      this.type = new Type("integer");
+      this.type = new Identifier("integer");
       return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)));
     }
 
     if (name.toLowerCase() == "chr") {
-      this.type = new Type("char");
+      this.type = new Identifier("char");
       return this.xs[0].generate(environment);
     }
 
     if (name.toLowerCase() == "ord") {
-      this.type = new Type("integer");
+      this.type = new Identifier("integer");
       return this.xs[0].generate(environment);
     }    
     
@@ -56,7 +56,7 @@ module.exports = class FunctionEvaluation {
     this.xs.forEach( function(p) {
       var exp = p.generate(environment);
       var type = environment.resolveType( p.type );
-      
+
       offset += type.bytes();
 
       if (! type.matches( types.shift() ) ) {

@@ -1,7 +1,7 @@
 'use strict';
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
-var Type = require('./type.js');
+var Identifier = require('./identifier.js');
 
 module.exports = class Operation {
   constructor(operator, operand1, operand2) {
@@ -26,7 +26,7 @@ module.exports = class Operation {
 
     if ((typeA.name == "boolean") && (typeB.name == "boolean")) {
       family = m.i32;
-      this.type = new Type("boolean");
+      this.type = new Identifier("boolean");
     }
     
     if (this.operator === "&&") {
@@ -45,26 +45,26 @@ module.exports = class Operation {
 
     if ((typeA.name == "integer") && (typeB.name == "integer")) {
       family = m.i32;
-      this.type = new Type("integer");
+      this.type = new Identifier("integer");
     }
 
     if ((typeA.name == "real") && (typeB.name == "integer")) {
       b = m.f64.convert_s.i32(b);
-      typeB = new Type("real");
+      typeB = new Identifier("real");
       family = m.f64;
-      this.type = new Type("real");
+      this.type = new Identifier("real");
     }
 
     if ((typeA.name == "integer") && (typeB.name == "real")) {    
       a = m.f64.convert_s.i32(a);
-      typeA = new Type("real");      
+      typeA = new Identifier("real");      
       family = m.f64;
-      this.type = new Type("real");            
+      this.type = new Identifier("real");            
     }
 
     if ((typeA.name == "real") && (typeB.name == "real")) {    
       family = m.f64;
-      this.type = new Type("real");       
+      this.type = new Identifier("real");       
     }
 
     if (family === undefined) {
@@ -95,32 +95,32 @@ module.exports = class Operation {
       if (typeA.name != "real")
         a = m.f64.convert_s.i32(a);
       
-      this.type = new Type("real");            
+      this.type = new Identifier("real");            
       return m.f64.div( a, b );
     }
 
     if (this.operator === "==") {
-      this.type = new Type("boolean"); 
+      this.type = new Identifier("boolean"); 
       return family.eq(a,b);
     }
 
     if (this.operator === "!=") {
-      this.type = new Type("boolean"); 
+      this.type = new Identifier("boolean"); 
       return family.ne(a,b);
     }
 
     if (family === m.i32) {
-      if (this.operator === "<") { this.type = new Type("boolean"); return family.lt_s(a,b); }
-      if (this.operator === ">") { this.type = new Type("boolean"); return family.gt_s(a,b); }
-      if (this.operator === ">=") { this.type = new Type("boolean"); return family.ge_s(a,b); }
-      if (this.operator === "<=") { this.type = new Type("boolean"); return family.le_s(a,b); }
+      if (this.operator === "<") { this.type = new Identifier("boolean"); return family.lt_s(a,b); }
+      if (this.operator === ">") { this.type = new Identifier("boolean"); return family.gt_s(a,b); }
+      if (this.operator === ">=") { this.type = new Identifier("boolean"); return family.ge_s(a,b); }
+      if (this.operator === "<=") { this.type = new Identifier("boolean"); return family.le_s(a,b); }
     }
 
     if (family === m.f64) {
-      if (this.operator === "<") { this.type = new Type("boolean"); return family.lt(a,b); }
-      if (this.operator === ">") { this.type = new Type("boolean"); return family.gt(a,b); }
-      if (this.operator === ">=") { this.type = new Type("boolean"); return family.ge(a,b); }
-      if (this.operator === "<=") { this.type = new Type("boolean"); return family.le(a,b); }
+      if (this.operator === "<") { this.type = new Identifier("boolean"); return family.lt(a,b); }
+      if (this.operator === ">") { this.type = new Identifier("boolean"); return family.gt(a,b); }
+      if (this.operator === ">=") { this.type = new Identifier("boolean"); return family.ge(a,b); }
+      if (this.operator === "<=") { this.type = new Identifier("boolean"); return family.le(a,b); }
     }
 
 
