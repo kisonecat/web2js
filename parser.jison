@@ -205,6 +205,9 @@ TYPE:
 
 SUBRANGE_TYPE:
     SUBRANGE_CONSTANT '..' SUBRANGE_CONSTANT { $$ = new SubrangeType($1,$3); }
+  | IDENTIFIER '..' SUBRANGE_CONSTANT  { $$ = new SubrangeType($1,$3); }
+  | IDENTIFIER '..' IDENTIFIER  { $$ = new SubrangeType($1,$3); }
+  | SUBRANGE_CONSTANT '..' IDENTIFIER { $$ = new SubrangeType($1,$3); }
 ;
 
 INTEGER: i_num { $$ = parseInt(yytext); } ;
@@ -213,7 +216,6 @@ SUBRANGE_CONSTANT:
     INTEGER { $$ = new NumericLiteral($1, new Identifier("integer")); }
   | unary_plus INTEGER { $$ = new NumericLiteral($2, new Identifier("integer")); }
   | unary_minus INTEGER { $$ = new NumericLiteral(-$2, new Identifier("integer")); }
-  | IDENTIFIER { $$ = $1; }
   | unary_plus IDENTIFIER { $$ = $2; }
   | unary_minus IDENTIFIER { $$ = new UnaryOperation( '-', $2 ); }
 ;

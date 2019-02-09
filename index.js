@@ -34,7 +34,6 @@ lexer.addRule("begin"		, function(lexer) { return 'begin'; } );
 lexer.addRule("case"		, function(lexer) { return 'case'; } );
 lexer.addRule("const"		, function(lexer) { return 'const'; } );
 lexer.addRule("div"		, function(lexer) { return 'div'; } );
-lexer.addRule("break"		, function(lexer) { return 'break'; } );
 lexer.addRule("do"		, function(lexer) { return 'do'; } );
 lexer.addRule("downto"	, function(lexer) { return 'downto'; } );
 lexer.addRule("else"		, function(lexer) { return 'else'; } );
