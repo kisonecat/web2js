@@ -31,7 +31,16 @@ module.exports = class Environment {
   }   
 
   resolveLabel( label ) {
-    return this.labels[label];
+    var e = this;
+    
+    while( e ) {
+      if (e.labels[label])
+        return e.labels[label];
+
+      e = e.parent;
+    }
+
+    return undefined;
   }
   
   resolveTypeOnce( typeIdentifier ) {

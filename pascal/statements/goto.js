@@ -23,11 +23,14 @@ module.exports = class Goto {
     }
 
     var e = environment;
-    while (e.name === undefined) {
+    while (e !== undefined && e.name === undefined) {
       e = e.parent;
     }
-   
-    throw `Could not find label ${this.label} in ${e.name}`;
+
+    if (e)
+      throw `Could not find label ${this.label} in ${e.name}`;
+    else
+      throw `Could not find label ${this.label} in main`;
     return module.return();
   }
 };
