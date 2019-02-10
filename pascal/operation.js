@@ -43,19 +43,19 @@ module.exports = class Operation {
         throw "Can only 'or' on boolean types."      
     }
 
-    if ((typeA.name == "integer") && (typeB.name == "integer")) {
+    if ((typeA.isInteger()) && (typeB.isInteger())) {
       family = m.i32;
       this.type = new Identifier("integer");
     }
 
-    if ((typeA.name == "real") && (typeB.name == "integer")) {
+    if ((typeA.name == "real") && (typeB.isInteger())) {
       b = m.f64.convert_s.i32(b);
       typeB = new Identifier("real");
       family = m.f64;
       this.type = new Identifier("real");
     }
 
-    if ((typeA.name == "integer") && (typeB.name == "real")) {    
+    if ((typeA.isInteger()) && (typeB.name == "real")) {    
       a = m.f64.convert_s.i32(a);
       typeA = new Identifier("real");      
       family = m.f64;
@@ -68,6 +68,8 @@ module.exports = class Operation {
     }
 
     if (family === undefined) {
+      console.log(typeA.isInteger());
+      console.log(typeB.isInteger());
       throw `Could not determine types for operator.`
     }
 

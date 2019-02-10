@@ -1,6 +1,9 @@
 'use strict';
 
 var ArrayType = require('./array-type');
+var RecordDeclaration = require('./record-declaration');
+var VariantDeclaration = require('./variant-declaration');
+var RecordType = require('./record-type');
 var binaryen = require('binaryen');
 
 module.exports = class Environment {
@@ -43,19 +46,44 @@ module.exports = class Environment {
     return typeIdentifier;
   }
 
+  resolveRecordDeclaration( f ) {
+    var self = this;
+    if (f.type) {
+      var t = self.resolveType(f.type);
+      return new RecordDeclaration( f.names, t );
+    }
+
+    if (f.variants) {
+      return new VariantDeclaration( f.variants.map( function (v){
+        return self.resolveType(v);
+      } ) );
+    }
+
+    throw `Could not resolve record declaration ${f}`;
+  }
+  
   resolveType( typeIdentifier ) {
     var old = undefined;
     var resolved = typeIdentifier;
-
+    var self = this;
+    
     do {
       old = resolved;
-      resolved = this.resolveTypeOnce( resolved );
+      resolved = self.resolveTypeOnce( resolved );
     } while (old != resolved);
 
     if (resolved.componentType) {
-      var component = this.resolveType( resolved.componentType );
-      var index = this.resolveType( resolved.index );
+      var component = self.resolveType( resolved.componentType );
+      var index = self.resolveType( resolved.index );
       return new ArrayType( index, component );
+    }
+
+    if (resolved.fields) {
+      return new RecordType(
+        resolved.fields.map( function(f) {
+          return self.resolveRecordDeclaration(f);
+        }),
+        resolved.packed );
     }
 
     return resolved;

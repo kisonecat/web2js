@@ -252,8 +252,8 @@ RECORD_SECTION:  FIELD_ID_LIST ':' TYPE { $$ = new RecordDeclaration( $1, $3 ); 
 ;
 
 RECORD_CASES:
-    RECORD_CASE { $$ = $1; }
-  | RECORD_CASES RECORD_CASE { $$ = $1.concat( $2 ); }
+RECORD_CASE { $$ = [new RecordType($1)]; }
+  | RECORD_CASES RECORD_CASE { $$ = $1.concat( [new RecordType($2)] ); }
 ;
 
 RECORD_CASE: i_num ':' '(' FIELD_LIST ')' ';' { $$ = $4; } ;

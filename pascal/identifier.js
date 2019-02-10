@@ -35,6 +35,13 @@ module.exports = class Identifier {
     throw "Cannot identify binaryen type";
   }
 
+  isInteger() {
+    if (this.name == "integer")
+      return true;
+
+    return false;
+  }
+  
   bytes(e) {
     if (this.name == "integer")
       return 4;
@@ -48,7 +55,8 @@ module.exports = class Identifier {
     if (this.name == "real")
       return 8;
 
-    throw "Cannot find size of type instance in bytes";
+    var t = e.resolveType( this.name );
+    return t.bytes(e);
   }
 
   matches(other) {

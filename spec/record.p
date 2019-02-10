@@ -4,7 +4,7 @@ const small = 0;
 
 type  
   Point	      = record  
-		   X,Y,Z : integer ;  
+		   X,Y : integer ;  
 		end;	 
    twochoices = 1..2;
    quarterword = 0..255;
@@ -22,14 +22,13 @@ var
 
  procedure writepoint( point :  Point ) ;
 begin
-   write('(',point.X,' ',point.Y,' ',point.Z,')');
+   write('(',point.X,' ',point.Y,')');
 end;
 
 procedure sum(a,b	: Point ; c : Point ) ;
 begin
    a.X := b.X + c.X;
    a.Y := b.Y + c.Y;
-   a.Z := b.Z + c.Z;   
 end;
 
 begin
@@ -46,11 +45,10 @@ begin
    
    m[0].X := 1;
    m[0].Y := 2;
-   m[0].Z := 3;
    p.X := 17;
    p.Y := -20;
-   p.Z := 100;
+   
    sum(m[1], m[0], p);
-   writepoint(m[1]);
+   writepoint(m[0]);
    writeln();
 end.

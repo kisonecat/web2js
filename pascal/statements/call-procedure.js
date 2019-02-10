@@ -22,7 +22,7 @@ module.exports = class CallProcedure {
         var type = environment.resolveType( p.type );
         var printer = "print";
         
-        if (type.name == "integer")
+        if (type.isInteger())
           printer = "printInteger";
 
         if (type.name == "real")        

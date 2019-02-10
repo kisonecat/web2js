@@ -13,6 +13,18 @@ module.exports = class SubrangeType {
   bytes(e) {
     return Math.log(this.range(e))/Math.log(256);
   }  
+
+  isInteger() {
+    return true;
+  }
+
+  matches(other) {
+    if ((this.lower.number == other.lower.number) &&
+        (this.upper.number == other.upper.number))
+      return true;
+
+    return false;
+  }
   
   intish(e) {
     if ((typeof this.upper.number == "number") &&

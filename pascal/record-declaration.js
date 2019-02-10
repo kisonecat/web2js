@@ -6,6 +6,10 @@ module.exports = class RecordDeclaration {
     this.type = type;
   }
 
+  bytes(e) {
+    return this.type.bytes(e) * this.names.length;
+  }
+  
   generate(e) {
     return `${this.names} = ${this.type.generate(e)}`;
   }

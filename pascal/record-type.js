@@ -3,12 +3,19 @@
 module.exports = class RecordType {
   constructor(fields, packed) {
     this.fields = fields;
-    console.log("RECORD=",this.fields);
-
-    if (this.fields[1])
-      console.log("first",this.fields[1]);
+    this.packed = packed;
   }
 
+  bytes(e) {
+    return this.fields
+      .map( function(f) { return f.bytes(e); } )
+      .reduce(function(a, b) { return a + b; }, 0);
+  }
+
+  matches(other) {
+    return true;
+  }
+  
   initializer(e) {
     return "{}";
   }

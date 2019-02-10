@@ -27,10 +27,11 @@ module.exports = class Memory {
     this.memorySize = 0;
     
     this.i32 = commands( this, 4, this.module.i32.load, this.module.i32.store );
+    this.i64 = commands( this, 4, this.module.i64.load, this.module.i64.store );    
     this.u8  = commands( this, 1, this.module.i32.load8_u, this.module.i32.store8 );
     this.s8  = commands( this, 1, this.module.i32.load8_s, this.module.i32.store8 );
-    this.s16 = commands( this, 2, this.module.i32.load16_s, this.module.i32.store16_s );                
-    this.u16 = commands( this, 2, this.module.i32.load16_u, this.module.i32.store16_u );
+    this.s16 = commands( this, 2, this.module.i32.load16_s, this.module.i32.store16 );
+    this.u16 = commands( this, 2, this.module.i32.load16_u, this.module.i32.store16 );
     this.f32 = commands( this, 4, this.module.f32.load, this.module.f32.store );
     this.f64 = commands( this, 8, this.module.f64.load, this.module.f64.store );
     this.none = { load: function() { }, store: function() {} };
@@ -124,6 +125,18 @@ module.exports = class Memory {
     if (type.name == "real")
       return this.f64;
 
+    if (type.bytes() == 4)
+      return this.i32;
+
+    if (type.bytes() == 8)
+      return this.i64;  
+
+    if (type.bytes() == 2)
+      return this.u16;
+
+    if (type.bytes() == 1)
+      return this.u8;
+   
     return this.none;
   }
 

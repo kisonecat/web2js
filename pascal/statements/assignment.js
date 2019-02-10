@@ -29,7 +29,7 @@ module.exports = class Assignment {
       return environment.resolveVariable(this.lhs).set(
         module.f64.convert_s.i32(rhs) );      
     }
-    
+
     return this.lhs.variable.set( rhs );
   }
 };
