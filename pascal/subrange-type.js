@@ -13,7 +13,6 @@ module.exports = class SubrangeType {
   maximum() {
     return this.upper.number;
   }
-
   
   range(e) {
     return this.maximum() - this.minimum() + 1;
@@ -28,6 +27,9 @@ module.exports = class SubrangeType {
   }
 
   matches(other) {
+    if (other.isInteger())
+      return true;
+    
     if ((this.lower.number == other.lower.number) &&
         (this.upper.number == other.upper.number))
       return true;

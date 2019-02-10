@@ -86,6 +86,9 @@ module.exports = class Identifier {
   }
 
   matches(other) {
+    if ((this.name == "integer") && (other.lower && other.upper))
+      return true;
+    
     if (this.name == other.name)
       return true;
 

@@ -20,4 +20,6 @@ begin
    c := chr(65);
    writeln(c,c,c,c);
    writeln(g(3,'Z',124.4,5));
+   writeln(odd(17));
+   writeln(odd(16));
 end.

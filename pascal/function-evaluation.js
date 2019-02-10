@@ -34,12 +34,23 @@ module.exports = class FunctionEvaluation {
       this.type = new Identifier("integer");
       return this.xs[0].generate(environment);
     }    
+
+    if (name.toLowerCase() == "odd") {
+      this.type = new Identifier("boolean");
+      var n = this.xs[0].generate(environment);
+      return module.i32.eq( module.i32.rem_s( n, module.i32.const(2) ), module.i32.const(1) );
+    }    
     
     var offset = 0;
     var commands = [];
     var stack = environment.program.stack;
+
+    var theFunction = environment.resolveFunction( this.f );
+    if (theFunction === undefined) {
+      throw `Could not find function ${this.f.name}`;
+    }
     
-    this.type = environment.resolveFunction( this.f ).resultType;
+    this.type = theFunction.resultType;
 
     var params = environment.resolveFunction( this.f ).params;
     var byReference = [];
@@ -95,9 +106,14 @@ module.exports = class FunctionEvaluation {
 
     var resultType = Binaryen.none;
 
-    if (this.type !== undefined)
+    if (this.type !== undefined) {
       resultType = this.type.binaryen();
-    
+
+      if (resultType === undefined) {
+        throw `Could not identify binaryen type for ${this.type}`;
+      }
+    }
+
     commands.push( module.call( name, [], resultType ) );
     
     if (this.type !== undefined)
