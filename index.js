@@ -211,8 +211,19 @@ var library = {
   },      
 };
 
+var filesystemLibrary = {
+  reset: function(length, pointer) {
+    var buffer = new Uint8Array( memory.buffer, pointer, length );
+    var string = String.fromCharCode.apply(null, buffer);
+    process.stdout.write("heard reset(",string,")");
+
+    return 17;
+  }
+};
+
 // Compile the binary and create an instance
 var wasm = new WebAssembly.Instance(code, { library: library,
+                                            fs: filesystemLibrary,
                                             env: { memory: memory } } );
 
 //console.log("exports: " + Object.keys(wasm.exports).sort().join(","));

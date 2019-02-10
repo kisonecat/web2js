@@ -58,6 +58,9 @@ module.exports = class Identifier {
     if (this.name == "real")
       return Binaryen.f64;
 
+    console.log(this);
+    console.trace();
+    
     throw "Cannot identify binaryen type";
   }
 
@@ -107,6 +110,15 @@ module.exports = class Identifier {
     }
     
     var v = environment.resolveVariable( this );
+
+    // Could be a function call
+    if (v === undefined) {
+      var f = environment.resolveFunction( this );
+      var e = f.evaluate([]).generate(environment);
+      this.type = f.resultType;
+      return e;
+    }
+    
     this.variable = v;
     this.type = v.type;
 

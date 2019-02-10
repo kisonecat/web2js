@@ -39,6 +39,24 @@ module.exports = class FunctionEvaluation {
       this.type = new Identifier("boolean");
       var n = this.xs[0].generate(environment);
       return module.i32.eq( module.i32.rem_s( n, module.i32.const(2) ), module.i32.const(1) );
+    }
+
+    // erstat always OKAY
+    if (name.toLowerCase() == "erstat") {
+      this.type = new Identifier("integer");
+      return module.i32.const(0);
+    }
+
+    // FIXME
+    if (name.toLowerCase() == "eoln") {
+      this.type = new Identifier("boolean");
+      return module.i32.const(0);
+    }    
+
+    // FIXME
+    if (name.toLowerCase() == "eof") {
+      this.type = new Identifier("boolean");
+      return module.i32.const(0);
     }    
     
     var offset = 0;
@@ -47,7 +65,10 @@ module.exports = class FunctionEvaluation {
 
     var theFunction = environment.resolveFunction( this.f );
     if (theFunction === undefined) {
-      throw `Could not find function ${this.f.name}`;
+      //throw `Could not find function ${this.f.name}`;
+      console.log( `Could not find function ${this.f.name}` );
+      this.type = new Identifier("integer");
+      return module.i32.const(17);
     }
     
     this.type = theFunction.resultType;

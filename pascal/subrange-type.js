@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 module.exports = class SubrangeType {
   constructor(lower,upper) {
@@ -26,6 +27,10 @@ module.exports = class SubrangeType {
     return true;
   }
 
+  binaryen() {
+    return Binaryen.i32;    
+  }
+  
   matches(other) {
     if (other.isInteger())
       return true;

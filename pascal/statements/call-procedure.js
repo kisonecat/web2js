@@ -15,6 +15,32 @@ module.exports = class CallProcedure {
   
   generate(environment) {
     var module = environment.module;
+
+    // No need for "break-in" functions
+    if (this.procedure.name.toLowerCase() == "break") {
+      return module.nop();
+    }
+    
+    // Ignore the mode parameter to reset
+    if (this.procedure.name.toLowerCase() == "reset") {
+      var file = this.params[0];
+      file.generate(environment);
+
+      var filename = this.params[1];
+      var filenameExp = filename.generate(environment);
+      var result = undefined;
+      
+      if (filename.type.name == "string")
+        result = module.call( "reset", [module.i32.load8_u(0,0,filenameExp),
+                                        module.i32.add(1,filenameExp)],
+                              Binaryen.i32 );
+      else
+        result = module.call( "reset", [module.i32.const(filename.type.index.range()),
+                                        filename.variable.pointer()],
+                              Binaryen.i32 );
+      
+      return file.variable.set( result );
+    }
     
     if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
       var printers = this.params.map( function(p) {

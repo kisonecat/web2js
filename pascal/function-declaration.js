@@ -3,6 +3,7 @@
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
 var PointerType = require('./pointer-type.js');
+var FunctionEvaluation = require('./function-evaluation.js');
 
 module.exports = class FunctionDeclaration {
   constructor(identifier, params, resultType, block) {
@@ -34,14 +35,19 @@ module.exports = class FunctionDeclaration {
     }
 
     if (this.resultType) {
-      result = this.resultType.binaryen();
+      var resolved = environment.resolveType( this.resultType );
+      result = resolved.binaryen();
       addVariable( this.identifier.name, this.resultType );
       resultVariable = environment.variables[this.identifier.name];
     }
 
     parentEnvironment.functions[this.identifier.name] = {
       resultType: this.resultType,
-      params: this.params
+      params: this.params,
+      identifier: this.identifier,
+      evaluate: function(params) {
+        return (new FunctionEvaluation( this.identifier, params ));
+      }
     };
 
     if (this.block === null) {

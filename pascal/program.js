@@ -60,7 +60,10 @@ module.exports = class Program {
     module.addFunctionImport( "printChar", "library", "printChar", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
     module.addFunctionImport( "printString", "library", "printString", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
     module.addFunctionImport( "printFloat", "library", "printFloat", module.addFunctionType(null, Binaryen.none, [Binaryen.f64] ) );
-    module.addFunctionImport( "printNewline", "library", "printNewline", module.addFunctionType(null, Binaryen.none, [] ) );        
+    module.addFunctionImport( "printNewline", "library", "printNewline", module.addFunctionType(null, Binaryen.none, [] ) );
+
+    module.addFunctionImport( "reset", "fs", "reset",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
 
     this.memory.setup();
     
