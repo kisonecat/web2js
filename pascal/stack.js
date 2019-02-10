@@ -51,7 +51,13 @@ module.exports = class Stack {
       },
       rebase: function( type, base ) {
         return stack.variable( this.name, type, this.offset, module.i32.add( this.base, base ) );        
+      },
+
+      pointer: function() {
+        return module.i32.add( module.i32.const( this.offset + stack.offset ),
+                               module.i32.add( this.base, module.global.get( "stack", Binaryen.i32 ) ) );
       }
+
     };
   }
 

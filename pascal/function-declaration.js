@@ -2,6 +2,7 @@
 
 var Binaryen = require('binaryen');
 var Environment = require('./environment.js');
+var PointerType = require('./pointer-type.js');
 
 module.exports = class FunctionDeclaration {
   constructor(identifier, params, resultType, block) {
@@ -57,6 +58,9 @@ module.exports = class FunctionDeclaration {
       var param = this.params[i];
       var type = environment.resolveType(param.type);
 
+      if ( param.reference )
+        type = new PointerType( type );
+      
       for( var j in param.names ) {
         offset += type.bytes();
       }
@@ -68,11 +72,20 @@ module.exports = class FunctionDeclaration {
       var param = this.params[i];
       var type = environment.resolveType(param.type);
 
+      if (param.reference) {
+        type = new PointerType( type );
+      }
+      
       for( var j in param.names ) {
         paramOffset += type.bytes();
         
-        environment.variables[param.names[j].name] =
-          environment.program.stack.variable( param.names[j].name, type, offset - paramOffset );
+        var v = environment.program.stack.variable( param.names[j].name, type, offset - paramOffset );
+        
+        if (param.reference) {
+          environment.variables[param.names[j].name] =
+            environment.program.memory.dereferencedVariable( param.names[j].name, type.referent, v );
+        } else
+          environment.variables[param.names[j].name] = v;
       }
     }
 

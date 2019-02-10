@@ -20,12 +20,12 @@ var
    t : twohalves ;
    a : array[small..large] of integer;
 
- procedure writepoint( point :  Point ) ;
+procedure writepoint( point :  Point ) ;
 begin
    write('(',point.X,' ',point.Y,')');
 end;
 
-procedure sum(a,b	: Point ; c : Point ) ;
+procedure sum(var a,b,c : Point ) ;
 begin
    a.X := b.X + c.X;
    a.Y := b.Y + c.Y;
@@ -47,8 +47,12 @@ begin
    m[0].Y := 2;
    p.X := 17;
    p.Y := -20;
-   
+
+   writepoint(m[1]);
+   writeln;
    sum(m[1], m[0], p);
    writepoint(m[0]);
+   writeln;   
+   writepoint(m[1]);   
    writeln();
 end.

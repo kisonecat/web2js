@@ -57,6 +57,37 @@ module.exports = class Memory {
     return pointer;
   }
 
+  dereferencedVariable( name, type, referent, base ) { 
+    var memory = this;
+    var module = this.module;
+    
+    if (base === undefined)
+      base = module.i32.const(0);
+
+    return {
+      name: name,
+      type: type,
+      base: base,
+      referent: referent,
+      
+      set: function(expression) {
+        return memory.byType(this.type).store( 0, expression, module.i32.add( this.referent.get(), this.base ) );
+      },
+      
+      get: function() {
+        return memory.byType(this.type).load( 0, module.i32.add( this.referent.get(), this.base ) );
+      },
+      
+      rebase: function( type, base ) {
+        return memory.dereferencedVariable( this.name, type, this.referent, module.i32.add( this.base, base ) );
+      },
+
+      pointer: function() {
+        return referent.get();
+      }
+    };   
+  }
+  
   variable( name, type, offset, base ) {
     var memory = this;
     var module = this.module;
@@ -80,6 +111,10 @@ module.exports = class Memory {
       
       rebase: function( type, base ) {
         return memory.variable( this.name, type, this.offset, module.i32.add( this.base, base ) );
+      },
+
+      pointer: function() {
+        return module.i32.add( module.i32.const(this.offset), this.base );
       }
     };
   }

@@ -305,7 +305,6 @@ FORM_PAR_SEC_L:		FORM_PAR_SEC  { $$ = [$1]; }
 FORM_PAR_SEC1:  VAR_ID_DEC_LIST ':' IDENTIFIER  {  $$ = new VariableDeclaration( $1, $3 ); }
 	;
 
-// FIXME: this should permit me to pass by value!
 FORM_PAR_SEC:
     FORM_PAR_SEC1 { $$ = $1; }
   | var FORM_PAR_SEC1  { $2.reference = true; $$ = $2; }

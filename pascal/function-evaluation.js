@@ -1,6 +1,7 @@
 'use strict';
 var Binaryen = require('binaryen');
 var Identifier = require('./identifier.js');
+var PointerType = require('./pointer-type.js');
 
 module.exports = class FunctionEvaluation {
   constructor(f,xs) {
@@ -47,6 +48,9 @@ module.exports = class FunctionEvaluation {
       var param = params[i];
       var type = environment.resolveType(param.type);
 
+      if (param.reference)
+        type = new PointerType(type);
+      
       for( var j in param.names ) {
         byReference.push( param.reference );
         types.push( type );
@@ -57,6 +61,11 @@ module.exports = class FunctionEvaluation {
       var exp = p.generate(environment);
       var type = environment.resolveType( p.type );
 
+      var referenced = byReference.shift();
+
+      if (referenced)
+        type = new PointerType(type);
+      
       offset += type.bytes();
 
       if (! type.matches( types.shift() ) ) {
@@ -66,18 +75,18 @@ module.exports = class FunctionEvaluation {
       commands.push( stack.extend( type.bytes() ) );
       stack.shift( type.bytes() );
 
-      /*
-      if (byReference.shift()) {
-        console.log(p);
-      }
-      */
-      
       exp = p.generate(environment);
-
-      var v = stack.variable( null, type, -offset );
-      commands.push( v.set( exp ) );
+      
+      if (referenced) {
+        var v = stack.variable( null, type, -offset );
+        commands.push( v.set( p.variable.pointer() ) );
+      } else {
+        var v = stack.variable( null, type, -offset );
+        commands.push( v.set( exp ) );
+      }
     } );
-    
+
+   
     stack.shift( -offset );
     
     if (environment.resolveFunction( this.f ) === undefined) {
