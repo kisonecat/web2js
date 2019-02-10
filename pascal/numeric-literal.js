@@ -6,7 +6,11 @@ var Identifier = require('./identifier.js');
 module.exports = class NumericLiteral {
   constructor(n, type) {
     this.number = n;
-    this.type = type;
+
+    if (type)
+      this.type = type;
+    else
+      this.type = new Identifier("integer");
   }
 
   generate(environment) {

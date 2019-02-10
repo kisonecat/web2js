@@ -10,10 +10,9 @@ module.exports = class Desig {
     // Split a desig into individual desigs
 
     if (this.target.generate == undefined) {
-      console.log("mising=",this.target);
+      throw `Missing target in ${this}`;
     }
       
-    
     this.target.generate(environment);
     var variable = this.target.variable;
     var type = environment.resolveType( this.target.type );
@@ -25,7 +24,7 @@ module.exports = class Desig {
 
       var base = module.i32.mul( module.i32.const( type.componentType.bytes() ),
                                  module.i32.sub( index,
-                                                 module.i32.const( type.index.lower.number ) ) );
+                                                 module.i32.const( type.index.minimum() ) ) );
       this.variable = variable.rebase( type.componentType, base );
       this.type = type.componentType;
       return this.variable.get();
@@ -75,8 +74,6 @@ module.exports = class Desig {
         }
       }
 
-      console.log("type=",this.variable.type);
-      console.log("DESIG=",this);
       throw `Could not find field ${this.desig.name}`;
     }
     

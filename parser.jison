@@ -177,7 +177,7 @@ CONSTANT_EXPRESS              {$$ = new Operation('/', $1, $3);}
          ;
 
  STRING:  string_literal   { $$ = new StringLiteral(yytext); }
- 	| single_char      { $$ = new SingleCharacter(yytext); }
+ 	| single_char      { $$ = new SingleCharacter(yytext.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'")); }
  	;
 
  TYPE_DEC_PART:		/* empty */ { $$ = []; }

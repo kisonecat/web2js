@@ -6,8 +6,17 @@ module.exports = class SubrangeType {
     this.upper = upper;
   }
 
+  minimum() {
+    return this.lower.number;
+  }
+
+  maximum() {
+    return this.upper.number;
+  }
+
+  
   range(e) {
-    return this.upper.number - this.lower.number + 1;
+    return this.maximum() - this.minimum() + 1;
   }
 
   bytes(e) {

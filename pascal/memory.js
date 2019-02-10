@@ -120,7 +120,7 @@ module.exports = class Memory {
   }
   
   allocateVariable( name, type ) {
-    var pointer = this.memorySize;    
+    var pointer = this.memorySize;
     this.memorySize += type.bytes();
     var module = this.module;
 

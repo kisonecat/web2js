@@ -68,8 +68,6 @@ module.exports = class Operation {
     }
 
     if (family === undefined) {
-      console.log(typeA.isInteger());
-      console.log(typeB.isInteger());
       throw `Could not determine types for operator.`
     }
 

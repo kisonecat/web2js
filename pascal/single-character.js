@@ -3,7 +3,7 @@ var Identifier = require('./identifier.js');
 
 module.exports = class SingleCharacter {
   constructor(character) {
-    this.character = character.replace(/^'/,'').replace(/'$/,'').replace(/''/,"'");
+    this.character = character;
     this.type = new Identifier('char');
   }
 

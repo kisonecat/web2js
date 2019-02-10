@@ -72,6 +72,18 @@ module.exports = class Environment {
       resolved = self.resolveTypeOnce( resolved );
     } while (old != resolved);
 
+    if (resolved.lower) {
+      if (resolved.lower.name) {
+        resolved.lower = this.resolveConstant( resolved.lower );
+      }
+    }
+
+    if (resolved.upper) {
+      if (resolved.upper.name) {
+        resolved.upper = this.resolveConstant( resolved.upper );
+      }
+    }
+    
     if (resolved.componentType) {
       var component = self.resolveType( resolved.componentType );
       var index = self.resolveType( resolved.index );

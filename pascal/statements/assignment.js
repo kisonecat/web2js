@@ -2,6 +2,8 @@
 var Binaryen = require('binaryen');
 
 var Desig = require('../desig');
+var NumericLiteral = require('../numeric-literal');
+var SingleCharacter = require('../single-character');
 
 module.exports = class Assignment {
   constructor(lhs,rhs) {
@@ -22,7 +24,27 @@ module.exports = class Assignment {
     var lhsType = environment.resolveType( this.lhs.type );
 
     if ((this.rhs.type.name == "string") && (this.lhs.type.componentType)) {
-      throw 'Can not handle assignment of string to array';
+      if (this.rhs.text) {
+        var commands = [];
+        
+        for( var i = 0; i < Math.min( this.rhs.text.length, this.lhs.type.index.range() ); i++ ) {
+          var d = new Desig( this.lhs, new NumericLiteral(i + this.lhs.type.index.minimum()) );
+          d.generate(environment);
+          var c =  new SingleCharacter(this.rhs.text[i]);
+          commands.push( d.variable.set( c.generate(environment) ) );
+        }
+
+        for( i = Math.min( this.rhs.text.length, this.lhs.type.index.range() ); i < this.lhs.type.index.range(); i++ ) {
+          var d = new Desig( this.lhs, new NumericLiteral(i + this.lhs.type.index.minimum()) );
+          d.generate(environment);
+          var c =  new SingleCharacter("\x00");
+          commands.push( d.variable.set( c.generate(environment) ) );          
+        }
+        
+        return module.block( null, commands );
+      } else {
+        throw 'Only handle assignment of string literal to array.';
+      }
     }
     
     if ((this.rhs.type.name == "integer") && (this.lhs.type.name == "real")) {

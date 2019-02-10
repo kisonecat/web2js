@@ -6,6 +6,32 @@ module.exports = class Identifier {
     this.name = name;
   }
 
+  minimum() {
+    if (this.name == "integer")
+      return -2147483647;
+
+    if (this.name == "char")
+      return 0;
+
+    if (this.name == "boolean")
+      return 0;
+
+    throw `Cannot find mimumum value of ${this.name}`;
+  }
+
+  maximum() {
+    if (this.name == "integer")
+      return 2147483648;
+
+    if (this.name == "char")
+      return 255;
+
+    if (this.name == "boolean")
+      return 0;
+
+    throw `Cannot find maximum value of ${this.name}`;    
+  }
+
   range(e) {
     if (this.name == "integer")
       throw "Cannot index by integers";
@@ -71,6 +97,9 @@ module.exports = class Identifier {
 
     if (c) {
       this.type = c.type;
+
+      if (c.text) this.text = c.text;
+      
       return c.generate(environment);
     }
     

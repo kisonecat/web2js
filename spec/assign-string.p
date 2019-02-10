@@ -24,12 +24,15 @@ begin
 end;
 
 begin
+
+   print;
+   
    phrase := other;
 
    print;
    
    phrase := words;
-
+   
    print;
    
    phrase := other;

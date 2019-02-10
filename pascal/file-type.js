@@ -6,6 +6,22 @@ module.exports = class FileType {
     this.type = type;
   }
 
+  binaryen(e) {
+    return Binaryen.i32;
+  }
+
+  matches(other) {
+    if (other.fileType) {
+      return this.type.matches(other.type);
+    }
+
+    return false;
+  }
+
+  bytes(e) {
+    return 4;
+  }
+  
   initializer(e) {
     return `new FileHandle()`;
   }
