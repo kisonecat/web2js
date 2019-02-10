@@ -19,6 +19,26 @@ module.exports = class FunctionEvaluation {
       return module.i32.trunc_s.f64(this.xs[0].generate(environment));
     }
 
+    if (name.toLowerCase() == "abs") {
+      var x = this.xs[0];
+      var e = x.generate(environment);
+      
+      if (x.type.name == "real") {
+        this.type = new Identifier("real");
+        return module.f64.abs(e);
+      }
+      
+      if (x.type.isInteger()) {
+        this.type = new Identifier("integer");
+        return module.if( module.i32.ge_s( e, module.i32.const(0) ),
+                          e,
+                          module.i32.mul( e, module.i32.const(-1) ) );
+      }
+
+      throw "Cannot compute abs."
+    }
+
+    
     if (name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
       this.type = new Identifier("integer");
@@ -128,7 +148,8 @@ module.exports = class FunctionEvaluation {
     var resultType = Binaryen.none;
 
     if (this.type !== undefined) {
-      resultType = this.type.binaryen();
+      var t = environment.resolveType( this.type );      
+      resultType = t.binaryen();
 
       if (resultType === undefined) {
         throw `Could not identify binaryen type for ${this.type}`;

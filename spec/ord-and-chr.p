@@ -22,4 +22,7 @@ begin
    writeln(g(3,'Z',124.4,5));
    writeln(odd(17));
    writeln(odd(16));
+   writeln(abs(-5));
+   writeln(abs(17));   
+   writeln(abs(-5*-3));      
 end.

@@ -67,8 +67,14 @@ module.exports = class Operation {
       this.type = new Identifier("real");       
     }
 
+    if ((typeA.name == "char") && (typeB.name == "char")) {    
+      family = m.i32;
+      this.type = new Identifier("char");       
+    }
+    
     if (family === undefined) {
-      throw `Could not determine types for operator.`
+      console.log(typeA," and ",typeB);
+      throw `Could not determine types for operator ${this.operator}.`
     }
 
     if (this.operator === "+") {

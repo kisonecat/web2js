@@ -16,7 +16,7 @@ module.exports = class UnaryOperation {
     if (this.operator == "+")
       return a;
     
-    if (this.type.name == "integer")
+    if (this.type.isInteger())
       return module.i32.mul( module.i32.const(-1), a );
 
     if (this.type.name == "real")
