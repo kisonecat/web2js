@@ -14,7 +14,7 @@ module.exports = class FunctionDeclaration {
 
   generate(environment) {
     var parentEnvironment = environment;
-    environment = new Environment(environment);
+    environment = new Environment(environment, this.identifier.name);
     var module = environment.module;
 
     var inputs = [];

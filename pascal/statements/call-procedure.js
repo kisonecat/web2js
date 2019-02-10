@@ -21,7 +21,7 @@ module.exports = class CallProcedure {
         var q = p.generate(environment);
         var type = environment.resolveType( p.type );
         var printer = "print";
-        
+
         if (type.isInteger())
           printer = "printInteger";
 

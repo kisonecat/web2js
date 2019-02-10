@@ -7,13 +7,14 @@ var RecordType = require('./record-type');
 var binaryen = require('binaryen');
 
 module.exports = class Environment {
-  constructor(parent) {
+  constructor(parent, name) {
     this.parent = parent;
     if (parent) {
       this.functionIdentifier = parent.functionIdentifier;
       this.program = parent.program;
     }
-    
+
+    this.name = name;
     this.labels = {};
     this.constants = {};
     this.variables = {};

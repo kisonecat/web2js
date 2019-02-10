@@ -72,7 +72,7 @@ module.exports = class Compound {
     ];
 
     this.statements.forEach( function(v) {
-      if (v.label) {
+      if (v.label && v.statement) {      
         branch = [ module.block( target[v.label], branch ) ];
       }
       

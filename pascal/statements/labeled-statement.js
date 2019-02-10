@@ -20,7 +20,7 @@ module.exports = class LabeledStatement {
 
     var loopLabel = `goto${count}`;
     count = count + 1;
-    
+
     environment.labels[ this.label ] = {
       label: loopLabel,
       generate: function(environment) {

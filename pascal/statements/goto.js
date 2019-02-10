@@ -22,7 +22,12 @@ module.exports = class Goto {
       return label.generate( environment );
     }
 
-    throw `Could not find label ${this.label}`;
+    var e = environment;
+    while (e.name === undefined) {
+      e = e.parent;
+    }
+   
+    throw `Could not find label ${this.label} in ${e.name}`;
     return module.return();
   }
 };

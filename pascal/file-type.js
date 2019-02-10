@@ -18,6 +18,10 @@ module.exports = class FileType {
     return false;
   }
 
+  isInteger() {
+    return false;
+  }
+  
   bytes(e) {
     return 4;
   }
