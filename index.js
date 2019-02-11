@@ -165,7 +165,7 @@ var program = parser.parse();
 
 var module = program.generate();
 
-//module.optimize();
+// module.optimize();
 
 fs.writeFileSync( "tex.wast", module.emitText() );
 fs.writeFileSync( "tex.wabt", module.emitBinary() );
@@ -181,7 +181,7 @@ module.dispose();
 
 var code = new WebAssembly.Module(binary);
 
-var pages = 1;
+var pages = 16;
 var memory = new WebAssembly.Memory({initial: pages, maximum: pages});
 
 var library = {

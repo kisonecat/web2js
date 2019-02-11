@@ -20,7 +20,27 @@ module.exports = class SubrangeType {
   }
 
   bytes(e) {
-    return Math.log(this.range(e))/Math.log(256);
+    var min = this.minimum();
+    var max = this.maximum();
+    
+    if ((min == 0) && (max == 255))
+      return 1;
+
+    if ((min == -127) && (max == 128))
+      return 1;
+
+    if ((min == 0) && (max == 65535))
+      return 2;
+
+    if ((min == -32767) && (max == 32768))
+      return 2;
+
+    var b = Math.log(this.range(e))/Math.log(256);
+
+    if (b <= 4)
+      return 4;
+    
+    throw 'Subrange too big.'
   }  
 
   isInteger() {

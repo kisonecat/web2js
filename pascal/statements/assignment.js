@@ -52,6 +52,34 @@ module.exports = class Assignment {
         module.f64.convert_s.i32(rhs) );      
     }
 
+    var lhsType = environment.resolveType(this.lhs.type);
+    this.lhs.variable.type = lhsType;
+    var width = lhsType.bytes();
+    
+    if ((width > 2) && (width != 4) && (width != 8)) {
+      if (this.rhs.variable && this.lhs.variable) {
+
+        var commands = [];
+        
+        for(var i in this.rhs.type.fields) {
+          var field = this.rhs.type.fields[i];
+
+          for(var j in field.names) {
+            var name = field.names[j];
+
+            commands.push( (new Assignment(
+              new Desig( this.lhs, name ),
+              new Desig( this.rhs, name )
+            )).generate(environment) );
+          }
+        }
+        
+        return module.block(null, commands);
+      }
+      
+      throw `Too big at ${this.lhs.type.bytes()}`;
+    }
+    
     return this.lhs.variable.set( rhs );
   }
 };

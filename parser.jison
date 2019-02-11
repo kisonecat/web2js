@@ -130,8 +130,8 @@ CONST_DEC: IDENTIFIER '=' CONSTANT_EXPRESS ';'  { $$ = new ConstantDeclaration( 
 CONSTANT:
     INTEGER  { $$ = new NumericLiteral($1, new Identifier("integer")); }
   | r_num  { $$ = new NumericLiteral(parseFloat( yytext ), new Identifier("real")); }
-  | true  { $$ = new NumericLiteral(true, new Identifier("boolean")); }
-  | false  { $$ = new NumericLiteral(false, new Identifier("boolean")); }
+  | true  { $$ = new NumericLiteral(1, new Identifier("boolean")); }
+  | false  { $$ = new NumericLiteral(0, new Identifier("boolean")); }
   | STRING     { $$ = $1; }
 ;
 

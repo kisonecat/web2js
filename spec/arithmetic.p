@@ -35,5 +35,30 @@ begin
    writeln(i);
 
    i := round(40.0 / 9.0);
-   writeln(i);      
+   writeln(i);
+
+   if 5 >= 3 then writeln('5 >= 3');
+   if 5 <= 3 then writeln('5 <= 3');
+   if 5 < 3 then writeln('5 < 3');
+   if 5 > 3 then writeln('5 > 3');   
+   if 5 <> 3 then writeln('5 <> 3');      
+   if 3 >= 3 then writeln('3 >= 3');
+   if 3 <= 3 then writeln('3 <= 3');
+   if 3 < 3 then writeln('3 < 3');
+   if 3 > 3 then writeln('3 > 3');   
+   if 3 <> 3 then writeln('3 <> 3');      
+
+   if not 5 >= 3 then writeln('not 5 >= 3');
+   if not 5 <= 3 then writeln('not 5 <= 3');
+   if not 5 < 3 then writeln('not 5 < 3');
+   if not 5 > 3 then writeln('not 5 > 3');   
+   if not 5 <> 3 then writeln('not 5 <> 3');      
+   if not 3 >= 3 then writeln('not 3 >= 3');
+   if not 3 <= 3 then writeln('not 3 <= 3');
+   if not 3 < 3 then writeln('not 3 < 3');
+   if not 3 > 3 then writeln('not 3 > 3');   
+   if not 3 <> 3 then writeln('not 3 <> 3');
+
+   if 17 mod 8<>0 then writeln('17 mod 8<>0');
+
 end.

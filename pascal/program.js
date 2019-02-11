@@ -22,6 +22,7 @@ module.exports = class Program {
     environment.program = this;
     
     var module = environment.module;
+
     this.memory = new Memory(module);
     this.stack = new Stack(module, this.memory);
     

@@ -85,10 +85,10 @@ module.exports = class FunctionEvaluation {
 
     var theFunction = environment.resolveFunction( this.f );
     if (theFunction === undefined) {
-      //throw `Could not find function ${this.f.name}`;
-      console.log( `Could not find function ${this.f.name}` );
-      this.type = new Identifier("integer");
-      return module.i32.const(17);
+      throw `Could not find function ${this.f.name}`;
+      //console.log( `Could not find function ${this.f.name}` );
+      //this.type = new Identifier("integer");
+      //return module.i32.const(17);
     }
     
     this.type = theFunction.resultType;
@@ -161,6 +161,6 @@ module.exports = class FunctionEvaluation {
     if (this.type !== undefined)
       return module.block( null, commands, resultType );
     else
-      return module.block( null, commands );      
+      return module.block( null, commands );
   }
 };

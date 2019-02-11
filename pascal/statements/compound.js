@@ -19,6 +19,7 @@ module.exports = class Compound {
   }
   
   generate(environment) {
+
     environment = new Environment(environment);    
     var module = environment.module;
 
@@ -39,7 +40,7 @@ module.exports = class Compound {
       var commands = this.statements.map( function(v) {
         return v.generate(environment);
       });
-      return module.block (null, commands );
+      return module.block (null, commands);
     }
 
     var trampolineLabel = `trampoline${trampoline}`;

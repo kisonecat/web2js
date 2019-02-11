@@ -40,9 +40,9 @@ module.exports = class Memory {
   setup() {
     var pages = Math.ceil(this.memorySize / 65536);
     var module = this.module;
-    
+
     // FIXME: should compute this
-    pages = 1;
+    pages = 16;
     module.addMemoryImport( "0", "env", "memory" );
     module.setMemory(pages, pages, "0", this.strings.map ( function(s) {
       return {offset: module.i32.const(s.offset), data: s.data};
@@ -121,6 +121,7 @@ module.exports = class Memory {
   
   allocateVariable( name, type ) {
     var pointer = this.memorySize;
+    
     this.memorySize += type.bytes();
     var module = this.module;
 

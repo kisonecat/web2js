@@ -58,9 +58,6 @@ module.exports = class Identifier {
     if (this.name == "real")
       return Binaryen.f64;
 
-    console.log(this);
-    console.trace();
-    
     throw "Cannot identify binaryen type";
   }
 
@@ -84,8 +81,9 @@ module.exports = class Identifier {
     if (this.name == "real")
       return 8;
 
-    var t = e.resolveType( this.name );
-    return t.bytes(e);
+    console.trace();
+    
+    throw `Cannot determine size of ${this.name}`;
   }
 
   matches(other) {
@@ -114,6 +112,10 @@ module.exports = class Identifier {
     // Could be a function call
     if (v === undefined) {
       var f = environment.resolveFunction( this );
+      if (f === undefined) {
+        throw `Could not find ${this.name}`;
+      }
+        
       var e = f.evaluate([]).generate(environment);
       this.type = f.resultType;
       return e;

@@ -14,10 +14,12 @@ module.exports = class Pointer {
 
     if (this.type.fileType) {
       this.type = this.type.type;
+      //console.log("FIXME pointer.js",this.type);
+      var t = environment.resolveType(this.type);
+      this.variable = environment.program.memory.variable( '', t, 0 );
+      return this.variable.get();
     }
 
-    console.log("FIXME pointer.js");
-    
-    return module.i32.const(65);
+    throw "Do not know how to create pointers.";
   }
 };

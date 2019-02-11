@@ -37,12 +37,22 @@ function runTest( filename ) {
   }
 
   var output;
+  var validated = '';
   try {
     output = child_process.execSync(`node ../index.js ${filename} 2> /dev/null`).toString();
+
+    validated = child_process.execSync(`wasm-validate tex.wabt`).toString();    
+    
   } catch (e) {
     output = undefined;
   }
 
+  if (validated.length > 0) {
+    process.stdout.write("  " + logSymbols.error.red + " " + filename.cyan + " failed validation\n");
+    fails++;
+    return;
+  }
+  
   if (output == desiredOutput)  {
     process.stdout.write("  " + logSymbols.success.green + " " + filename.cyan + "\n");
     successes++;    

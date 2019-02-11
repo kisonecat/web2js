@@ -83,13 +83,13 @@ module.exports = class Environment {
     } while (old != resolved);
 
     if (resolved.lower) {
-      if (resolved.lower.name) {
+      if ((resolved.lower.name) || (resolved.lower.operator)) {      
         resolved.lower = this.resolveConstant( resolved.lower );
       }
     }
 
     if (resolved.upper) {
-      if (resolved.upper.name) {
+      if ((resolved.upper.name) || (resolved.upper.operator)) {
         resolved.upper = this.resolveConstant( resolved.upper );
       }
     }
@@ -113,6 +113,13 @@ module.exports = class Environment {
 
   resolveConstant( c ) {
     var e = this;
+
+    if (c.operator == '-') {
+      c = this.resolveConstant( c.operand );
+      c = Object.assign({}, c)
+      c.number = c.number * -1;
+      return c;
+    }
     
     while( e ) {
       if (e.constants[c.name])

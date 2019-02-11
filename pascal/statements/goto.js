@@ -14,12 +14,12 @@ module.exports = class Goto {
     
     var label = environment.resolveLabel( this.label );
 
-    if ((this.label == 9999) || (this.label == 9998)) {
-      return module.unreachable();
-    }
-
     if (label) {
       return label.generate( environment );
+    }
+
+    if ((this.label == 9999) || (this.label == 9998)) {
+      return module.unreachable();
     }
 
     var e = environment;
@@ -31,6 +31,7 @@ module.exports = class Goto {
       throw `Could not find label ${this.label} in ${e.name}`;
     else
       throw `Could not find label ${this.label} in main`;
+    
     return module.return();
   }
 };
