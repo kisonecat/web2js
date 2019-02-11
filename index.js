@@ -166,7 +166,9 @@ var program = parser.parse();
 var module = program.generate();
 
 //module.optimize();
-//module.runPasses(["optimize-instructions"]);
+//module.runPasses(["optimize-stack-ir","simplify-locals","ssa","dfo","const-hoisting","dce"]);
+//module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
+
 
 //fs.writeFileSync( "tex.wast", module.emitText() );
 fs.writeFileSync( "tex.wabt", module.emitBinary() );
@@ -197,36 +199,62 @@ var library = {
     var buffer = new Uint8Array( memory.buffer, x+1, length );
     var string = String.fromCharCode.apply(null, buffer);
 
-    if (file.stdout)
+    if (file.stdout) {
       process.stdout.write(string);
+      return;
+    }
+
+    fs.writeSync( file.descriptor, string );    
   },
   printBoolean: function(descriptor, x) {
     var file = (descriptor < 0) ? {stdout:true} : files[descriptor];    
 
     var result = x ? "TRUE" : "FALSE";
 
-    if (file.stdout)      
+    if (file.stdout) {
       process.stdout.write(result);
+      return;
+    }
+
+    fs.writeSync( file.descriptor, result );    
   },
   printChar: function(descriptor, x) {
     var file = (descriptor < 0) ? {stdout:true} : files[descriptor];        
-    if (file.stdout)      
+    if (file.stdout) {
       process.stdout.write(String.fromCharCode(x));
+      return;
+    }
+
+    var b = Buffer.alloc(1);
+    b[0] = x;
+    fs.writeSync( file.descriptor, b );
   },
   printInteger: function(descriptor, x) {
     var file = (descriptor < 0) ? {stdout:true} : files[descriptor];            
-    if (file.stdout)      
+    if (file.stdout) {
       process.stdout.write(x.toString());
+      return;
+    }
+
+    fs.writeSync( file.descriptor, x.toString());
   },
   printFloat: function(descriptor, x) {
     var file = (descriptor < 0) ? {stdout:true} : files[descriptor];                
-    if (file.stdout)      
+    if (file.stdout) {
       process.stdout.write(x.toString());
+      return;
+    }
+
+    fs.writeSync( file.descriptor, x.toString());    
   },
   printNewline: function(descriptor, x) {
     var file = (descriptor < 0) ? {stdout:true} : files[descriptor];                    
-    if (file.stdout)      
+    if (file.stdout) {
       process.stdout.write("\n");
+      return;
+    }
+
+    fs.writeSync( file.descriptor, "\n");    
   },
 
   enterFunction: function(x, stack) {
@@ -352,9 +380,14 @@ var filesystemLibrary = {
     file.position = file.position + length;
   },
 
-  read: function(descriptor, pointer, length) {
-    throw 'No more reads';
-  }
+  put: function(descriptor, pointer, length) {
+    var file = files[descriptor];
+    
+    var buffer = new Uint8Array( memory.buffer );
+
+    console.log("putting to ",file.filename);
+  },
+
 };
 
 // Compile the binary and create an instance

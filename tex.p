@@ -494,7 +494,7 @@ end{:48};{51:}nameoffile:=poolname;
 if aopenin(poolfile)then begin c:=false;
 repeat{52:}begin if eof(poolfile)then begin;
 writeln(termout,'! TEX.POOL has no check sum.');aclose(poolfile);
-   getstringsstarted:=false;goto 10;end;read(poolfile,m,n);
+getstringsstarted:=false;goto 10;end;read(poolfile,m,n);
 if m='*'then{53:}begin a:=0;k:=1;
 while true do begin if(xord[n]<48)or(xord[n]>57)then begin;
 writeln(termout,'! TEX.POOL check sum doesn''t have nine digits.');
@@ -559,9 +559,9 @@ printchar(46);s:=10*(s mod 65536)+5;delta:=10;
 repeat if delta>65536 then s:=s-17232;printchar(48+(s div 65536));
 s:=10*(s mod 65536);delta:=delta*10;until s<=delta;end;
 {:103}{105:}function multandadd(n:integer;x,y,maxanswer:scaled):scaled;
-begin writeln('multandadd(',n,',',x,',',y,'max=',maxanswer,')');if n<0 then begin x:=-x;n:=-n;end;
-if n=0 then multandadd:=y else if((x<=((maxanswer-y)div n))and ((-x)<=(
-				  maxanswer+y)div n))then multandadd:=n*x+y else begin aritherror:=true; writeln('ERROR',x,',',n,',',maxanswer,',',(maxanswer-y),',',((maxanswer-y)div n));
+begin if n<0 then begin x:=-x;n:=-n;end;
+if n=0 then multandadd:=y else if((x<=(maxanswer-y)div n)and(-x<=(
+maxanswer+y)div n))then multandadd:=n*x+y else begin aritherror:=true;
 multandadd:=0;end;end;{:105}{106:}function xovern(x:scaled;
 n:integer):scaled;var negative:boolean;begin negative:=false;
 if n=0 then begin aritherror:=true;xovern:=0;remainder:=x;
@@ -574,7 +574,7 @@ var positive:boolean;t,u,v:nonnegativeinteger;
 begin if x>=0 then positive:=true else begin x:=-x;positive:=false;end;
 t:=(x mod 32768)*n;u:=(x div 32768)*n+(t div 32768);
 v:=(u mod d)*32768+(t mod 32768);
-   if u div d>=32768 then aritherror:=true else u:=32768*(u div d)+(v div d
+if u div d>=32768 then aritherror:=true else u:=32768*(u div d)+(v div d
 );if positive then begin xnoverd:=u;remainder:=v mod d;
 end else begin xnoverd:=-u;remainder:=-(v mod d);end;end;
 {:107}{108:}function badness(t,s:scaled):halfword;var r:integer;
@@ -1891,15 +1891,14 @@ if scankeyword(708)then v:=({558:}fontinfo[6+parambase[eqtb[3934].hh.rh]
 ].int{:558})else if scankeyword(709)then v:=({559:}fontinfo[5+parambase[
 eqtb[3934].hh.rh]].int{:559})else goto 45;{443:}begin getxtoken;
 if curcmd<>10 then backinput;end{:443};
-40:	      writeln('v=',v);writeln('f=',f);writeln('data=',xnoverd(v,f,65536));writeln('savecurval=',savecurval);curval:=multandadd(savecurval,v,xnoverd(v,f,65536),1073741823);
-	      writeln('error=',aritherror);
+40:curval:=multandadd(savecurval,v,xnoverd(v,f,65536),1073741823);
 goto 89;45:{:455};
 if mu then{456:}if scankeyword(337)then goto 88 else begin begin if
 interaction=3 then;printnl(262);print(705);end;print(710);
 begin helpptr:=4;helpline[3]:=711;helpline[2]:=712;helpline[1]:=713;
 helpline[0]:=714;end;error;goto 88;end{:456};
 if scankeyword(704)then{457:}begin preparemag;
-if eqtb[5280].int<>1000 then begin writeln('eqtb[5280].int=',eqtb[5280].int);curval:=xnoverd(curval,1000,eqtb[5280
+if eqtb[5280].int<>1000 then begin curval:=xnoverd(curval,1000,eqtb[5280
 ].int);f:=(1000*f+65536*remainder)div eqtb[5280].int;
 curval:=curval+(f div 65536);f:=f mod 65536;end;end{:457};
 if scankeyword(397)then goto 88;
@@ -1914,11 +1913,11 @@ end else if scankeyword(722)then goto 30 else{459:}begin begin if
 interaction=3 then;printnl(262);print(705);end;print(723);
 begin helpptr:=6;helpline[5]:=724;helpline[4]:=725;helpline[3]:=726;
 helpline[2]:=712;helpline[1]:=713;helpline[0]:=714;end;error;goto 32;
-end{:459};writeln('denom=',denom);curval:=xnoverd(curval,num,denom);
+end{:459};curval:=xnoverd(curval,num,denom);
 f:=(num*f+65536*remainder)div denom;curval:=curval+(f div 65536);
 f:=f mod 65536;32:{:458};
-88:	      if curval>=16384 then aritherror:=true else curval:=curval*65536+f;
-30:	      {:453};{443:}begin getxtoken;if curcmd<>10 then backinput;end{:443};
+88:if curval>=16384 then aritherror:=true else curval:=curval*65536+f;
+30:{:453};{443:}begin getxtoken;if curcmd<>10 then backinput;end{:443};
 89:if aritherror or(abs(curval)>=1073741824)then{460:}begin begin if
 interaction=3 then;printnl(262);print(727);end;begin helpptr:=2;
 helpline[1]:=728;helpline[0]:=729;end;error;curval:=1073741823;

@@ -160,7 +160,16 @@ module.exports = class CallProcedure {
 
     // FIXME
     if (this.procedure.name == "put") {
-      return module.nop();
+      var file = this.params[0];
+      var descriptor = file.generate(environment);
+      var fileType = environment.resolveType( file.type );
+
+      var data = module.i32.add( module.i32.const(4),
+                                 file.variable.pointer() );
+      
+      return module.call( "put",
+                          [descriptor, data, module.i32.const(fileType.type.bytes())],
+                          Binaryen.none );
     }
 
     if (this.procedure.name == "close") {
@@ -187,7 +196,7 @@ module.exports = class CallProcedure {
           file = q;
           return module.nop();
         }
-        
+
         if (type.isInteger())
           printer = "printInteger";
 
@@ -203,6 +212,9 @@ module.exports = class CallProcedure {
         if (type.name === "char")
           printer = "printChar";        
 
+        if (type.bytes() == 1)
+          printer = "printChar";
+        
         if (printer === undefined)
           throw 'Could not print.';
 

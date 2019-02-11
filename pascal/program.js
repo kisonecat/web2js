@@ -85,6 +85,10 @@ module.exports = class Program {
                               module.addFunctionType(null, Binaryen.none,
                                                      [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );
 
+    module.addFunctionImport( "put", "fs", "put",
+                              module.addFunctionType(null, Binaryen.none,
+                                                     [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );    
+
     
     module.addFunctionImport( "eof", "fs", "eof",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    

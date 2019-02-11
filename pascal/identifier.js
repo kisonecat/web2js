@@ -81,6 +81,9 @@ module.exports = class Identifier {
     if (this.name == "real")
       return 4;
 
+    if (this.name == "string")
+      return 4;
+
     console.trace();
     
     throw `Cannot determine size of ${this.name}`;

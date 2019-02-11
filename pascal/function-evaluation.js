@@ -127,7 +127,6 @@ module.exports = class FunctionEvaluation {
         type = new PointerType(type);
       
       commands.push( stack.extend( type.bytes() ) );
-      // offset += type.bytes();
       
       exp = p.generate(environment);
       var v = undefined;
