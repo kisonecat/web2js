@@ -40,7 +40,7 @@ module.exports = class SubrangeType {
     if (b <= 4)
       return 4;
     
-    throw 'Subrange too big.'
+    throw 'Subrange too big.';
   }  
 
   isInteger() {

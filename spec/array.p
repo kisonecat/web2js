@@ -4,6 +4,7 @@ var
    s	: array[1..13] of char;
    j, k	: integer;
    w	:  integer;
+   
 procedure print;
 var i : integer;
 begin

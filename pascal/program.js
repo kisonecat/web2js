@@ -15,6 +15,7 @@ module.exports = class Program {
     this.parent = parent;
     this.memory = undefined;
     this.stack = undefined;
+    this.traces = [];
   }
 
   generate(environment) {
@@ -63,9 +64,16 @@ module.exports = class Program {
     module.addFunctionImport( "printFloat", "library", "printFloat", module.addFunctionType(null, Binaryen.none, [Binaryen.f64] ) );
     module.addFunctionImport( "printNewline", "library", "printNewline", module.addFunctionType(null, Binaryen.none, [] ) );
 
+    module.addFunctionImport( "enterFunction", "library", "enterFunction", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
+    module.addFunctionImport( "leaveFunction", "library", "leaveFunction", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
+    
     module.addFunctionImport( "reset", "fs", "reset",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
 
+    module.addFunctionImport( "rewrite", "fs", "rewrite",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
+
+    
     this.memory.setup();
     
     return module;

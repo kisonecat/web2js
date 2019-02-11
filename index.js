@@ -184,6 +184,8 @@ var code = new WebAssembly.Module(binary);
 var pages = 16;
 var memory = new WebAssembly.Memory({initial: pages, maximum: pages});
 
+var callstack = [];
+
 var library = {
   printString: function(x) {
     var length = new Uint8Array( memory.buffer, x, 1 )[0];
@@ -208,24 +210,49 @@ var library = {
   },
   printNewline: function(x) {
     process.stdout.write("\n");
-  },      
+  },
+
+  enterFunction: function(x) {
+    callstack.push(program.traces[x]);
+    //console.log("enter",program.traces[x]);
+  },
+
+  leaveFunction: function(x) {
+    callstack.pop();
+    //console.log("leave",program.traces[x]);
+  },  
 };
 
 var filesystemLibrary = {
   reset: function(length, pointer) {
+    console.log("RESET");
     var buffer = new Uint8Array( memory.buffer, pointer, length );
     var string = String.fromCharCode.apply(null, buffer);
-    process.stdout.write("heard reset(",string,")");
+    //process.stdout.write("heard reset(",string,")");
+    console.log("heard reset",string);
+
+    return 17;
+  },
+
+  rewrite: function(length, pointer) {
+    console.log("rewrite length",length);
+    var buffer = new Uint8Array( memory.buffer, pointer, length );
+    var string = String.fromCharCode.apply(null, buffer);
+    console.log("heard rewrite",string);
 
     return 17;
   }
+
 };
 
 // Compile the binary and create an instance
+try {
 var wasm = new WebAssembly.Instance(code, { library: library,
                                             fs: filesystemLibrary,
                                             env: { memory: memory } } );
-
+} catch (e) {
+  console.log(callstack);
+}
 //console.log("exports: " + Object.keys(wasm.exports).sort().join(","));
 //console.log();
 

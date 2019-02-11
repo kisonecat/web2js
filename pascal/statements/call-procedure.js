@@ -42,10 +42,32 @@ module.exports = class CallProcedure {
                                         filename.variable.pointer()],
                               Binaryen.i32 );
       }
-      
+
       return file.variable.set( result );
     }
 
+    // Ignore the mode parameter to reset
+    if (this.procedure.name.toLowerCase() == "rewrite") {
+      var file = this.params[0];
+      file.generate(environment);
+
+      var filename = this.params[1];
+      var filenameExp = filename.generate(environment);
+      var result = undefined;
+
+      if (filename.type.name == "string") {
+        result = module.call( "rewrite", [module.i32.load8_u(0,0,filenameExp),
+                                        module.i32.add(module.i32.const(1),filenameExp)],
+                              Binaryen.i32 );
+      } else {
+        result = module.call( "rewrite", [module.i32.const(filename.type.index.range()),
+                                          filename.variable.pointer()],
+                              Binaryen.i32 );
+      }
+
+      return file.variable.set( result );
+    }
+    
     // FIXME
     if (this.procedure.name == "readln") {
       return module.nop();
@@ -71,10 +93,6 @@ module.exports = class CallProcedure {
       return module.nop();
     }
 
-    // FIXME
-    if (this.procedure.name == "rewrite") {
-      return module.nop();
-    }
 
     if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
       var printers = this.params.map( function(p) {

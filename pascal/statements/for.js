@@ -34,22 +34,23 @@ module.exports = class For {
     var increment = module.nop();
 
     if (this.skip > 0) {
-      condition = module.i32.le_s( this.variable.generate( environment ), end );
+      condition = module.i32.eq( this.variable.generate( environment ), end );
       increment = new Assignment( this.variable, new Operation( "+", this.variable, new NumericLiteral(1, new Identifier("integer")) ) );
     } else {
-      condition = module.i32.ge_s( this.variable.generate( environment ), end );
+      condition = module.i32.eq( this.variable.generate( environment ), end );
       increment = new Assignment( this.variable, new Operation( "-", this.variable, new NumericLiteral(1, new Identifier("integer")) ) );      
     }
     
     var loop = module.block( blockLabel,
                              [ assignment.generate(environment),
                                module.loop( loopLabel,
-                                            module.if( condition,
-                                                       module.block( null, [ this.statement.generate(environment),
-                                                                             increment.generate( environment ),
-                                                                             module.break( loopLabel ) ] ),
-                                                       module.break( blockLabel ) )
-                                          ) ] );
+                                            module.block( null, [ this.statement.generate(environment),
+                                                                  module.if( condition,
+                                                                             module.break( blockLabel ) ),
+                                                                  increment.generate( environment ),
+                                                                  module.break( loopLabel )
+                                                                ] ) )
+                                          ] );
 
     return loop;
   }

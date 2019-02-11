@@ -5,6 +5,8 @@ var Environment = require('./environment.js');
 var PointerType = require('./pointer-type.js');
 var FunctionEvaluation = require('./function-evaluation.js');
 
+var id = 0;
+
 module.exports = class FunctionDeclaration {
   constructor(identifier, params, resultType, block) {
     this.identifier = identifier;
@@ -99,19 +101,28 @@ module.exports = class FunctionDeclaration {
 
     var code = this.block.generate(environment);
 
+    environment.program.traces[id] = this.identifier.name;
+    
     if (resultVariable) {
-      code = module.block( null, [ environment.program.stack.extend( offset - paramOffset ),
+      code = module.block( null, [ module.call( "enterFunction", [module.i32.const(id)], Binaryen.none ),
+                                   environment.program.stack.extend( offset - paramOffset ),
                                    code,
                                    module.local.set(0, resultVariable.get() ),
                                    environment.program.stack.shrink( offset ),
+                                   module.call( "leaveFunction", [module.i32.const(id)], Binaryen.none ),
                                    module.return( module.local.get( 0, result ) )] );
+      
       module.addFunction(this.identifier.name, functionType, [result], code);
     } else {
-      code = module.block( null, [ environment.program.stack.extend( offset - paramOffset ),
+      code = module.block( null, [ module.call( "enterFunction", [module.i32.const(id)], Binaryen.none ),
+                                   environment.program.stack.extend( offset - paramOffset ),
                                    code,
+                                   module.call( "leaveFunction", [module.i32.const(id)], Binaryen.none ),
                                    environment.program.stack.shrink( offset )] );
       module.addFunction(this.identifier.name, functionType, [], code);
     }
+    
+    id = id + 1;
     
     return;
   }
