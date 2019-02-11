@@ -7,7 +7,7 @@ module.exports = class FileType {
   }
 
   binaryen(e) {
-    return Binaryen.i32;
+    throw 'Cannot pass file by value';
   }
 
   matches(other) {
@@ -23,7 +23,7 @@ module.exports = class FileType {
   }
   
   bytes(e) {
-    return 4;
+    return 4 + this.type.bytes(e);
   }
   
   initializer(e) {

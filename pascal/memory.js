@@ -128,6 +128,10 @@ module.exports = class Memory {
   }
   
   byType(type) {
+    if (type.fileType) {
+      return this.i32;
+    }
+    
     if (type.lower && type.upper) {
       var min = type.lower.number;
       var max = type.upper.number;
@@ -158,7 +162,7 @@ module.exports = class Memory {
       return this.u8;
 
     if (type.name == "real")
-      return this.f64;
+      return this.f32;
 
     if (type.bytes() == 4)
       return this.i32;

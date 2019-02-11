@@ -14,9 +14,8 @@ module.exports = class Pointer {
 
     if (this.type.fileType) {
       this.type = this.type.type;
-      //console.log("FIXME pointer.js",this.type);
       var t = environment.resolveType(this.type);
-      this.variable = environment.program.memory.variable( '', t, 900000 );
+      this.variable = environment.program.memory.variable( '', t, 4, this.referent.variable.pointer() );
       return this.variable.get();
     }
 

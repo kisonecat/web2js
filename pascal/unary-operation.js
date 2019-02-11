@@ -20,7 +20,7 @@ module.exports = class UnaryOperation {
       return module.i32.mul( module.i32.const(-1), a );
 
     if (this.type.name == "real")
-      return module.f64.neg(a);
+      return module.f32.neg(a);
 
     if (this.operator === "!") {
       if (this.type.name == "boolean") {

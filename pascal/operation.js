@@ -49,21 +49,21 @@ module.exports = class Operation {
     }
 
     if ((typeA.name == "real") && (typeB.isInteger())) {
-      b = m.f64.convert_s.i32(b);
+      b = m.f32.convert_s.i32(b);
       typeB = new Identifier("real");
-      family = m.f64;
+      family = m.f32;
       this.type = new Identifier("real");
     }
 
     if ((typeA.isInteger()) && (typeB.name == "real")) {    
-      a = m.f64.convert_s.i32(a);
+      a = m.f32.convert_s.i32(a);
       typeA = new Identifier("real");      
-      family = m.f64;
+      family = m.f32;
       this.type = new Identifier("real");            
     }
 
     if ((typeA.name == "real") && (typeB.name == "real")) {    
-      family = m.f64;
+      family = m.f32;
       this.type = new Identifier("real");       
     }
 
@@ -95,13 +95,13 @@ module.exports = class Operation {
 
     if (this.operator === "/") {
       if (typeB.name != "real")
-        b = m.f64.convert_s.i32(b);
+        b = m.f32.convert_s.i32(b);
       
       if (typeA.name != "real")
-        a = m.f64.convert_s.i32(a);
+        a = m.f32.convert_s.i32(a);
       
       this.type = new Identifier("real");            
-      return m.f64.div( a, b );
+      return m.f32.div( a, b );
     }
 
     if (this.operator === "==") {
@@ -121,7 +121,7 @@ module.exports = class Operation {
       if (this.operator === "<=") { this.type = new Identifier("boolean"); return family.le_s(a,b); }
     }
 
-    if (family === m.f64) {
+    if (family === m.f32) {
       if (this.operator === "<") { this.type = new Identifier("boolean"); return family.lt(a,b); }
       if (this.operator === ">") { this.type = new Identifier("boolean"); return family.gt(a,b); }
       if (this.operator === ">=") { this.type = new Identifier("boolean"); return family.ge(a,b); }

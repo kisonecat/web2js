@@ -8,14 +8,8 @@ module.exports = class Stack {
 
     var pages = 16;
     this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(pages*65536 - 1) );
-
-    this.offset = 0;
   }
-
-  shift(offset) {
-    this.offset = this.offset + offset;
-  }
-  
+    
   extend(bytes) {
     return this.shrink(-bytes);
   }
@@ -40,23 +34,23 @@ module.exports = class Stack {
       type: type,
       base: base,      
       set: function(expression) {
-        return memory.byType(this.type).store( this.offset + stack.offset,
+        return memory.byType(this.type).store( this.offset,
                                                expression,
                                                module.i32.add( this.base,
-                                                               module.global.get( "stack", Binaryen.i32 ) ) );
+                                                               module.local.get( 0, Binaryen.i32 ) ) );
       },
       get: function() {
-        return memory.byType(this.type).load( this.offset + stack.offset,
-                                              module.i32.add( this.base,                                              
-                                                              module.global.get( "stack", Binaryen.i32 ) ) );
+        return memory.byType(this.type).load( this.offset,
+                                              module.i32.add(this.base,
+                                                             module.local.get( 0, Binaryen.i32 ) ) );
       },
       rebase: function( type, base ) {
         return stack.variable( this.name, type, this.offset, module.i32.add( this.base, base ) );        
       },
 
       pointer: function() {
-        return module.i32.add( module.i32.const( this.offset + stack.offset ),
-                               module.i32.add( this.base, module.global.get( "stack", Binaryen.i32 ) ) );
+        return module.i32.add( module.i32.const( this.offset ),
+                               module.i32.add( this.base, module.local.get( 0, Binaryen.i32 ) ) );
       }
 
     };

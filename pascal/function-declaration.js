@@ -104,22 +104,32 @@ module.exports = class FunctionDeclaration {
     environment.program.traces[id] = this.identifier.name;
     
     if (resultVariable) {
-      code = module.block( null, [ module.call( "enterFunction", [module.i32.const(id)], Binaryen.none ),
+      code = module.block( null, [ module.call( "enterFunction",
+                                                [module.i32.const(id),
+                                                                  module.i32.add( module.i32.const( paramOffset ),
+                                                                    module.global.get( "stack", Binaryen.i32 ))], Binaryen.none ),
                                    environment.program.stack.extend( offset - paramOffset ),
+                                   module.local.set(0, module.global.get( "stack", Binaryen.i32 )),
                                    code,
-                                   module.local.set(0, resultVariable.get() ),
+                                   module.local.set(1, resultVariable.get() ),
                                    environment.program.stack.shrink( offset ),
-                                   module.call( "leaveFunction", [module.i32.const(id)], Binaryen.none ),
-                                   module.return( module.local.get( 0, result ) )] );
+                                   module.call( "leaveFunction",
+                                                [module.i32.const(id),
+                                                 module.global.get( "stack", Binaryen.i32 )], Binaryen.none ),
+                                   module.return( module.local.get( 1, result ) )] );
       
-      module.addFunction(this.identifier.name, functionType, [result], code);
+      module.addFunction(this.identifier.name, functionType, [Binaryen.i32, result], code);
     } else {
-      code = module.block( null, [ module.call( "enterFunction", [module.i32.const(id)], Binaryen.none ),
+      code = module.block( null, [ module.call( "enterFunction", [module.i32.const(id),
+                                                                  module.i32.add( module.i32.const( paramOffset ),
+                                                                    module.global.get( "stack", Binaryen.i32 ))], Binaryen.none ),
                                    environment.program.stack.extend( offset - paramOffset ),
+                                   module.local.set(0, module.global.get( "stack", Binaryen.i32 )),
                                    code,
-                                   module.call( "leaveFunction", [module.i32.const(id)], Binaryen.none ),
-                                   environment.program.stack.shrink( offset )] );
-      module.addFunction(this.identifier.name, functionType, [], code);
+                                   environment.program.stack.shrink( offset ),
+                                   module.call( "leaveFunction", [module.i32.const(id),module.global.get( "stack", Binaryen.i32 )], Binaryen.none )
+                                   ] );
+      module.addFunction(this.identifier.name, functionType, [Binaryen.i32], code);
     }
     
     id = id + 1;

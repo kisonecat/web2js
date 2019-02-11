@@ -16,7 +16,7 @@ module.exports = class FunctionEvaluation {
     
     if (name.toLowerCase() == "trunc") {
       this.type = new Identifier("integer");
-      return module.i32.trunc_s.f64(this.xs[0].generate(environment));
+      return module.i32.trunc_s.f32(this.xs[0].generate(environment));
     }
 
     if (name.toLowerCase() == "abs") {
@@ -25,7 +25,7 @@ module.exports = class FunctionEvaluation {
       
       if (x.type.name == "real") {
         this.type = new Identifier("real");
-        return module.f64.abs(e);
+        return module.f32.abs(e);
       }
       
       if (x.type.isInteger()) {
@@ -42,7 +42,7 @@ module.exports = class FunctionEvaluation {
     if (name.toLowerCase() == "round") {
       // nearest is actually "roundeven" which is what round is in pascal
       this.type = new Identifier("integer");
-      return module.i32.trunc_s.f64(module.f64.nearest(this.xs[0].generate(environment)));
+      return module.i32.trunc_s.f32(module.f32.nearest(this.xs[0].generate(environment)));
     }
 
     if (name.toLowerCase() == "chr") {
@@ -120,31 +120,26 @@ module.exports = class FunctionEvaluation {
       type = environment.resolveType( types.shift() );
 
       if (! type.matches( environment.resolveType( p.type ) ) ) {
-        console.log(type);
         throw `Type mismatch for ${type} in call to ${name}`;
       }
       
       if (referenced)
         type = new PointerType(type);
-
-      offset += type.bytes();
-
+      
       commands.push( stack.extend( type.bytes() ) );
-      stack.shift( type.bytes() );
-
+      // offset += type.bytes();
+      
       exp = p.generate(environment);
+      var v = undefined;
       
       if (referenced) {
-        var v = stack.variable( null, type, -offset );
+        v = environment.program.memory.variable( null, type, 0, module.global.get( "stack", Binaryen.i32 ) );
         commands.push( v.set( p.variable.pointer() ) );
       } else {
-        var v = stack.variable( null, type, -offset );
+        v = environment.program.memory.variable( null, type, 0, module.global.get( "stack", Binaryen.i32 ) );
         commands.push( v.set( exp ) );
       }
     } );
-
-   
-    stack.shift( -offset );
     
     if (environment.resolveFunction( this.f ) === undefined) {
       throw `Function ${name} is not defined.`;
@@ -162,7 +157,7 @@ module.exports = class FunctionEvaluation {
     }
 
     commands.push( module.call( name, [], resultType ) );
-    
+        
     if (this.type !== undefined)
       return module.block( null, commands, resultType );
     else

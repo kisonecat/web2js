@@ -165,9 +165,10 @@ var program = parser.parse();
 
 var module = program.generate();
 
-// module.optimize();
+//module.optimize();
+//module.runPasses(["optimize-instructions"]);
 
-fs.writeFileSync( "tex.wast", module.emitText() );
+//fs.writeFileSync( "tex.wast", module.emitText() );
 fs.writeFileSync( "tex.wabt", module.emitBinary() );
 
 // Get the binary in typed array form
@@ -185,47 +186,66 @@ var pages = 16;
 var memory = new WebAssembly.Memory({initial: pages, maximum: pages});
 
 var callstack = [];
+var stackstack = [];
+
+var files = [];
 
 var library = {
-  printString: function(x) {
+  printString: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];
     var length = new Uint8Array( memory.buffer, x, 1 )[0];
     var buffer = new Uint8Array( memory.buffer, x+1, length );
     var string = String.fromCharCode.apply(null, buffer);
-    process.stdout.write(string);
+
+    if (file.stdout)
+      process.stdout.write(string);
   },
-  printBoolean: function(x) {
-    if (x)
-      process.stdout.write("TRUE");
-    else
-      process.stdout.write("FALSE");      
+  printBoolean: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];    
+
+    var result = x ? "TRUE" : "FALSE";
+
+    if (file.stdout)      
+      process.stdout.write(result);
   },
-  printChar: function(x) {
-    process.stdout.write(String.fromCharCode(x));
+  printChar: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];        
+    if (file.stdout)      
+      process.stdout.write(String.fromCharCode(x));
   },
-  printInteger: function(x) {
-    process.stdout.write(x.toString());
+  printInteger: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];            
+    if (file.stdout)      
+      process.stdout.write(x.toString());
   },
-  printFloat: function(x) {
-    process.stdout.write(x.toString());
+  printFloat: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];                
+    if (file.stdout)      
+      process.stdout.write(x.toString());
   },
-  printNewline: function(x) {
-    process.stdout.write("\n");
+  printNewline: function(descriptor, x) {
+    var file = (descriptor < 0) ? {stdout:true} : files[descriptor];                    
+    if (file.stdout)      
+      process.stdout.write("\n");
   },
 
-  enterFunction: function(x) {
+  enterFunction: function(x, stack) {
     callstack.push(program.traces[x]);
+    stackstack.push(stack);
     //console.log("enter",program.traces[x]);
   },
 
-  leaveFunction: function(x) {
+  leaveFunction: function(x, stack) {
     callstack.pop();
+    var old = stackstack.pop();
+    if (old != stack) {
+      console.log("stack=",stack,"versus",old);
+    }
     //console.log("leave",program.traces[x]);
   },  
 };
 
-var files = [];
-
-var inputBuffer = "plain\n\\input sample";
+var inputBuffer = "\nplain\n\\input sample\n";
 
 var filesystemLibrary = {
   reset: function(length, pointer) {
@@ -241,7 +261,7 @@ var filesystemLibrary = {
     if (filename == "TTY:") {
       files.push({ filename: "stdin",
                    stdin: true,
-                   position: -1
+                   position: 0,
                  });
       return files.length - 1;
     }
@@ -249,7 +269,7 @@ var filesystemLibrary = {
     files.push({
       filename: filename,
       position: 0,
-      descriptor: fs.openSync(filename,'r')
+      descriptor: fs.openSync(filename,'r'),
     });
     
     return files.length - 1;
@@ -258,7 +278,9 @@ var filesystemLibrary = {
   rewrite: function(length, pointer) {
     var buffer = new Uint8Array( memory.buffer, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);    
-
+    
+    filename = filename.replace(/ +$/g,'');    
+    
     if (filename == "TTY:") {
       files.push({ filename: "stdout",
                    stdout: true
@@ -287,13 +309,7 @@ var filesystemLibrary = {
   eof: function(descriptor) {
     var file = files[descriptor];
     
-    if (file.stdin) {
-      return 0;
-    }
-
-    var b = Buffer.alloc(1);    
-
-    if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
+    if (file.eof)
       return 1;
     else
       return 0;
@@ -301,45 +317,17 @@ var filesystemLibrary = {
 
   eoln: function(descriptor) {
     var file = files[descriptor];
-    
-    if (file.stdin) {
-      return 0;
-    }
 
-    var b = Buffer.alloc(1);    
-
-    if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
+    if (file.eoln)
       return 1;
-
-    if (b == 10) return 1;
-    if (b == 13) return 1;
-
-    return 0;
+    else
+      return 0;
   },
-
-  
-  readln: function(descriptor) {
-    var file = files[descriptor];
-
-    var b = Buffer.alloc(1);
     
-    while( (b[0] != 10) && (b[0] != 13) ) {
-      if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
-        return;
-      
-      file.position++;
-    }
-  },
-  
-  read: function(descriptor, pointer, length) {
+  get: function(descriptor, pointer, length) {
     var file = files[descriptor];
-
+    
     var buffer = new Uint8Array( memory.buffer );
-
-    if (filesystemLibrary.eoln(descriptor)) {
-      buffer[pointer] = 0;
-      return;
-    }
     
     if (file.stdin) {
       if (file.position >= inputBuffer.length)
@@ -347,11 +335,25 @@ var filesystemLibrary = {
       else
 	buffer[pointer] = inputBuffer[file.position].charCodeAt(0);
     } else {
-      if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0)
+      if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0) {
         buffer[pointer] = 0;
+        file.eof = true;
+        file.eoln = true;
+        return;
+      }
     }
 
+    file.eoln = false;
+    if (buffer[pointer] == 10)
+      file.eoln = true;
+    if (buffer[pointer] == 13)
+      file.eoln = true;
+
     file.position = file.position + length;
+  },
+
+  read: function(descriptor, pointer, length) {
+    throw 'No more reads';
   }
 };
 

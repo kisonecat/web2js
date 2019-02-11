@@ -4,6 +4,7 @@ var ArrayType = require('./array-type');
 var RecordDeclaration = require('./record-declaration');
 var VariantDeclaration = require('./variant-declaration');
 var RecordType = require('./record-type');
+var FileType = require('./file-type');
 var binaryen = require('binaryen');
 
 module.exports = class Environment {
@@ -82,6 +83,10 @@ module.exports = class Environment {
       resolved = self.resolveTypeOnce( resolved );
     } while (old != resolved);
 
+    if (resolved.fileType) {
+      return new FileType( self.resolveType(resolved.type), resolved.packed );
+    }
+    
     if (resolved.lower) {
       if ((resolved.lower.name) || (resolved.lower.operator)) {      
         resolved.lower = this.resolveConstant( resolved.lower );

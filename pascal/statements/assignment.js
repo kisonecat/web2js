@@ -49,7 +49,7 @@ module.exports = class Assignment {
     
     if ((this.rhs.type.name == "integer") && (this.lhs.type.name == "real")) {
       return environment.resolveVariable(this.lhs).set(
-        module.f64.convert_s.i32(rhs) );      
+        module.f32.convert_s.i32(rhs) );      
     }
 
     var lhsType = environment.resolveType(this.lhs.type);

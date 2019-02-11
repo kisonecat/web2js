@@ -56,7 +56,7 @@ module.exports = class Identifier {
       return Binaryen.i32;            
 
     if (this.name == "real")
-      return Binaryen.f64;
+      return Binaryen.f32;
 
     throw "Cannot identify binaryen type";
   }
@@ -79,7 +79,7 @@ module.exports = class Identifier {
       return 1;
 
     if (this.name == "real")
-      return 8;
+      return 4;
 
     console.trace();
     
@@ -120,10 +120,10 @@ module.exports = class Identifier {
       this.type = f.resultType;
       return e;
     }
-    
+
     this.variable = v;
     this.type = v.type;
-
+    
     return v.get();
   }
 };

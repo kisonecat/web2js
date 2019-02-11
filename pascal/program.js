@@ -57,15 +57,23 @@ module.exports = class Program {
     var main = module.addFunction("main", f, [], e);
     module.setStart(main);
 
-    module.addFunctionImport( "printInteger", "library", "printInteger", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
-    module.addFunctionImport( "printBoolean", "library", "printBoolean", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
-    module.addFunctionImport( "printChar", "library", "printChar", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
-    module.addFunctionImport( "printString", "library", "printString", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
-    module.addFunctionImport( "printFloat", "library", "printFloat", module.addFunctionType(null, Binaryen.none, [Binaryen.f64] ) );
-    module.addFunctionImport( "printNewline", "library", "printNewline", module.addFunctionType(null, Binaryen.none, [] ) );
+    module.addFunctionImport( "printInteger", "library", "printInteger",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.i32] ) );
+    module.addFunctionImport( "printBoolean", "library", "printBoolean",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.i32] ) );    
+    module.addFunctionImport( "printChar", "library", "printChar",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.i32] ) );    
+    module.addFunctionImport( "printString", "library", "printString",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.i32] ) );
+    module.addFunctionImport( "printFloat", "library", "printFloat",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.f32] ) );
+    module.addFunctionImport( "printNewline", "library", "printNewline",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
-    module.addFunctionImport( "enterFunction", "library", "enterFunction", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
-    module.addFunctionImport( "leaveFunction", "library", "leaveFunction", module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
+    module.addFunctionImport( "enterFunction", "library", "enterFunction",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32, Binaryen.i32] ) );
+    module.addFunctionImport( "leaveFunction", "library", "leaveFunction",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32, Binaryen.i32] ) );
     
     module.addFunctionImport( "reset", "fs", "reset",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
@@ -73,20 +81,17 @@ module.exports = class Program {
     module.addFunctionImport( "rewrite", "fs", "rewrite",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
 
-    module.addFunctionImport( "read", "fs", "read",
+    module.addFunctionImport( "get", "fs", "get",
                               module.addFunctionType(null, Binaryen.none,
                                                      [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );
 
-    module.addFunctionImport( "readln", "fs", "readln",
-                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
-
+    
     module.addFunctionImport( "eof", "fs", "eof",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
 
     module.addFunctionImport( "eoln", "fs", "eoln",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
 
-    
     module.addFunctionImport( "close", "fs", "close",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
