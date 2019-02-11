@@ -69,9 +69,26 @@ module.exports = class Program {
     
     module.addFunctionImport( "reset", "fs", "reset",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
-
+    
     module.addFunctionImport( "rewrite", "fs", "rewrite",
-                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
+
+    module.addFunctionImport( "read", "fs", "read",
+                              module.addFunctionType(null, Binaryen.none,
+                                                     [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );
+
+    module.addFunctionImport( "readln", "fs", "readln",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
+
+    module.addFunctionImport( "eof", "fs", "eof",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
+
+    module.addFunctionImport( "eoln", "fs", "eoln",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
+
+    
+    module.addFunctionImport( "close", "fs", "close",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
     
     this.memory.setup();

@@ -223,26 +223,136 @@ var library = {
   },  
 };
 
+var files = [];
+
+var inputBuffer = "plain\n\\input sample";
+
 var filesystemLibrary = {
   reset: function(length, pointer) {
-    console.log("RESET");
     var buffer = new Uint8Array( memory.buffer, pointer, length );
-    var string = String.fromCharCode.apply(null, buffer);
-    //process.stdout.write("heard reset(",string,")");
-    console.log("heard reset",string);
+    var filename = String.fromCharCode.apply(null, buffer);
 
-    return 17;
+    filename = filename.replace(/ +$/g,'');
+    filename = filename.replace(/^TeXfonts:/,'fonts/');    
+
+    if (filename == 'TeXformats:TEX.POOL')
+      filename = "tex.pool";
+
+    if (filename == "TTY:") {
+      files.push({ filename: "stdin",
+                   stdin: true,
+                   position: -1
+                 });
+      return files.length - 1;
+    }
+
+    files.push({
+      filename: filename,
+      position: 0,
+      descriptor: fs.openSync(filename,'r')
+    });
+    
+    return files.length - 1;
   },
 
   rewrite: function(length, pointer) {
-    console.log("rewrite length",length);
     var buffer = new Uint8Array( memory.buffer, pointer, length );
-    var string = String.fromCharCode.apply(null, buffer);
-    console.log("heard rewrite",string);
+    var filename = String.fromCharCode.apply(null, buffer);    
 
-    return 17;
+    if (filename == "TTY:") {
+      files.push({ filename: "stdout",
+                   stdout: true
+                 });
+      return files.length - 1;
+    }
+
+    files.push({
+      filename: filename,
+      position: 0,
+      descriptor: fs.openSync(filename,'w')
+    });
+    
+    return files.length - 1;
+  },
+
+  close: function(descriptor) {
+    var file = files[descriptor];
+
+    if (file.descriptor)
+      fs.closeSync( file.descriptor );
+
+    files[descriptor] = {};
+  },
+
+  eof: function(descriptor) {
+    var file = files[descriptor];
+    
+    if (file.stdin) {
+      return 0;
+    }
+
+    var b = Buffer.alloc(1);    
+
+    if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
+      return 1;
+    else
+      return 0;
+  },
+
+  eoln: function(descriptor) {
+    var file = files[descriptor];
+    
+    if (file.stdin) {
+      return 0;
+    }
+
+    var b = Buffer.alloc(1);    
+
+    if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
+      return 1;
+
+    if (b == 10) return 1;
+    if (b == 13) return 1;
+
+    return 0;
+  },
+
+  
+  readln: function(descriptor) {
+    var file = files[descriptor];
+
+    var b = Buffer.alloc(1);
+    
+    while( (b[0] != 10) && (b[0] != 13) ) {
+      if (fs.readSync( file.descriptor, b, 0, 1, file.position ) == 0)
+        return;
+      
+      file.position++;
+    }
+  },
+  
+  read: function(descriptor, pointer, length) {
+    var file = files[descriptor];
+
+    var buffer = new Uint8Array( memory.buffer );
+
+    if (filesystemLibrary.eoln(descriptor)) {
+      buffer[pointer] = 0;
+      return;
+    }
+    
+    if (file.stdin) {
+      if (file.position >= inputBuffer.length)
+	buffer[pointer] = 13;
+      else
+	buffer[pointer] = inputBuffer[file.position].charCodeAt(0);
+    } else {
+      if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0)
+        buffer[pointer] = 0;
+    }
+
+    file.position = file.position + length;
   }
-
 };
 
 // Compile the binary and create an instance
@@ -251,6 +361,7 @@ var wasm = new WebAssembly.Instance(code, { library: library,
                                             fs: filesystemLibrary,
                                             env: { memory: memory } } );
 } catch (e) {
+  console.log(e);
   console.log(callstack);
 }
 //console.log("exports: " + Object.keys(wasm.exports).sort().join(","));

@@ -67,16 +67,23 @@ module.exports = class FunctionEvaluation {
       return module.i32.const(0);
     }
 
-    // FIXME
     if (name.toLowerCase() == "eoln") {
       this.type = new Identifier("boolean");
-      return module.i32.const(0);
+
+      var file = this.xs[0];
+
+      return module.call( "eoln", [file.generate(environment)],
+                          Binaryen.i32 );
     }    
 
-    // FIXME
+    
     if (name.toLowerCase() == "eof") {
       this.type = new Identifier("boolean");
-      return module.i32.const(0);
+
+      var file = this.xs[0];
+
+      return module.call( "eof", [file.generate(environment)],
+                          Binaryen.i32 );
     }    
     
     var offset = 0;
@@ -100,9 +107,6 @@ module.exports = class FunctionEvaluation {
       var param = params[i];
       var type = environment.resolveType(param.type);
 
-      if (param.reference)
-        type = new PointerType(type);
-      
       for( var j in param.names ) {
         byReference.push( param.reference );
         types.push( type );
@@ -111,19 +115,20 @@ module.exports = class FunctionEvaluation {
     
     this.xs.forEach( function(p) {
       var exp = p.generate(environment);
-      var type = environment.resolveType( p.type );
 
       var referenced = byReference.shift();
+      type = environment.resolveType( types.shift() );
 
-      if (referenced)
-        type = new PointerType(type);
-      
-      offset += type.bytes();
-
-      if (! type.matches( types.shift() ) ) {
+      if (! type.matches( environment.resolveType( p.type ) ) ) {
+        console.log(type);
         throw `Type mismatch for ${type} in call to ${name}`;
       }
       
+      if (referenced)
+        type = new PointerType(type);
+
+      offset += type.bytes();
+
       commands.push( stack.extend( type.bytes() ) );
       stack.shift( type.bytes() );
 

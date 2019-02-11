@@ -68,14 +68,32 @@ module.exports = class CallProcedure {
       return file.variable.set( result );
     }
     
-    // FIXME
-    if (this.procedure.name == "readln") {
-      return module.nop();
-    }
+    if ((this.procedure.name == "readln") || (this.procedure.name == "read")) {
+      var file = undefined;
+      var commands = [];
+      
+      this.params.forEach( function(p) {
+        var q = p.generate(environment);
+        var type = environment.resolveType( p.type );
 
-    // FIXME
-    if (this.procedure.name == "read") {
-      return module.nop();
+        var reader = undefined;
+        
+        if (type.fileType) {
+          file = q;
+        } else {
+          if (file) {
+            var width = module.i32.const( type.bytes() );
+            var pointer = p.variable.pointer();
+            commands.push( module.call( "read", [file, pointer, width], Binaryen.none ) );
+          }
+        }
+      });
+
+      if (this.procedure.name == "readln")
+        if (file)
+          commands.push( module.call( "readln", [file], Binaryen.none ) );
+      
+      return module.block( null, commands );
     }
 
     // FIXME
@@ -88,9 +106,11 @@ module.exports = class CallProcedure {
       return module.nop();
     }
 
-    // FIXME
     if (this.procedure.name == "close") {
-      return module.nop();
+      var file = this.params[0];
+
+      return module.call( "close", [file.generate(environment)],
+                          Binaryen.i32 );
     }
 
 

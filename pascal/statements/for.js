@@ -31,12 +31,15 @@ module.exports = class For {
     var assignment = new Assignment( this.variable, this.start );
 
     var condition = module.nop();
+    var initial = module.nop();    
     var increment = module.nop();
 
     if (this.skip > 0) {
+      initial = module.i32.le_s( this.start.generate(environment), end );
       condition = module.i32.eq( this.variable.generate( environment ), end );
       increment = new Assignment( this.variable, new Operation( "+", this.variable, new NumericLiteral(1, new Identifier("integer")) ) );
     } else {
+      initial = module.i32.ge_s( this.start.generate(environment), end );
       condition = module.i32.eq( this.variable.generate( environment ), end );
       increment = new Assignment( this.variable, new Operation( "-", this.variable, new NumericLiteral(1, new Identifier("integer")) ) );      
     }
@@ -52,6 +55,6 @@ module.exports = class For {
                                                                 ] ) )
                                           ] );
 
-    return loop;
+    return module.if( initial, loop );
   }
 };

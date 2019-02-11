@@ -477,9 +477,9 @@ j:=strstart[s];k:=strstart[t];
 while j<strstart[s+1]do begin if strpool[j]<>strpool[k]then goto 45;
 j:=j+1;k:=k+1;end;result:=true;45:streqstr:=result;end;
 {:46}{47:}function getstringsstarted:boolean;label 30,10;var k,l:0..255;
-   m,n:char;g:strnumber;a:integer;c:boolean;begin poolptr:=0;strptr:=0;
+m,n:char;g:strnumber;a:integer;c:boolean;begin poolptr:=0;strptr:=0;
 strstart[0]:=0;
-      {48:}for k:=0 to 255 do begin if({49:}(k<32)or(k>126){:49})then begin
+{48:}for k:=0 to 255 do begin if({49:}(k<32)or(k>126){:49})then begin
 begin strpool[poolptr]:=94;poolptr:=poolptr+1;end;
 begin strpool[poolptr]:=94;poolptr:=poolptr+1;end;
 if k<64 then begin strpool[poolptr]:=k+64;poolptr:=poolptr+1;
