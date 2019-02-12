@@ -27,6 +27,9 @@ module.exports = class CallProcedure {
     if (this.procedure.name.toLowerCase() == "breakin") {
       return module.nop();
     }
+    if (this.procedure.name.toLowerCase() == "break_in") {
+      return module.nop();
+    }
     
     // Ignore the mode parameter to reset
     if ((this.procedure.name.toLowerCase() == "reset") || (this.procedure.name.toLowerCase() == "get")) {
@@ -89,7 +92,7 @@ module.exports = class CallProcedure {
       return file.variable.set( result );
     }
     
-    if ((this.procedure.name == "readln") || (this.procedure.name == "read")) {
+    if ((this.procedure.name == "readln") || (this.procedure.name == "read_ln") || (this.procedure.name == "read")) {
       var file = undefined;
       var commands = [];
 
@@ -125,7 +128,7 @@ module.exports = class CallProcedure {
         }
       });
 
-      if (this.procedure.name == "readln") {
+      if ((this.procedure.name == "readln") || (this.procedure.name == "read_ln")) {
         if (file) {
           var loopLabel = `readln${count}`;
           var blockLabel = `readln${count}-done`;
@@ -180,7 +183,7 @@ module.exports = class CallProcedure {
     }
 
 
-    if ((this.procedure.name == "writeln") || (this.procedure.name == "write")) {
+    if ((this.procedure.name == "writeln") || (this.procedure.name == "write_ln") || (this.procedure.name == "write")) {
       var file = undefined;
       
       var printers = this.params.map( function(p) {
@@ -224,7 +227,7 @@ module.exports = class CallProcedure {
           return module.call( printer, [module.i32.const(-1), q], Binaryen.none );
       });
 
-      if (this.procedure.name == "writeln") {
+      if ((this.procedure.name == "writeln") || (this.procedure.name == "write_ln")) {
         if (file)
           printers.push( module.call( "printNewline", [file], Binaryen.none ) );
         else

@@ -5,9 +5,8 @@ module.exports = class Stack {
   constructor(m, memory) {
     this.module = m;
     this.memory = memory;
-
-    var pages = 16;
-    this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(pages*65536 - 1) );
+    
+    this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(this.memory.pages*65536 - 1) );
   }
     
   extend(bytes) {

@@ -184,7 +184,7 @@ module.dispose();
 
 var code = new WebAssembly.Module(binary);
 
-var pages = 16;
+var pages = 20;
 var memory = new WebAssembly.Memory({initial: pages, maximum: pages});
 
 var callstack = [];
@@ -274,12 +274,18 @@ var library = {
 };
 
 var inputBuffer = "\nplain\n\\input sample\n";
+//var inputBuffer = "\n&plain\n\\input sample\n";
+//var inputBuffer = "\nplain\n\\dump";
+//var inputBuffer = "\nplain";
+//var inputBuffer = "\n&plain";
 
 var filesystemLibrary = {
   reset: function(length, pointer) {
     var buffer = new Uint8Array( memory.buffer, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);
 
+    //console.log( filename );
+    
     filename = filename.replace(/ +$/g,'');
     filename = filename.replace(/^TeXfonts:/,'fonts/');    
 
@@ -385,7 +391,7 @@ var filesystemLibrary = {
     
     var buffer = new Uint8Array( memory.buffer );
 
-    console.log("putting to ",file.filename);
+    fs.writeSync( file.descriptor, buffer, pointer, length );
   },
 
 };

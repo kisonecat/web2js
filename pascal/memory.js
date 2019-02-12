@@ -21,10 +21,11 @@ function commands( memory, bytes, loader, storer ) {
 }
 
 module.exports = class Memory {
-  constructor(m) {
+  constructor(m, pages) {
     this.module = m;
     this.strings = [];
     this.memorySize = 0;
+    this.pages = pages;
     
     this.i32 = commands( this, 4, this.module.i32.load, this.module.i32.store );
     this.i64 = commands( this, 4, this.module.i64.load, this.module.i64.store );    
@@ -38,13 +39,15 @@ module.exports = class Memory {
   }
 
   setup() {
-    var pages = Math.ceil(this.memorySize / 65536);
+    var neededPages = Math.ceil(this.memorySize / 65536);
     var module = this.module;
-
-    // FIXME: should compute this
-    pages = 16;
+    
+    if (this.pages < neededPages) {
+      throw `Need ${neededPages} of memory`;
+    }
+    
     module.addMemoryImport( "0", "env", "memory" );
-    module.setMemory(pages, pages, "0", this.strings.map ( function(s) {
+    module.setMemory(this.pages, this.pages, "0", this.strings.map ( function(s) {
       return {offset: module.i32.const(s.offset), data: s.data};
     }));    
   }

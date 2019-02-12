@@ -4,6 +4,8 @@ var Environment = require('./environment.js');
 var Stack = require('./stack.js');
 var Memory = require('./memory.js');
 
+var pages = 20;
+
 module.exports = class Program {
   constructor(labels,consts,types,vars,pfs,compound, parent) {
     this.labels = labels;
@@ -24,7 +26,7 @@ module.exports = class Program {
     
     var module = environment.module;
 
-    this.memory = new Memory(module);
+    this.memory = new Memory(module, pages);
     this.stack = new Stack(module, this.memory);
     
     this.consts.forEach( function(v) {
@@ -75,28 +77,28 @@ module.exports = class Program {
     module.addFunctionImport( "leaveFunction", "library", "leaveFunction",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32, Binaryen.i32] ) );
     
-    module.addFunctionImport( "reset", "fs", "reset",
+    module.addFunctionImport( "reset", "library", "reset",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
     
-    module.addFunctionImport( "rewrite", "fs", "rewrite",
+    module.addFunctionImport( "rewrite", "library", "rewrite",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
 
-    module.addFunctionImport( "get", "fs", "get",
+    module.addFunctionImport( "get", "library", "get",
                               module.addFunctionType(null, Binaryen.none,
                                                      [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );
 
-    module.addFunctionImport( "put", "fs", "put",
+    module.addFunctionImport( "put", "library", "put",
                               module.addFunctionType(null, Binaryen.none,
                                                      [Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );    
 
     
-    module.addFunctionImport( "eof", "fs", "eof",
+    module.addFunctionImport( "eof", "library", "eof",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
 
-    module.addFunctionImport( "eoln", "fs", "eoln",
+    module.addFunctionImport( "eoln", "library", "eoln",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
 
-    module.addFunctionImport( "close", "fs", "close",
+    module.addFunctionImport( "close", "library", "close",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
     
