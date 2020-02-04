@@ -163,13 +163,13 @@ class FileHandle {
       return;
     } else {
       if (typeof filename !== "string")
-	filename = String.fromCharCode.apply(null, filename);
+	    filename = String.fromCharCode.apply(null, filename);
 
       filename = filename.replace(/ +$/g,'');
       filename = filename.replace(/^TeXfonts:/,'fonts/');    
 
       if (filename == 'TeXformats:TEX.POOL')
-	filename = "tex.pool";
+        filename = process.env.ETEX ? "etex.pool" : "tex.pool"
 
       this.filename = filename;
       this.position = -1;

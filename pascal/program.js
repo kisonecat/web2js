@@ -4,7 +4,7 @@ var Environment = require('./environment.js');
 var Stack = require('./stack.js');
 var Memory = require('./memory.js');
 
-var pages = 20;
+var pages = process.env.PAGES ? Number(process.env.PAGES) : 20
 
 module.exports = class Program {
   constructor(labels,consts,types,vars,pfs,compound, parent) {

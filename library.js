@@ -99,7 +99,7 @@ module.exports = {
     filename = filename.replace(/^TeXfonts:/,'fonts/');    
 
     if (filename == 'TeXformats:TEX.POOL')
-      filename = "tex.pool";
+      filename = process.env.ETEX ? "etex.pool" : "tex.pool";
 
     if (filename == "TTY:") {
       files.push({ filename: "stdin",
@@ -109,10 +109,35 @@ module.exports = {
       return files.length - 1;
     }
 
+    let descriptor;
+
+    if (process.env.ETEX){
+      let basename = filename.slice(filename.lastIndexOf('/') + 1);
+      const { spawnSync } = require('child_process');
+      let realFilename = spawnSync('kpsewhich', [filename]).stdout.toString().trim();
+      if (realFilename == '') {
+        // try again with basename
+        realFilename = spawnSync('kpsewhich', [basename]).stdout.toString().trim();
+        if (realFilename == '') {
+          // Give up, just create empty file
+          spawnSync('touch', [basename]);
+          realFilename = basename;
+          console.log(`For filename #${filename}# created empty #${basename}#`);
+        } else {
+          console.log(`Found filename #${filename}# via basename at #${realFilename}#`);
+        }
+      } else {
+        console.log(`Found filename #${filename}# at #${realFilename}#`);
+      }
+      descriptor = fs.openSync(realFilename, 'r');
+    } else {
+      descriptor = fs.openSync(filename, 'r');
+    }
+
     files.push({
       filename: filename,
       position: 0,
-      descriptor: fs.openSync(filename,'r'),
+      descriptor
     });
     
     return files.length - 1;

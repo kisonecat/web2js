@@ -30,5 +30,5 @@ node initex.js
 ```
 Now compile `sample.tex` by running
 ```
-node tex.js
+node tex.js sample
 ```

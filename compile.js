@@ -145,7 +145,7 @@ lexer.addRule(/./		, function(lexer) { return '..'; } );
 
 var fs = require('fs');
 var filename = process.argv[2];
-var code = fs.readFileSync(process.argv[2]).toString();
+var code = fs.readFileSync(filename).toString();
 lexer.setSource(code);
 
 var parser = require('./parser').parser;
