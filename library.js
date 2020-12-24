@@ -3,6 +3,7 @@ var process = require('process');
 var callstack = [];
 var stackstack = [];
 var files = [];
+var exec = require('child_process').execSync;
 
 var memory = undefined;
 var inputBuffer = undefined;
@@ -16,6 +17,23 @@ module.exports = {
   setInput: function(input, cb) {
     inputBuffer = input;
     if (cb) callback = cb;
+  },
+
+  getCurrentMinutes: function() {
+    var d = (new Date());
+    return 60 * (d.getHours()) + d.getMinutes();
+  },
+  
+  getCurrentDay: function () {
+    return (new Date()).getDate();
+  },
+  
+  getCurrentMonth: function() {
+    return (new Date()).getMonth() + 1;
+  },
+  
+  getCurrentYear: function() {
+    return (new Date()).getFullYear();    
   },
 
   printString: function(descriptor, x) {
@@ -83,20 +101,18 @@ module.exports = {
     fs.writeSync( file.descriptor, "\n");    
   },
 
-  enterFunction: function(x, stack) {
-  },
-
-  leaveFunction: function(x, stack) {
-  },  
-
   reset: function(length, pointer) {
     var buffer = new Uint8Array( memory, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);
 
-    //console.log( filename );
+    if (filename.startsWith('{')) {
+      filename = filename.replace(/^{/g,'');
+      filename = filename.replace(/}.*/g,''); 
+    }
     
     filename = filename.replace(/ +$/g,'');
-    filename = filename.replace(/^TeXfonts:/,'fonts/');    
+    filename = filename.replace(/^\*/,'');    
+    filename = filename.replace(/^TeXfonts:/,'');    
 
     if (filename == 'TeXformats:TEX.POOL')
       filename = "tex.pool";
@@ -105,14 +121,26 @@ module.exports = {
       files.push({ filename: "stdin",
                    stdin: true,
                    position: 0,
+                   erstat: 0
                  });
       return files.length - 1;
     }
 
+    try {
+      var path = exec('kpsewhich ' + filename).toString().split("\n")[0];
+    } catch (e) {
+      files.push({
+        filename: filename,
+        erstat: 1
+      });
+      return files.length - 1;
+    }
+    
     files.push({
       filename: filename,
       position: 0,
-      descriptor: fs.openSync(filename,'r'),
+      erstat: 0,      
+      descriptor: fs.openSync(path,'r'),
     });
     
     return files.length - 1;
@@ -126,7 +154,8 @@ module.exports = {
     
     if (filename == "TTY:") {
       files.push({ filename: "stdout",
-                   stdout: true
+                   stdout: true,
+                   erstat: 0,                   
                  });
       return files.length - 1;
     }
@@ -134,11 +163,42 @@ module.exports = {
     files.push({
       filename: filename,
       position: 0,
+      erstat: 0,      
       descriptor: fs.openSync(filename,'w')
     });
     
     return files.length - 1;
   },
+
+  getfilesize: function(length, pointer) {
+    var buffer = new Uint8Array( memory, pointer, length );
+    var filename = String.fromCharCode.apply(null, buffer);
+    
+    if (filename.startsWith('{')) {
+      filename = filename.replace(/^{/g,'');
+      filename = filename.replace(/}.*/g,''); 
+    }
+    
+    filename = filename.replace(/ +$/g,'');
+    filename = filename.replace(/^\*/,'');    
+    filename = filename.replace(/^TeXfonts:/,'');    
+
+    if (filename == 'TeXformats:TEX.POOL')
+      filename = "tex.pool";
+
+    try {
+      filename = exec('kpsewhich ' + filename).toString().split("\n")[0];
+    } catch (e) {
+      try {
+        var stats = fs.statSync(filename);
+        return stats.size;
+      } catch (e) {
+        return 0;
+      }
+    }
+    
+    return 0;
+  },  
 
   close: function(descriptor) {
     var file = files[descriptor];
@@ -158,6 +218,12 @@ module.exports = {
       return 0;
   },
 
+  erstat: function(descriptor) {
+    var file = files[descriptor];
+    return file.erstat;
+  },
+
+  
   eoln: function(descriptor) {
     var file = files[descriptor];
 
@@ -169,7 +235,7 @@ module.exports = {
     
   get: function(descriptor, pointer, length) {
     var file = files[descriptor];
-    
+
     var buffer = new Uint8Array( memory );
     
     if (file.stdin) {
@@ -179,14 +245,20 @@ module.exports = {
       } else
 	buffer[pointer] = inputBuffer[file.position].charCodeAt(0);
     } else {
-      if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0) {
-        buffer[pointer] = 0;
+      if (file.descriptor) {
+        if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0) {
+          buffer[pointer] = 0;
+          file.eof = true;
+          file.eoln = true;
+          return;
+        }
+      } else {
         file.eof = true;
-        file.eoln = true;
+        file.eoln = true;        
         return;
       }
     }
-
+    
     file.eoln = false;
     if (buffer[pointer] == 10)
       file.eoln = true;

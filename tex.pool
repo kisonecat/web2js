@@ -1,3 +1,4 @@
+02.6
 11buffer size
 09pool size
 17number of strings
@@ -85,6 +86,8 @@
 04kern
 13 (for accent)
 05mkern
+03end
+05begin
 04math
 02on
 03off
@@ -150,7 +153,7 @@
 07everycr
 07errhelp
 04toks
-08parshape
+04ETC.
 03box
 04void
 12current font
@@ -273,6 +276,7 @@
 10noboundary
 08noexpand
 04omit
+08parshape
 07penalty
 08prevgraf
 07radical
@@ -285,6 +289,10 @@
 05vrule
 09save size
 15grouping levels
+11reassigning
+08changing
+04into
+17globally changing
 08curlevel
 09retaining
 09restoring
@@ -296,7 +304,6 @@
 59reverted to the magnification you used earlier on this run.
 46Illegal magnification has been changed to 1000
 52The magnification ratio must be between 1 and 32768.
-04ETC.
 04BAD.
 02->
 22begin-group character 
@@ -311,6 +318,7 @@
 14the character 
 23[unknown command code!]
 02: 
+07(level 
 08Runaway 
 10definition
 08argument
@@ -334,6 +342,7 @@
 11<everyjob> 
 10<everycr> 
 07<mark> 
+11<everyeof> 
 08<write> 
 16input stack size
 05write
@@ -482,8 +491,20 @@
 06string
 07meaning
 08fontname
+06strcmp
+11shellescape
+08filesize
+09kanjiskip
+05Uchar
+08Ucharcat
 07jobname
+12eTeXrevision
+09pdfstrcmp
+14Invalid code (
+45), should be in the ranges 1..4, 6..8, 10..13
+55I'm going to use 12 instead of that illegal code value.
 04 at 
+53tokens_to_string() called while selector = new_string
 60Where was the left brace? You said something like `\def\a}',
 43which I'm going to interpret as `\def\a{}'.
 32You already have nine parameters
@@ -515,6 +536,7 @@
 06iftrue
 07iffalse
 06ifcase
+06unless
 02fi
 02or
 04else
@@ -619,6 +641,7 @@
 09underline
 04left
 05right
+06middle
 06limits
 08nolimits
 20fraction, thickness 
@@ -766,7 +789,6 @@
 45I'll just pretend that you didn't ask for it.
 49If you're in the wrong mode, you might be able to
 58return to the right one by typing `I}' or `I$' or `I\par'.
-03end
 04dump
 05hskip
 04hfil
@@ -811,6 +833,7 @@
 56You should say `\leaders <box or rule><hskip or vskip>'.
 50I found the <box or rule>, but there's no suitable
 48<hskip or vskip>, so I'm ignoring these leaders.
+05tail1
 34Sorry; this \lastbox will be void.
 58Sorry...I usually can't take things from the current page.
 37This \lastbox will therefore be void.
@@ -898,6 +921,7 @@
 55I'm ignoring this fraction specification, since I don't
 52know whether a construction like `x \over y \over z'
 53means `{x \over y} \over z' or `x \over {y \over z}'.
+50I'm ignoring a \middle that had no matching \left.
 49I'm ignoring a \right that had no matching \left.
 47Math formula deleted: Insufficient symbol fonts
 50Sorry, but I can't typeset math unless \textfont 2
@@ -922,9 +946,12 @@
 06prefix
 29You can't use a prefix with `
 55I'll pretend you didn't say \long or \outer or \global.
+69I'll pretend you didn't say \long or \outer or \global or \protected.
 06' or `
-08' with `
 49I'll pretend you didn't say \long or \outer here.
+63I'll pretend you didn't say \long or \outer or \protected here.
+09protected
+08' with `
 33Missing control sequence inserted
 52Please don't say `\def cs{...}', say `\def\cs{...}'.
 59I've inserted an inaccessible control sequence so that your
@@ -943,7 +970,6 @@
 07toksdef
 44You should have said `\read<number> to \cs'.
 34I'm going to look for the \cs now.
-14Invalid code (
 29), should be in the range 0..
 21), should be at most 
 54I'm going to use 0 instead of that illegal code value.
@@ -992,8 +1018,6 @@
 02> 
 09undefined
 05macro
-10long macro
-11outer macro
 17outer endtemplate
 06> \box
 02OK
@@ -1042,4 +1066,107 @@
 59On this page there's a \write with fewer real {'s than }'s.
 04ext4
 16output file name
-*117275187
+12lastnodetype
+11eTeXversion
+53Sorry, this optional e-TeX feature has been disabled.
+08everyeof
+14tracingassigns
+13tracinggroups
+10tracingifs
+17tracingscantokens
+14tracingnesting
+19predisplaydirection
+11lastlinefit
+15savingvdiscards
+15savinghyphcodes
+12bottom level
+05semi 
+06simple
+09adjusted 
+03no 
+05align
+04disc
+07 choice
+06 shift
+05 left
+14 group (level 
+08leaving 
+09entering 
+17currentgrouplevel
+16currentgrouptype
+14currentiflevel
+13currentiftype
+15currentifbranch
+10fontcharwd
+10fontcharht
+10fontchardp
+10fontcharic
+14parshapelength
+14parshapeindent
+13parshapedimen
+10showgroups
+11align entry
+10showtokens
+10unexpanded
+10detokenize
+07showifs
+17 entered on line 
+22no active conditionals
+10### level 
+15interactionmode
+20Bad interaction mode
+43Modes are 0=batch, 1=nonstop, 2=scroll, and
+483=errorstop. Proceed, and I'll ignore this case.
+11TeXXeTstate
+06beginL
+04endL
+06beginR
+04endR
+09, display
+03LR1
+24\endL or \endR problem (
+10 missing, 
+06 extra
+03LR2
+03LR3
+03LR4
+10scantokens
+02( 
+08readline
+09ifdefined
+08ifcsname
+10iffontchar
+10' before `
+16Warning: end of 
+20 of a different file
+26Warning: end of file when 
+14 is incomplete
+07numexpr
+07dimexpr
+08glueexpr
+06muexpr
+33I can't evaluate this expression,
+33Missing ) inserted for expression
+58I was expecting to see `+', `-', `*', `/', or `)'. Didn't.
+16gluestretchorder
+15glueshrinkorder
+11gluestretch
+10glueshrink
+08mutoglue
+08gluetomu
+05marks
+08topmarks
+10firstmarks
+08botmarks
+15splitfirstmarks
+13splitbotmarks
+46A register number must be between 0 and 32767.
+03 s=
+03 a=
+12pagediscards
+13splitdiscards
+18interlinepenalties
+13clubpenalties
+14widowpenalties
+21displaywidowpenalties
+*460829516

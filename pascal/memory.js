@@ -41,7 +41,7 @@ module.exports = class Memory {
   setup() {
     var neededPages = Math.ceil(this.memorySize / 65536);
     var module = this.module;
-    
+
     if (this.pages < neededPages) {
       throw `Need ${neededPages} of memory`;
     }

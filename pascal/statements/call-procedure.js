@@ -91,7 +91,7 @@ module.exports = class CallProcedure {
 
       return file.variable.set( result );
     }
-    
+
     if ((this.procedure.name == "readln") || (this.procedure.name == "read_ln") || (this.procedure.name == "read")) {
       var file = undefined;
       var commands = [];

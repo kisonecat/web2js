@@ -1,4 +1,5 @@
 'use strict';
+var Binaryen = require('binaryen');
 
 module.exports = class Goto {
   constructor(label) {
@@ -19,7 +20,15 @@ module.exports = class Goto {
     }
 
     if ((this.label == 9999) || (this.label == 9998)) {
-      return module.unreachable();
+      var jmpbuf = 900 * 1024*64;
+      var jmpbuf_end = 1000 * 1024*64;
+      
+      return module.block( null, [ module.i32.store( jmpbuf, 0, module.i32.const(0), module.i32.const(jmpbuf+8) ),
+                                   module.i32.store( jmpbuf + 4, 0, module.i32.const(0), module.i32.const(jmpbuf_end) ),
+                                   module.call( "start_unwind", [module.i32.const(jmpbuf)], Binaryen.none ),
+                                   module.return( module.i32.const(0) ) ] );
+      //return module.call( "start_unwind", [module.i32.const(1024)], Binaryen.none );
+      //return module.unreachable();
     }
 
     var e = environment;

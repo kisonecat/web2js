@@ -1,4 +1,5 @@
 var Lexer = require('flex-js');
+var Binaryen = require('binaryen');
 
 var lexer = new Lexer();
 
@@ -166,5 +167,8 @@ var program = parser.parse();
 
 var module = program.generate();
 
+module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
+
 fs.writeFileSync( "out.wasm", module.emitBinary() );
 
+console.log("Using ", program.memory.memorySize, "bytes" );

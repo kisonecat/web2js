@@ -4,7 +4,7 @@ var Environment = require('./environment.js');
 var Stack = require('./stack.js');
 var Memory = require('./memory.js');
 
-var pages = 20;
+var pages = 2500;
 
 module.exports = class Program {
   constructor(labels,consts,types,vars,pfs,compound, parent) {
@@ -57,8 +57,20 @@ module.exports = class Program {
     
     var f = module.addFunctionType(null, Binaryen.none, []);
     var main = module.addFunction("main", f, [], e);
-    module.setStart(main);
+    
+    //module.setStart(main);
+    module.addFunctionExport("main", "main");
+    
+    module.addFunctionImport( "start_unwind", "asyncify", "start_unwind",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );    
+    module.addFunctionImport( "stop_unwind", "asyncify", "stop_unwind",
+                              module.addFunctionType(null, Binaryen.none, [] ) );        
+    module.addFunctionImport( "start_rewind", "asyncify", "start_rewind",
+                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );        
+    module.addFunctionImport( "stop_rewind", "asyncify", "stop_rewind",
+                              module.addFunctionType(null, Binaryen.none, [] ) );    
 
+    
     module.addFunctionImport( "printInteger", "library", "printInteger",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32,Binaryen.i32] ) );
     module.addFunctionImport( "printBoolean", "library", "printBoolean",
@@ -72,12 +84,12 @@ module.exports = class Program {
     module.addFunctionImport( "printNewline", "library", "printNewline",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
-    module.addFunctionImport( "enterFunction", "library", "enterFunction",
-                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32, Binaryen.i32] ) );
-    module.addFunctionImport( "leaveFunction", "library", "leaveFunction",
-                              module.addFunctionType(null, Binaryen.none, [Binaryen.i32, Binaryen.i32] ) );
-    
+
+
     module.addFunctionImport( "reset", "library", "reset",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
+
+    module.addFunctionImport( "getfilesize", "library", "getfilesize",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
     
     module.addFunctionImport( "rewrite", "library", "rewrite",
@@ -96,12 +108,26 @@ module.exports = class Program {
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
 
     module.addFunctionImport( "eoln", "library", "eoln",
-                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );    
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) );
+
+    module.addFunctionImport( "erstat", "library", "erstat",
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32] ) ); 
 
     module.addFunctionImport( "close", "library", "close",
                               module.addFunctionType(null, Binaryen.none, [Binaryen.i32] ) );
 
-    
+    module.addFunctionImport( "getCurrentMinutes", "library", "getCurrentMinutes",
+                              module.addFunctionType(null, Binaryen.i32, [] ) );
+
+    module.addFunctionImport( "getCurrentDay", "library", "getCurrentDay",
+                              module.addFunctionType(null, Binaryen.i32, [] ) );
+
+    module.addFunctionImport( "getCurrentMonth", "library", "getCurrentMonth",
+                              module.addFunctionType(null, Binaryen.i32, [] ) );
+
+    module.addFunctionImport( "getCurrentYear", "library", "getCurrentYear",
+                              module.addFunctionType(null, Binaryen.i32, [] ) );                
+
     this.memory.setup();
     
     return module;

@@ -114,6 +114,28 @@ module.exports = class Identifier {
 
     // Could be a function call
     if (v === undefined) {
+      var module = environment.module;
+      
+      if (this.name == "currentminutes") {
+        this.type = new Identifier("integer");      
+        return module.call( "getCurrentMinutes", [], Binaryen.i32 );
+      }
+      
+      if (this.name == "currentday") {
+        this.type = new Identifier("integer");      
+        return module.call( "getCurrentDay", [], Binaryen.i32 );
+      }
+      
+      if (this.name == "currentmonth") {
+        this.type = new Identifier("integer");      
+        return module.call( "getCurrentMonth", [], Binaryen.i32 );
+      }
+      
+      if (this.name == "currentyear") {
+        this.type = new Identifier("integer");      
+        return module.call( "getCurrentYear", [], Binaryen.i32 );
+      }
+      
       var f = environment.resolveFunction( this );
       if (f === undefined) {
         throw `Could not find ${this.name}`;

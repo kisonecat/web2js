@@ -60,11 +60,14 @@ module.exports = class FunctionEvaluation {
       var n = this.xs[0].generate(environment);
       return module.i32.eq( module.i32.rem_s( n, module.i32.const(2) ), module.i32.const(1) );
     }
-
-    // erstat always OKAY
+    
     if (name.toLowerCase() == "erstat") {
       this.type = new Identifier("integer");
-      return module.i32.const(0);
+
+      var file = this.xs[0];
+
+      return module.call( "erstat", [file.generate(environment)],
+                          Binaryen.i32 );
     }
 
     if (name.toLowerCase() == "eoln") {
@@ -85,6 +88,16 @@ module.exports = class FunctionEvaluation {
       return module.call( "eof", [file.generate(environment)],
                           Binaryen.i32 );
     }    
+
+    if (name.toLowerCase() == "getfilesize") {
+      this.type = new Identifier("integer");
+      
+      var filename = this.xs[0];
+      var filenameExp = filename.generate(environment);
+      return module.call( "getfilesize", [module.i32.const(filename.type.index.range()),
+                                            filename.variable.pointer()],
+                            Binaryen.i32 );
+    }
     
     var offset = 0;
     var commands = [];
