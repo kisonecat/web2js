@@ -58,7 +58,8 @@ module.exports = class FunctionEvaluation {
     if (name.toLowerCase() == "odd") {
       this.type = new Identifier("boolean");
       var n = this.xs[0].generate(environment);
-      return module.i32.eq( module.i32.rem_s( n, module.i32.const(2) ), module.i32.const(1) );
+      // https://en.wikipedia.org/wiki/Modulo_operation#Common_pitfalls
+      return module.i32.ne( module.i32.rem_s( n, module.i32.const(2) ), module.i32.const(0) );
     }
     
     if (name.toLowerCase() == "erstat") {
