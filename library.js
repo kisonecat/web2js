@@ -8,11 +8,16 @@ var exec = require('child_process').execSync;
 var memory = undefined;
 var inputBuffer = undefined;
 var callback = undefined;
+var texPool = "tex.pool";
 
 module.exports = {
   setMemory: function(m) {
     memory = m;
   },
+
+  setTexPool: function(m) {
+    texPool = m;
+  },  
 
   setInput: function(input, cb) {
     inputBuffer = input;
@@ -115,7 +120,7 @@ module.exports = {
     filename = filename.replace(/^TeXfonts:/,'');    
 
     if (filename == 'TeXformats:TEX.POOL')
-      filename = "tex.pool";
+      filename = texPool;
 
     if (filename == "TTY:") {
       files.push({ filename: "stdin",

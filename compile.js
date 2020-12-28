@@ -24,9 +24,6 @@ lexer.addRule('{', function (lexer) {
 
 lexer.addRule(/{W}/);
 
-//lexer.addRule(/procedure [a-z_]+;[ \n\t]*forward;/);
-//lexer.addRule(/function [(),:a-z_]+;[ \n\t]*forward;/);
-
 lexer.addRule("packed"		, function(lexer) { return 'packed'; } );
 lexer.addRule("forward"		, function(lexer) { return 'forward'; } );
 lexer.addRule("and"		, function(lexer) { return 'and'; } );
@@ -169,6 +166,6 @@ var module = program.generate();
 
 module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
 
-fs.writeFileSync( "out.wasm", module.emitBinary() );
+fs.writeFileSync( process.argv[3], module.emitBinary() );
 
 console.log("Using ", program.memory.memorySize, "bytes" );
