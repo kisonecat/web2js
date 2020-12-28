@@ -20,7 +20,7 @@ trip.p trip.pool: trip.web tripchanges.ch
 	tangle -underline trip.web tripchanges.ch
 trip.pool: trip.p
 
-trip.wasm: trip.p
+trip.wasm: trip.p parser.js
 	node compile.js $< $@
 
 trip-async.wasm: trip.wasm
