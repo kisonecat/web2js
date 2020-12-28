@@ -52,6 +52,8 @@ test: tripdiff.js tripin.log trip.log triptrap/tripin.log triptrap/trip.log
 	node tripdiff.js trip.log triptrap/trip.log
 
 clean:
+	rm -f parser.js
+	rm -f changes.ch
 	rm -f trip.tfm trip.tex
 	rm -f trip.wasm
 	rm -f trip-async.wasm
