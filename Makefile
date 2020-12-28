@@ -1,5 +1,6 @@
-CHANGE_FILES=etex.ch date.ch ord-chr.ch jstex.ch wordsize.ch 
 TEXWEB=texk/tex.web
+ETEXCH=etexdir/etex.ch
+CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch jstex.ch wordsize.ch 
 
 all:
 
