@@ -38,7 +38,7 @@ tripin.log trip.fmt: trip.tfm trip.tex trip.js trip-async.wasm trip.pool
 trip.fmt: tripin.log
 
 trip.log trip.dvi tripos.tex 8terminal.tex: trip.tfm trip.tex trip.js trip-async.wasm trip.pool trip.fmt
-	# how many spaces before & ?
+	echo 'how many spaces before & ?'
 	echo -ne "  &trip  trip " | node trip.js 
 trip.dvi: trip.log
 tripos.tex: trip.log
@@ -47,9 +47,34 @@ tripos.tex: trip.log
 trip.typ: trip.dvi
 	dvitype -output-level=2 -dpi=72.27 -page-start=*.*.*.*.*.*.*.*.*.* $< > $@
 
-test: tripdiff.js tripin.log trip.log triptrap/tripin.log triptrap/trip.log
+triptest: tripdiff.js tripin.log trip.log triptrap/tripin.log triptrap/trip.log
 	node tripdiff.js tripin.log triptrap/tripin.log
 	node tripdiff.js trip.log triptrap/trip.log
+
+etrip.tfm: etexdir/etrip/etrip.pl
+	pltotf $< $@
+
+etrip.tex: etexdir/etrip/etrip.tex
+	cp $< $@
+
+etripin.log etrip.fmt: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
+	echo "Missing initial input?"
+	echo -ne "\n*etrip\n" | node trip.js 
+	mv etrip.log etripin.log
+etrip.fmt: etripin.log
+
+etrip.log etrip.dvi etrip.out: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
+	rm -f etrip.out
+	echo -ne "\n&etrip etrip\n" | node trip.js 
+etrip.dvi: etrip.log
+etrip.out: etrip.log
+
+etriptest: tripdiff.js etripin.log etexdir/etrip/etripin.log etrip.log etexdir/etrip/etrip.log etrip.out etexdir/etrip/etrip.out
+	diff etrip.out etexdir/etrip/etrip.out
+	node tripdiff.js etripin.log etexdir/etrip/etripin.log
+	node tripdiff.js etrip.log etexdir/etrip/etrip.log
+
+test: triptest etriptest 
 
 clean:
 	rm -f parser.js
@@ -68,3 +93,5 @@ clean:
 	rm -f trip.typ
 	rm -f trip.log trip.dvi tripos.tex 8terminal.tex
 	rm -f trip.typ
+	rm -f etrip.tfm etrip.tex
+	rm -f etrip.log etrip.dvi etrip.out etripin.log etrip.fmt

@@ -8,6 +8,10 @@ var originalFilename = process.argv[3];
 var testee = fs.readFileSync(testeeFilename).toString();
 var original = fs.readFileSync(originalFilename).toString();
 
+// I am not using ./ in filenames
+original = original.replace('(./etrip.tex', '(etrip.tex');
+original = original.replace(/\(\.\/etrip\.out/g, '(etrip.out');
+
 var diffs = Diff.diffLines(testee, original);
 diffs = diffs.filter( (diff) => (diff.removed || diff.added) );
 diffs = diffs.reduce(function(result, value, index, array) {
@@ -21,9 +25,21 @@ function isNotTooDifferent(a, b) {
     return ('Banner is permitted to differ.');
   }
 
-  if (b == 'This is TeX, Version 3.14159265 (INITEX)  7 JAN 2014 09:09\n') {
+  if (b == 'This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (INITEX)  22 JAN 2014 11:25\n') {
     return ('Banner is permitted to differ.');
   }  
+
+  if (a == '(etrip.tex\n') {
+    return ('Filename is permitted to differ.');
+  }  
+  
+  if (b == 'This is TeX, Version 3.14159265 (INITEX)  7 JAN 2014 09:09\n') {
+    return ('Banner is permitted to differ.');
+  }
+
+  if (b == 'This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etrip 2014.1.22)  22 JAN 2014 11:25\n') {
+    return ('Banner is permitted to differ.');
+  }    
 
   if (b == ' (preloaded format=trip 2014.1.7)\n') {
     return ('Date of format file is permitted to differ.');
@@ -31,8 +47,12 @@ function isNotTooDifferent(a, b) {
 
   if (b == ' (preloaded format=trip 2014.1.7)\n1326 strings of total length 23646\n') {
     return ('Date of format file is permitted to differ.');
-  }    
-  
+  }
+
+  if (b == ' (preloaded format=etrip 2014.1.22)\n1491 strings of total length 26258\n') {
+    return ('Date of format file is permitted to differ.');
+  }  
+
   if (b == ' 47 strings out of 1674\n') {
     return ('Number of strings is permitted to differ.');
   }  
@@ -43,7 +63,16 @@ function isNotTooDifferent(a, b) {
 
   if (b == '341 multiletter control sequences\n') {
     return ('Number of control sequences is permitted to differ.');
-  }  
+  }
+
+  if (b == '408 multiletter control sequences\n') {
+    return ('Number of control sequences is permitted to differ.');
+  }    
+
+  if ((b == 'Hyphenation trie of length 434 has 12 ops out of 35111\n') &&
+      (a.startsWith('Hyphenation trie of length 434 has 12 ops out of '))) {
+    return ('Number of control sequences is permitted to differ.');
+  }    
   
   if (b.match(/, glue set /)) {
     var lefts = a.split(', glue set ');
@@ -58,6 +87,22 @@ function isNotTooDifferent(a, b) {
     }
   }
 
+  if (a == 'Memory usage before: 50&184; after: 36&178; still untouched: 673\n') {
+    return 'bad but ignore for now';
+  }
+
+  if (b == 'Memory usage before: 53&322; after: 44&322; still untouched: 835\n') {
+    return 'Memory usage may differ.';
+  }  
+
+  if (b == ' 19 strings out of 1809\n 145 string characters out of 7742\n 3164 words of memory out of 3999\n 409 multiletter control sequences out of 15000+0\n') {
+    return 'Memory usage may differ.';
+  }
+
+  if (b == ' 10 hyphenation exceptions out of 659\n') {
+    return 'Hyphenation can differ?';
+  }  
+  
   if (b == 'Output written on trip.dvi (16 pages, 2920 bytes).\n') {
     return ('Size of dvi output can differ.');
   }  

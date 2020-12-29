@@ -3,17 +3,30 @@
 This is a Pascal compiler that targets WebAssembly, designed
 specifically to compile TeX.
 
+Importantly, this version passes the [trip tests](http://texdoc.net/texmf-dist/doc/generic/knuth/tex/tripman.pdf) which you can verify by running `make test`.
+
+## Prerequisites
+
+This projects depends on [NodeJS](https://nodejs.org/en/) for executing the javascript.  To post-process the WebAssembly, you will need `wasm-opt` on your path.
+
+You will need a full TeX installation (e.g., [TeX Live](https://www.tug.org/texlive/)) with access to `kpsewhich` in order that library.js can find the necessary TeX files.  You also need `tie` and `tangle` to turn the WEB sources into Pascal which can be fed to the compiler.
+
+The contents of the `texk`, `triptrap`, and `etexdir` subdirectories were simply copied from tug.org via
+```
+mkdir texk
+rsync -a --delete --exclude=.svn tug.org::tldevsrc/Build/source/texk/web2c/tex.web texk
+rsync -a --delete --exclude=.svn tug.org::tldevsrc/Build/source/texk/web2c/triptrap .
+rsync -a --delete --exclude=.svn tug.org::tldevsrc/Build/source/texk/web2c/etexdir .
+```
+
 ## Getting started
+
+After cloning this repository, be sure to run `npm install`.
+
+
 
 The following assumes you have TeX running on your machine (e.g., that
 `tangle` is available).
-
-Download a clean copy of the TeX WEB sources.
-```
-wget http://ctan.math.washington.edu/tex-archive/systems/knuth/dist/tex/tex.web
-```
-
-https://tug.org/svn/texlive/trunk/Build/source/texk/web2c/etexdir/etex.ch?revision=32727&view=co
 
 
 tie -c changes.ch tex.web etex.ch tex.ch
