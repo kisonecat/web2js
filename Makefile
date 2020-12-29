@@ -63,16 +63,22 @@ etripin.log etrip.fmt: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
 	mv etrip.log etripin.log
 etrip.fmt: etripin.log
 
-etrip.log etrip.dvi etrip.out: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
+etrip.log etrip.dvi etrip.out etrip.fot: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
 	rm -f etrip.out
-	echo -ne "\n&etrip etrip\n" | node trip.js 
+	echo -ne "\n&etrip etrip\n" | node trip.js > etrip.fot
 etrip.dvi: etrip.log
 etrip.out: etrip.log
+etrip.fot: etrip.log
 
-etriptest: tripdiff.js etripin.log etexdir/etrip/etripin.log etrip.log etexdir/etrip/etrip.log etrip.out etexdir/etrip/etrip.out
+etrip.typ: etrip.dvi
+	dvitype -output-level=2 -dpi=72.27 -page-start=*.*.*.*.*.*.*.*.*.* $< > $@
+
+etriptest: tripdiff.js etripin.log etexdir/etrip/etripin.log etrip.log etexdir/etrip/etrip.log etrip.out etexdir/etrip/etrip.out etrip.typ etexdir/etrip/etrip.typ etrip.fot etexdir/etrip/etrip.fot
 	diff etrip.out etexdir/etrip/etrip.out
 	node tripdiff.js etripin.log etexdir/etrip/etripin.log
 	node tripdiff.js etrip.log etexdir/etrip/etrip.log
+	node tripdiff.js etrip.typ etexdir/etrip/etrip.typ
+	node tripdiff.js etrip.fot etexdir/etrip/etrip.fot
 
 test: triptest etriptest 
 
@@ -95,3 +101,4 @@ clean:
 	rm -f trip.typ
 	rm -f etrip.tfm etrip.tex
 	rm -f etrip.log etrip.dvi etrip.out etripin.log etrip.fmt
+	rm -f etrip.typ

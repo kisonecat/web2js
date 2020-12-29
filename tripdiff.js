@@ -27,8 +27,21 @@ function isNotTooDifferent(a, b) {
 
   if (b == 'This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (INITEX)  22 JAN 2014 11:25\n') {
     return ('Banner is permitted to differ.');
-  }  
+  }
 
+  if (b == 'This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etex)\n') {
+    return ('Banner is permitted to differ.');
+  }
+  
+  if (b == 'This is DVItype, Version 3.6 (TeX Live 2014)\n') {
+    return ('Banner is permitted to differ.');
+  }
+
+
+  if (b == '\' TeX output 2014.01.22:1125\'\n') {
+    return ('Dates and times can differ.');
+  }
+  
   if (a == '(etrip.tex\n') {
     return ('Filename is permitted to differ.');
   }  
@@ -112,6 +125,13 @@ function isNotTooDifferent(a, b) {
 
 for(const diff of diffs) {
   [x, y] = diff;
+
+  if ((x === undefined) || (y === undefined)) {
+    if (y) process.stdout.write(y.value.red);
+    if (x) process.stdout.write(x.value.green);  
+    console.log('Test failed.'.red.bold);
+    process.exit(1);
+  }
 
   if (x.added && y.removed)
     [x,y] = [y,x];
