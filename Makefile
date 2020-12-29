@@ -1,6 +1,6 @@
 TEXWEB=texk/tex.web
 ETEXCH=etexdir/etex.ch
-CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch jstex.ch wordsize.ch 
+CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch logopenout.ch jstex.ch wordsize.ch 
 
 all:
 
@@ -64,7 +64,6 @@ etripin.log etrip.fmt: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
 etrip.fmt: etripin.log
 
 etrip.log etrip.dvi etrip.out etrip.fot: etrip.tfm etrip.tex trip.js trip-async.wasm trip.pool
-	rm -f etrip.out
 	echo -ne "\n&etrip etrip\n" | node trip.js > etrip.fot
 etrip.dvi: etrip.log
 etrip.out: etrip.log

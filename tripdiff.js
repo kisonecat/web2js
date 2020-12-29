@@ -100,11 +100,7 @@ function isNotTooDifferent(a, b) {
     }
   }
 
-  if (a == 'Memory usage before: 50&184; after: 36&178; still untouched: 673\n') {
-    return 'bad but ignore for now';
-  }
-
-  if (b == 'Memory usage before: 53&322; after: 44&322; still untouched: 835\n') {
+  if (a.startsWith('Memory usage before: ') && b.startsWith('Memory usage before: ')) {
     return 'Memory usage may differ.';
   }  
 
