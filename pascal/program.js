@@ -91,6 +91,11 @@ module.exports = class Program {
 
     module.addFunctionImport( "getfilesize", "library", "getfilesize",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
+
+    module.addFunctionImport( "inputln", "library", "inputln",
+                              module.addFunctionType(null, Binaryen.i32,
+                                                     [Binaryen.i32, Binaryen.i32, Binaryen.i32,
+                                                      Binaryen.i32, Binaryen.i32, Binaryen.i32, Binaryen.i32] ) );        
     
     module.addFunctionImport( "rewrite", "library", "rewrite",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );

@@ -10,9 +10,53 @@ var inputBuffer = undefined;
 var callback = undefined;
 var texPool = "tex.pool";
 
+let wasmExports;
+let view;
+
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: ''
+});
+
+let DATA_ADDR = 2400 * 1024*64;
+let END_ADDR = 2500 * 1024*64;
+let windingDepth = 0;
+let sleeping = false;
+
+function startUnwind() {
+  if (view) {
+    view[DATA_ADDR >> 2] = DATA_ADDR + 8;
+    view[DATA_ADDR + 4 >> 2] = END_ADDR;
+  }
+  
+  wasmExports.asyncify_start_unwind(DATA_ADDR);
+  windingDepth = windingDepth + 1;
+}
+
+function startRewind() {
+  wasmExports.asyncify_start_rewind(DATA_ADDR);
+  wasmExports.main();
+  //if (windingDepth == 0) {
+  //callback();
+  //}
+}
+
+function stopRewind() {
+  windingDepth = windingDepth - 1;
+  wasmExports.asyncify_stop_rewind();
+}
+
 module.exports = {
   setMemory: function(m) {
     memory = m;
+    view = new Int32Array(m);
+  },
+
+  setWasmExports: function(m) {
+    wasmExports = m;
   },
 
   setTexPool: function(m) {
@@ -126,7 +170,10 @@ module.exports = {
       files.push({ filename: "stdin",
                    stdin: true,
                    position: 0,
-                   erstat: 0
+                   position2: 0,                   
+                   erstat: 0,
+                   eoln: false,
+                   content: Buffer.from(inputBuffer)
                  });
       return files.length - 1;
     }
@@ -140,12 +187,15 @@ module.exports = {
       });
       return files.length - 1;
     }
-    
+
     files.push({
       filename: filename,
       position: 0,
-      erstat: 0,      
+      position2: 0,                         
+      erstat: 0,
+      eoln: false,      
       descriptor: fs.openSync(path,'r'),
+      content: fs.readFileSync(path)
     });
     
     return files.length - 1;
@@ -237,7 +287,53 @@ module.exports = {
     else
       return 0;
   },
+
+  inputln: function(descriptor, bypass_eoln, bufferp, firstp, lastp, max_buf_stackp, buf_size) {
+    var file = files[descriptor];
+    var last_nonblank = 0; // |last| with trailing blanks removed
+
+    var buffer = new Uint8Array( memory, bufferp, buf_size);
+    var first = new Uint32Array( memory, firstp, 4 );
+    var last = new Uint32Array( memory, lastp, 4 );
+    var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 4 );
+
+    // cf.\ Matthew 19\thinspace:\thinspace30
+    last[0] = first[0];
+
+    // input the first character of the line into |f^|
+    if (bypass_eoln) {
+      if (!file.eof) {
+        if (file.eoln) {
+          file.position2 = file.position2 + 1;
+        }
+      }
+    }
     
+    let endOfLine = file.content.indexOf(10, file.position2);
+    if (endOfLine < 0) endOfLine = file.content.length;
+      
+    if (file.position2 >= file.content.length) {
+      if (file.stdin) {
+        if (callback) callback();
+      }
+      
+      file.eof = true;
+      return false;
+    } else {
+      var bytesCopied = file.content.copy( buffer, first[0], file.position2, endOfLine );
+      
+      last[0] = first[0] + bytesCopied;
+      
+      while( buffer[last[0] - 1] == 32 )
+        last[0] = last[0] - 1;
+      
+      file.position2 = endOfLine;
+      file.eoln = true;
+    }
+    
+    return true;
+  },
+  
   get: function(descriptor, pointer, length) {
     var file = files[descriptor];
 
@@ -247,8 +343,9 @@ module.exports = {
       if (file.position >= inputBuffer.length) {
 	buffer[pointer] = 13;
         if (callback) callback();
-      } else
+      } else {
 	buffer[pointer] = inputBuffer[file.position].charCodeAt(0);
+      }
     } else {
       if (file.descriptor) {
         if (fs.readSync( file.descriptor, buffer, pointer, length, file.position ) == 0) {
@@ -272,7 +369,7 @@ module.exports = {
 
     file.position = file.position + length;
   },
-
+  
   put: function(descriptor, pointer, length) {
     var file = files[descriptor];
     
@@ -280,5 +377,4 @@ module.exports = {
 
     fs.writeSync( file.descriptor, buffer, pointer, length );
   },
-
 };

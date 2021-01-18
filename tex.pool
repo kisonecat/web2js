@@ -1066,6 +1066,8 @@
 59On this page there's a \write with fewer real {'s than }'s.
 04ext4
 16output file name
+08\openout
+04 = `
 12lastnodetype
 11eTeXversion
 53Sorry, this optional e-TeX feature has been disabled.
@@ -1169,4 +1171,4 @@
 13clubpenalties
 14widowpenalties
 21displaywidowpenalties
-*460829516
+*043144253

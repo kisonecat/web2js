@@ -11,7 +11,30 @@ changes.ch: $(TEXWEB) $(CHANGE_FILES)
 	tie -c $@ $(TEXWEB) $(CHANGE_FILES)
 
 tripchanges.ch: $(TEXWEB) changes.ch trip.ch
-	tie -c $@ $(TEXWEB) changes.ch trip.ch 
+	tie -c $@ $(TEXWEB) changes.ch trip.ch
+
+################################################################
+
+bigmem-changes.ch: $(TEXWEB) changes.ch bigmem.ch
+	tie -c $@ $(TEXWEB) changes.ch bigmem.ch
+
+tex.web: $(TEXWEB)
+	cp $< $@
+
+tex.p tex.pool: tex.web bigmem-changes.ch
+	tangle -underline tex.web bigmem-changes.ch
+tex.pool: tex.p
+
+tex.wasm: tex.p parser.js
+	node compile.js $< $@
+
+tex-async.wasm: tex.wasm
+	wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect -O4 $< -o $@
+
+core.dump: tex-async.wasm library.js
+	node initex.js
+
+################################################################
 
 trip.web: $(TEXWEB)
 	cp $< $@
@@ -24,7 +47,7 @@ trip.wasm: trip.p parser.js
 	node compile.js $< $@
 
 trip-async.wasm: trip.wasm
-	wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect -O $< -o $@
+	wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect -O4 $< -o $@
 
 trip.tfm: triptrap/trip.pl
 	pltotf $< $@
@@ -39,7 +62,7 @@ trip.fmt: tripin.log
 
 trip.log trip.dvi tripos.tex 8terminal.tex: trip.tfm trip.tex trip.js trip-async.wasm trip.pool trip.fmt
 	echo 'how many spaces before & ?'
-	echo -ne "  &trip  trip " | node trip.js 
+	echo -ne " &trip  trip " | node trip.js 
 trip.dvi: trip.log
 tripos.tex: trip.log
 8terminal.tex: trip.log

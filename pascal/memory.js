@@ -123,6 +123,10 @@ module.exports = class Memory {
   }
   
   allocateVariable( name, type ) {
+    // align everything to 4-byte boundaries
+    if (this.memorySize % 4 !== 0)
+      this.memorySize += 4 - (this.memorySize % 4);
+    
     var pointer = this.memorySize;
     this.memorySize += type.bytes();
     var module = this.module;
