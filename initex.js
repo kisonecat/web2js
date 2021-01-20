@@ -43,6 +43,7 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\n";
 
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} \\the\\catcode`\\^^@\\Ucharcat 65 10 is an A? \\end{document}\n";
+preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\end{document}\n";
 //preamble = "\\input{downcase.tex}\n";
 
 library.setMemory(memory.buffer);

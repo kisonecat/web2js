@@ -13,7 +13,8 @@
     "binaryen": "^89.0.0",
     "flex-js": "^1.0.4",
     "jison": "^0.4.18",
-    "pegjs": "^0.10.0"
+    "pegjs": "^0.10.0",
+    "node-kpathsea": "^1.1.0"
   },
   "devDependencies": {
     "colors": "^1.4.0",

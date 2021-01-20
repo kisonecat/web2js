@@ -120,7 +120,7 @@ module.exports = class FunctionDeclaration {
                                    ] );
       module.addFunction(this.identifier.name, functionType, [Binaryen.i32], code);
     }
-    
+    console.log(id,this.identifier.name);
     id = id + 1;
     
     return;
