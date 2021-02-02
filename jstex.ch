@@ -1,7 +1,7 @@
-% This is ximera.ch, a WEB change file code extending e-TeX,
-% to be applied to etex.web in order to define the XimeraTeX program.
+% This is jstex.ch, a WEB change file code extending e-TeX,
+% to be applied to etex.web in order to define the jsTeX program.
 
-% XimeraTeX is copyright (C) 2020 by Jim Fowler.
+% jsTeX is copyright (C) 2021 by Jim Fowler.
 
 % e-TeX is copyright (C) 1999-2012 by P. Breitenlohner (1994,98 by the NTS
 % team); all rights are reserved. Copying of this file is authorized only if
@@ -13,7 +13,7 @@
 % TeX is a trademark of the American Mathematical Society.
 % e-TeX and NTS are trademarks of the NTS group.
 
-@x limbo l.1 - this is XimeraTeX
+@x limbo l.1 - this is jsTeX
 % e-TeX is copyright (C) 1999-2012 by P. Breitenlohner (1994,98 by the NTS
 % team); all rights are reserved. Copying of this file is authorized only if
 % (1) you are P. Breitenlohner, or if (2) you make absolutely no changes to
@@ -23,11 +23,11 @@
 % See etex_gen.tex for hints on how to install this program.
 % And see etripman.tex for details about how to validate it.
 @y
-% XimeraTeX is copyright (C) 2020 by Jim Fowler; all rights are reserved.
+% jsTeX is copyright (C) 2021 by Jim Fowler; all rights are reserved.
 % Copying of this file is authorized only if (1) you are Jim Fowler,
 % or if (2) you make absolutely no changes to your copy. (Programs
 % such as TIE allow the application of several change files to
-% tex.web; master files tex.web, etex.ch, and ximera.ch should stay
+% tex.web; master files tex.web, etex.ch, and jstex.ch should stay
 % intact.)
 @z
 
@@ -71,6 +71,7 @@ procedure@?ins_the_toks; forward;@t\2@>
 @y
 procedure@?compare_strings; forward;@t\2@>
 procedure@?do_filesize; forward;@t\2@>
+procedure@?do_directjs; forward;@t\2@>
 procedure@?pack_file_name(@!n,@!a,@!e:str_number); forward;@t\2@>
 procedure@?ins_the_toks; forward;@t\2@>
 @z
@@ -146,7 +147,8 @@ begin str_toks:=str_toks_cat(b,0); end;
 @d ucharcat_code = ximeratex_first_expand_code + 13 {command code for \.{\\Ucharcat}}
 @d filesize_code = ximeratex_first_expand_code + 14 {command code for \.{\\filesize}}
 @d kanjiskip_code = ximeratex_first_expand_code + 15 {command code for \.{\\kanjiskip}}
-@d shellescape_code = ximeratex_first_expand_code + 15 {command code for \.{\\shellescape}}
+@d shellescape_code = ximeratex_first_expand_code + 16 {command code for \.{\\shellescape}}
+@d directjs_code = ximeratex_first_expand_code + 17 {command code for \.{\\directjs}}
 @d ximeratex_convert_codes = ximeratex_first_expand_code + 26 {end of \ximeratex's command codes}
 @d job_name_code=ximeratex_convert_codes {command code for \.{\\jobname}}
 @z
@@ -161,6 +163,8 @@ primitive("shellescape",convert,shellescape_code);@/
 @!@:shellescape_}{\.{\\shellescape} primitive@>
 primitive("filesize",convert,filesize_code);@/
 @!@:filesize_}{\.{\\filesize} primitive@>
+primitive("directjs",convert,directjs_code);@/
+@!@:directjs_}{\.{\\directjs} primitive@>
 primitive("kanjiskip",convert,kanjiskip_code);@/
 @!@:kanjiskip_}{\.{\\kanjiskip} primitive@>
 primitive("Uchar",convert,uchar_code);@/
@@ -177,6 +181,7 @@ primitive("jobname",convert,job_name_code);@/
   pdf_strcmp_code: print_esc("pdfstrcmp");
   shellescape_code: print_esc("shellescape");  
   filesize_code: print_esc("filesize");
+  directjs_code: print_esc("directjs");
   kanjiskip_code: print_esc("kanjiskip");    
   uchar_code: print_esc("Uchar");
   ucharcat_code: print_esc("Ucharcat");
@@ -250,6 +255,18 @@ filesize_code:
     scanner_status := save_scanner_status;
     restore_cur_string;
   end;
+directjs_code:
+  begin
+    save_scanner_status := scanner_status;
+    save_warning_index := warning_index;
+    save_def_ref := def_ref;
+    save_cur_string;
+    do_directjs;
+    def_ref := save_def_ref;
+    warning_index := save_warning_index;
+    scanner_status := save_scanner_status;
+    restore_cur_string;
+  end;
 kanjiskip_code: scan_int; { stub for now }
 uchar_code: scan_int;
 ucharcat_code:
@@ -276,6 +293,7 @@ job_name_code: print(job_name);
 pdf_strcmp_code: print_int(cur_val);
 shellescape_code: print_int(cur_val);
 filesize_code: print_int(cur_val);
+directjs_code: begin end;
 uchar_code, ucharcat_code: print_char(cur_val);
 job_name_code: print(job_name);
 @z
@@ -370,6 +388,25 @@ begin
   flush_str(s);
   cur_val_level:=int_val;
 end;
+
+procedure do_directjs; {to implement \.{\\directjs}}
+var s: str_number;
+    t: str_number;
+    b: pool_pointer;
+    save_cur_cs: pointer;
+begin
+  call_func(scan_toks(false, true));
+  s:=tokens_to_string(def_ref);
+  delete_token_ref(def_ref);
+   
+  b := pool_ptr;
+  evaljs(s,str_pool,str_start,pool_ptr,pool_size,max_strings);
+  t := make_string;
+
+  link(garbage):=str_toks(b);
+  ins_list(link(temp_head));
+   
+  flush_str(t);
+  flush_str(s);
+end;
 @z
-
-

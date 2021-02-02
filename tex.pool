@@ -494,6 +494,7 @@
 06strcmp
 11shellescape
 08filesize
+08directjs
 09kanjiskip
 05Uchar
 08Ucharcat
@@ -1171,4 +1172,4 @@
 13clubpenalties
 14widowpenalties
 21displaywidowpenalties
-*043144253
+*454918541

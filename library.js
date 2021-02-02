@@ -317,14 +317,37 @@ module.exports = {
       return 0;
   },
 
+  evaljs: function(str_number, str_poolp, str_startp, pool_ptrp, pool_size, max_strings) {
+    var str_start = new Uint32Array( memory, str_startp, max_strings+1);
+    var pool_ptr = new Uint32Array( memory, pool_ptrp, 1);
+    var str_pool = new Uint8Array( memory, str_poolp, pool_size+1);
+    var length = str_start[str_number+1] - str_start[str_number];
+    var input = new Uint8Array( memory, str_poolp + str_start[str_number], length );
+    var string = new TextDecoder("ascii").decode(input);
+    
+    var tex = {
+      print: function(s) {
+        const encoder = new TextEncoder('ascii');
+        const view = encoder.encode(s);
+        const buffer = Buffer.from(view);
+        console.log('want to print',s);
+        str_pool.set( buffer, pool_ptr[0] );
+        pool_ptr[0] += view.length;
+      }
+    };
+
+    var f = Function('tex', string);
+    f(tex);
+  },
+  
   inputln: function(descriptor, bypass_eoln, bufferp, firstp, lastp, max_buf_stackp, buf_size) {
     var file = files[descriptor];
     var last_nonblank = 0; // |last| with trailing blanks removed
 
     var buffer = new Uint8Array( memory, bufferp, buf_size);
-    var first = new Uint32Array( memory, firstp, 4 );
-    var last = new Uint32Array( memory, lastp, 4 );
-    var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 4 );
+    var first = new Uint32Array( memory, firstp, 1 );
+    var last = new Uint32Array( memory, lastp, 1 );
+    var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 1 );
 
     // cf.\ Matthew 19\thinspace:\thinspace30
     last[0] = first[0];

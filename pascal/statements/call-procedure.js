@@ -92,6 +92,28 @@ module.exports = class CallProcedure {
       return file.variable.set( result );
     }
 
+    if (this.procedure.name == "evaljs") {
+        var str_number = this.params[0];
+        var str_pool = this.params[1];
+        var str_start = this.params[2];
+        var pool_ptr = this.params[3];
+        var pool_size = this.params[4];
+        var max_strings = this.params[5];
+      
+        str_pool.generate(environment);
+        str_start.generate(environment);
+        pool_ptr.generate(environment);
+
+        return module.call( "evaljs", [str_number.generate(environment),
+                                       str_pool.variable.pointer(),
+                                       str_start.variable.pointer(),
+                                       pool_ptr.variable.pointer(),
+                                       pool_size.generate(environment),
+                                       max_strings.generate(environment),
+                                      ],
+                            Binaryen.none );
+    }          
+
     if ((this.procedure.name == "readln") || (this.procedure.name == "read_ln") || (this.procedure.name == "read")) {
       var file = undefined;
       var commands = [];
