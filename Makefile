@@ -1,6 +1,6 @@
 TEXWEB=texk/tex.web
 ETEXCH=etexdir/etex.ch
-CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch logopenout.ch jstex.ch wordsize.ch 
+CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch logopenout.ch jstex.ch nonlocal-goto.ch wordsize.ch 
 
 all:
 
