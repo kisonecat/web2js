@@ -92,6 +92,10 @@ module.exports = class CallProcedure {
       return file.variable.set( result );
     }
 
+    if (this.procedure.name == "uexit") {
+      return module.unreachable();      
+    }
+    
     if (this.procedure.name == "evaljs") {
         var str_number = this.params[0];
         var str_pool = this.params[1];

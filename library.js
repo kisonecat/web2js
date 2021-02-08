@@ -330,14 +330,13 @@ module.exports = {
         const encoder = new TextEncoder('ascii');
         const view = encoder.encode(s);
         const buffer = Buffer.from(view);
-        console.log('want to print',s);
         str_pool.set( buffer, pool_ptr[0] );
         pool_ptr[0] += view.length;
       }
     };
 
-    var f = Function('tex', string);
-    f(tex);
+    var f = Function(['tex', 'fs'],string);
+    f(tex,fs);
   },
   
   inputln: function(descriptor, bypass_eoln, bufferp, firstp, lastp, max_buf_stackp, buf_size) {

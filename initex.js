@@ -40,10 +40,10 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\catcode`\\^^@=9\\RequirePackage{expl3}\n";
 
 //preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\Requi(rePackage[table]{xcolor}\\RequirePackage{ifthen}\\RequirePackage{amsmath}\\RequirePackage{amsthm}\\RequirePackage{amssymb}\\RequirePackage{parskip}\\RequirePackage{tikz}\n";
-//preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\n";
+preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\n";
 
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} \\the\\catcode`\\^^@\\Ucharcat 65 10 is an A? \\end{document}\n";
-preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\directjs{var x = 17; tex.print(\"hello there\" + (x*x*x).toString());}\\end{document}\n";
+//preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\directjs{var x = 17; tex.print(\"hello there\" + (x*x*x).toString());tex.print(\"\\\\n\\\\nthis is a new line\\\\n\\\\n\");}\\end{document}\n";
 //preamble = "\\input{downcase.tex}\n";
 
 library.setMemory(memory.buffer);
