@@ -24,7 +24,7 @@ module.exports = class Memory {
   constructor(m, pages) {
     this.module = m;
     this.strings = [];
-    this.memorySize = 0;
+    this.memorySize = 1025; // the low 1K of memory can be considered unused when optimizing.
     this.pages = pages;
     
     this.i32 = commands( this, 4, this.module.i32.load, this.module.i32.store );

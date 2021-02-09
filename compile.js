@@ -163,8 +163,10 @@ parser.lexer = {
 var program = parser.parse();
 
 var module = program.generate();
+// Transcriptwrittenontexput.log.nodeinitex.js8.48suser0.73ssystem157%cpu5.832totalTranscript written on texput.log.node initex.js  8.48s user 0.73s system 157% cpu 5.832 total
+// module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
 
-module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
+//module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute-propagate","code-pushing","duplicate-function-elimination","inlining-optimizing","dae-optimizing","generate-stack-ir","optimize-stack-ir"]);
 
 fs.writeFileSync( process.argv[3], module.emitBinary() );
 
