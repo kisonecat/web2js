@@ -169,3 +169,5 @@ module.runPasses(["remove-unused-brs","pick-load-signs","precompute","precompute
 fs.writeFileSync( process.argv[3], module.emitBinary() );
 
 console.log("Using ", program.memory.memorySize, "bytes" );
+var neededPages = Math.ceil(program.memory.memorySize / 65536);
+console.log("Using ", neededPages, "pages" );

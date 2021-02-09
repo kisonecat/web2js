@@ -40,6 +40,7 @@
 @x
 procedure@?ins_the_toks; forward;@t\2@>
 @y
+procedure@?scan_pdf_ext_toks; forward;@t\2@>
 procedure@?compare_strings; forward;@t\2@>
 procedure@?do_filesize; forward;@t\2@>
 procedure@?do_directjs; forward;@t\2@>
@@ -112,6 +113,7 @@ begin str_toks:=str_toks_cat(b,0); end;
 @y
 @d etex_convert_codes=etex_convert_base+1 {end of \eTeX's command codes}
 @d ximeratex_first_expand_code = etex_convert_codes + 1 {base for \ximeratex's command codes}
+@d expanded_code = ximeratex_first_expand_code + 10 {command code for \.{\\pdfstrcmp}}
 @d pdf_strcmp_code = ximeratex_first_expand_code + 11 {command code for \.{\\pdfstrcmp}}
 @d uchar_code = ximeratex_first_expand_code + 12 {command code for \.{\\Uchar}}
 @d ucharcat_code = ximeratex_first_expand_code + 13 {command code for \.{\\Ucharcat}}
@@ -127,6 +129,8 @@ begin str_toks:=str_toks_cat(b,0); end;
 primitive("jobname",convert,job_name_code);@/
 @!@:job_name_}{\.{\\jobname} primitive@>
 @y
+primitive("expanded",convert,expanded_code);@/
+@!@:expanded_}{\.{\\expanded} primitive@>
 primitive("strcmp",convert,pdf_strcmp_code);@/
 @!@:pdf_strcmp_}{\.{\\pdfstrcmp} primitive@>
 primitive("shellescape",convert,shellescape_code);@/
@@ -148,6 +152,7 @@ primitive("jobname",convert,job_name_code);@/
 @x
   othercases print_esc("jobname")
 @y
+  expanded_code: print_esc("expanded");
   pdf_strcmp_code: print_esc("pdfstrcmp");
   shellescape_code: print_esc("shellescape");  
   filesize_code: print_esc("filesize");
@@ -200,6 +205,19 @@ selector:=old_setting; link(garbage):=str_toks_cat(b,cat); ins_list(link(temp_he
 @x
 job_name_code: if job_name=0 then open_log_file;
 @y
+expanded_code:
+  begin
+    save_scanner_status := scanner_status;
+    save_warning_index := warning_index;
+    save_def_ref := def_ref;
+    save_cur_string;
+    scan_pdf_ext_toks;
+    warning_index := save_warning_index;
+    scanner_status := save_scanner_status;
+    ins_list(link(def_ref));
+    def_ref := save_def_ref;
+    restore_cur_string;
+  end;
 pdf_strcmp_code:
   begin
     save_scanner_status:=scanner_status;
@@ -301,6 +319,11 @@ begin
   show_token_list(link(p),null,pool_size-pool_ptr);
   selector:=old_setting;
   tokens_to_string:=make_string;
+end;
+
+procedure scan_pdf_ext_toks;
+begin
+  call_func(scan_toks(false, true)); 
 end;
 
 procedure compare_strings; {to implement \.{\\strcmp}}

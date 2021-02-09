@@ -150,7 +150,6 @@ module.exports = {
     var buffer = new Uint8Array( memory, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);
 
-    console.log('reset',filename);
     filename = filename.replace(/\000+$/g,'');
     
     if (filename.startsWith('{')) {
@@ -196,7 +195,7 @@ module.exports = {
     }
     
     var path = kpse.findFile(filename, format);
-    console.log('finding',path);
+
     if (path == undefined) {
       files.push({
         filename: filename,
