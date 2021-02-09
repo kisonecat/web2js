@@ -66,7 +66,7 @@ function isNotTooDifferent(a, b) {
     return ('Date of format file is permitted to differ.');
   }  
 
-  if (b == ' 47 strings out of 1674\n') {
+  if (b.startsWith(' 47 strings out of 1674\n')) {
     return ('Number of strings is permitted to differ.');
   }  
 

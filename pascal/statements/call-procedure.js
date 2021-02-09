@@ -97,23 +97,38 @@ module.exports = class CallProcedure {
     }
     
     if (this.procedure.name == "evaljs") {
-        var str_number = this.params[0];
-        var str_pool = this.params[1];
-        var str_start = this.params[2];
-        var pool_ptr = this.params[3];
-        var pool_size = this.params[4];
-        var max_strings = this.params[5];
-      
-        str_pool.generate(environment);
-        str_start.generate(environment);
-        pool_ptr.generate(environment);
+      var str_number = this.params[0];
+      var str_pool = this.params[1];
+      var str_start = this.params[2];
+      var pool_ptr = this.params[3];
+      var pool_size = this.params[4];
+      var max_strings = this.params[5];
 
-        return module.call( "evaljs", [str_number.generate(environment),
+      var buffer = this.params[6];
+      var first = this.params[7];
+      var last = this.params[8];
+      var max_buf_stack = this.params[9];
+      var buf_size = this.params[10];
+      
+      buffer.generate(environment);
+      first.generate(environment);
+      last.generate(environment);
+      max_buf_stack.generate(environment);
+      str_pool.generate(environment);
+      str_start.generate(environment);
+      pool_ptr.generate(environment);
+      
+      return module.call( "evaljs", [str_number.generate(environment),
                                        str_pool.variable.pointer(),
                                        str_start.variable.pointer(),
                                        pool_ptr.variable.pointer(),
                                        pool_size.generate(environment),
                                        max_strings.generate(environment),
+                                       buffer.variable.pointer(),
+                                       first.variable.pointer(),
+                                       last.variable.pointer(),                                      
+                                       max_buf_stack.variable.pointer(),
+                                       buf_size.generate(environment),
                                       ],
                             Binaryen.none );
     }          

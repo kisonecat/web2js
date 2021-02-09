@@ -38,35 +38,6 @@
 @z
 
 @x
-@p function input_ln(var f:alpha_file;@!bypass_eoln:boolean):boolean;
-  {inputs the next line or returns |false|}
-var last_nonblank:0..buf_size; {|last| with trailing blanks removed}
-begin if bypass_eoln then if not eof(f) then get(f);
-  {input the first character of the line into |f^|}
-last:=first; {cf.\ Matthew 19\thinspace:\thinspace30}
-if eof(f) then input_ln:=false
-else  begin last_nonblank:=first;
-  while not eoln(f) do
-    begin if last>=max_buf_stack then
-      begin max_buf_stack:=last+1;
-      if max_buf_stack=buf_size then
-        @<Report overflow of the input buffer, and abort@>;
-      end;
-    buffer[last]:=xord[f^]; get(f); incr(last);
-    if buffer[last-1]<>" " then last_nonblank:=last;
-    end;
-  last:=last_nonblank; input_ln:=true;
-  end;
-end;
-@y
-@p function input_ln(var f:alpha_file;@!bypass_eoln:boolean):boolean;
-  {inputs the NEXT LINE or returns |false|}
-begin
-  input_ln := inputln_actual(f,bypass_eoln,buffer,first,last,max_buf_stack,buf_size);
-end;
-@z
-
-@x
 procedure@?ins_the_toks; forward;@t\2@>
 @y
 procedure@?compare_strings; forward;@t\2@>
@@ -76,14 +47,13 @@ procedure@?pack_file_name(@!n,@!a,@!e:str_number); forward;@t\2@>
 procedure@?ins_the_toks; forward;@t\2@>
 @z
 
-
 @x
 The token list created by |str_toks| begins at |link(temp_head)| and ends
 at the value |p| that is returned. (If |p=temp_head|, the list is empty.)
 
 @p @t\4@>@<Declare \eTeX\ procedures for token lists@>@;@/
 function str_toks(@!b:pool_pointer):pointer;
-  {changes the string |str_pool[b..pool_ptr]| to a token list}
+  {converts |str_pool[b..pool_ptr-1]| to a token list}
 var p:pointer; {tail of the token list}
 @!q:pointer; {new node being added to the token list via |store_new_token|}
 @!t:halfword; {token being appended}
@@ -398,15 +368,6 @@ begin
   call_func(scan_toks(false, true));
   s:=tokens_to_string(def_ref);
   delete_token_ref(def_ref);
-   
-  b := pool_ptr;
-  evaljs(s,str_pool,str_start,pool_ptr,pool_size,max_strings);
-  t := make_string;
-
-  link(garbage):=str_toks(b);
-  ins_list(link(temp_head));
-   
-  flush_str(t);
-  flush_str(s);
+  flush_str(s);  
 end;
 @z
