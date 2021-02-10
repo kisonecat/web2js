@@ -1,14 +1,4 @@
 @x
-primitive("input",input,0);@/
-@!@:input_}{\.{\\input} primitive@>
-@y
-primitive("input",input,0);@/
-@!@:input_}{\.{\\input} primitive@>
-primitive("directjs",input,3);@/
-@!@:directjs_}{\.{\\directjs} primitive@>
-@z
-
-@x
 else if chr_code=2 then print_esc("scantokens")
 @y
 else if chr_code=2 then print_esc("scantokens")
@@ -33,6 +23,10 @@ procedure@?directjs_start; forward;@t\2@>
 @* \[54] System-dependent changes.
 @y
 @* \[53b] The features of \jsTeX.
+
+@<Generate all \eTeX...@>=
+primitive("directjs",input,3);@/
+@!@:directjs_}{\.{\\directjs} primitive@>
 
 @ @<Declare \eTeX\ procedures for use by |main_control|@>=
 procedure directjs_start;

@@ -1,6 +1,6 @@
 TEXWEB=texk/tex.web
 ETEXCH=etexdir/etex.ch
-CHANGE_FILES=$(ETEXCH) date.ch ord-chr.ch logopenout.ch jstex.ch inputln.ch nonlocal-goto.ch codes.ch filesize.ch strcmp.ch directjs.ch expanded.ch banner.ch wordsize.ch
+CHANGE_FILES=$(ETEXCH) $(addprefix jstex/,date.ch ord-chr.ch logopenout.ch jstex.ch tokens.ch inputln.ch nonlocal-goto.ch codes.ch filesize.ch strcmp.ch shellescape.ch directjs.ch uchar.ch kanjiskip.ch expanded.ch banner.ch wordsize.ch)
 
 all:
 
