@@ -202,8 +202,6 @@ primitive("shellescape",convert,shellescape_code);@/
 @!@:shellescape_}{\.{\\shellescape} primitive@>
 primitive("filesize",convert,filesize_code);@/
 @!@:filesize_}{\.{\\filesize} primitive@>
-primitive("baddirectjs",convert,directjs_code);@/
-@!@:directjs_}{\.{\\directjs} primitive@>
 primitive("kanjiskip",convert,kanjiskip_code);@/
 @!@:kanjiskip_}{\.{\\kanjiskip} primitive@>
 primitive("Uchar",convert,uchar_code);@/
@@ -221,7 +219,6 @@ primitive("jobname",convert,job_name_code);@/
   pdf_strcmp_code: print_esc("pdfstrcmp");
   shellescape_code: print_esc("shellescape");  
   filesize_code: print_esc("filesize");
-  directjs_code: print_esc("directjs");
   kanjiskip_code: print_esc("kanjiskip");    
   uchar_code: print_esc("Uchar");
   ucharcat_code: print_esc("Ucharcat");
@@ -308,18 +305,6 @@ filesize_code:
     scanner_status := save_scanner_status;
     restore_cur_string;
   end;
-directjs_code:
-  begin
-    save_scanner_status := scanner_status;
-    save_warning_index := warning_index;
-    save_def_ref := def_ref;
-    save_cur_string;
-    do_directjs;
-    def_ref := save_def_ref;
-    warning_index := save_warning_index;
-    scanner_status := save_scanner_status;
-    restore_cur_string;    
-  end;
 kanjiskip_code: scan_int; { stub for now }
 uchar_code: scan_int;
 ucharcat_code:
@@ -346,7 +331,6 @@ job_name_code: print(job_name);
 pdf_strcmp_code: print_int(cur_val);
 shellescape_code: print_int(cur_val);
 filesize_code: print_int(cur_val);
-directjs_code: print_char(65);
 uchar_code, ucharcat_code: print_char(cur_val);
 job_name_code: print(job_name);
 @z
@@ -357,7 +341,6 @@ found: scanner_status:=normal;
 if hash_brace<>0 then store_new_token(hash_brace);
 scan_toks:=p;
 end;
-
 @y
 @<Scan and build the body of the token list; |goto found| when finished@>;
 found: scanner_status:=normal;
@@ -445,53 +428,5 @@ begin
 
   flush_str(s);
   cur_val_level:=int_val;
-end;
-
-procedure do_directjs; {to implement \.{\\directjs}}
-var s: str_number;
-    t: str_number;
-    b: pool_pointer;
-    save_cur_cs: pointer;
-begin
-  call_func(scan_toks(false, true));
-  s:=tokens_to_string(def_ref);
-  delete_token_ref(def_ref);
-  flush_str(s);
-
-  push_input;
-  start:=first; state:=mid_line;
-  name:=0;
-  loc:=start;
-  last:=start;
-  limit:=start; loc:=limit;
-
-  buffer[last] := 65;
-  incr(last);
-  buffer[last] := 65;
-  incr(last);
-  buffer[last] := end_line_char;
-  incr(last);  
-  cur_input.js_field:=1;
-
-end;
-
-procedure directjs_start;
-var old_setting:0..max_selector; {holds |selector| setting}
-@!t:str_number; {string to be evaluated}
-@!s:str_number; {string to be converted into a pseudo file}
-@!l,@!m:pool_pointer; {indices into |str_pool|}
-@!p,@!q,@!r:pointer; {for list construction}
-@!w: four_quarters; {four ASCII codes}
-@!nl,@!sz:integer;
-begin
-  call_func(scan_toks(false, true));
-  t:=tokens_to_string(def_ref);
-  delete_token_ref(def_ref);
-  evaljs(t,str_pool, str_start, pool_ptr, pool_size, max_strings,buffer,first,last,max_buf_stack,buf_size);
-  s := make_string;
-@<Convert string |s| into a new pseudo file@>;
-flush_str(s);
-flush_str(t);
-@<Initiate input from new pseudo file@>;
 end;
 @z

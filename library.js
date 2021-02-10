@@ -17,6 +17,8 @@ var texPool = "tex.pool";
 let wasmExports;
 let view;
 
+let window = {};
+
 let DATA_ADDR = 2400 * 1024*64;
 let END_ADDR = 2500 * 1024*64;
 let windingDepth = 0;
@@ -332,8 +334,6 @@ module.exports = {
     // FIXME: this should not be ignored
     var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 1 );
 
-    console.log('evaling',string);
-    
     var tex = {
       print: function(s) {
         const encoder = new TextEncoder('ascii');
@@ -344,8 +344,8 @@ module.exports = {
       }
     };
 
-    var f = Function(['tex'],string);
-    f(tex);
+    var f = Function(['tex','window'],string);
+    f(tex, window);
   },
   
   inputln: function(descriptor, bypass_eoln, bufferp, firstp, lastp, max_buf_stackp, buf_size) {
