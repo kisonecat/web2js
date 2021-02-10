@@ -34,7 +34,7 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{listings}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{epstopdf}";
 
 //preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{pgffor}\n\\RequirePackage{array}\n\\RequirePackage{tkz-euclide}\n\\RequirePackage{tikz-cd}\n";
-//preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage{tikz}\n";
+preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage{tikz}\n";
 //\\RequirePackage{listings}\n";
 
 //preamble = "\\catcode`\\^^@=9\\RequirePackage{expl3}\n";
@@ -46,7 +46,7 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} \\the\\catcode`\\^^@\\Ucharcat 65 10 is an A? \\end{document}\n";
 //preamble = "\\documentclass{article}\n\\begin{document}hello\\end{document}\n";
 //preamble = "\\input{hello.tex}\n";
-preamble = "";
+//preamble = "";
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\directjs{var x = 17; tex.print(\"hello there\" + (x*x*x).toString());tex.print(\"\\\\n\\\\nthis is a new line\\\\n\\\\n\");}\\end{document}\n";
 //preamble = "\\input{downcase.tex}\n";
 

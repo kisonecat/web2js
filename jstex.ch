@@ -68,16 +68,6 @@
 @z
 
 @x
-procedure@?ins_the_toks; forward;@t\2@>
-@y
-procedure@?scan_pdf_ext_toks; forward;@t\2@>
-procedure@?compare_strings; forward;@t\2@>
-procedure@?do_filesize; forward;@t\2@>
-procedure@?pack_file_name(@!n,@!a,@!e:str_number); forward;@t\2@>
-procedure@?ins_the_toks; forward;@t\2@>
-@z
-
-@x
 The token list created by |str_toks| begins at |link(temp_head)| and ends
 at the value |p| that is returned. (If |p=temp_head|, the list is empty.)
 
@@ -137,34 +127,11 @@ begin str_toks:=str_toks_cat(b,0); end;
 @z
 
 @x
-@d etex_convert_codes=etex_convert_base+1 {end of \eTeX's command codes}
-@d job_name_code=etex_convert_codes {command code for \.{\\jobname}}
-@y
-@d etex_convert_codes=etex_convert_base+1 {end of \eTeX's command codes}
-@d ximeratex_first_expand_code = etex_convert_codes + 1 {base for \ximeratex's command codes}
-@d expanded_code = ximeratex_first_expand_code + 10 {command code for \.{\\pdfstrcmp}}
-@d pdf_strcmp_code = ximeratex_first_expand_code + 11 {command code for \.{\\pdfstrcmp}}
-@d uchar_code = ximeratex_first_expand_code + 12 {command code for \.{\\Uchar}}
-@d ucharcat_code = ximeratex_first_expand_code + 13 {command code for \.{\\Ucharcat}}
-@d filesize_code = ximeratex_first_expand_code + 14 {command code for \.{\\filesize}}
-@d kanjiskip_code = ximeratex_first_expand_code + 15 {command code for \.{\\kanjiskip}}
-@d shellescape_code = ximeratex_first_expand_code + 16 {command code for \.{\\shellescape}}
-@d ximeratex_convert_codes = ximeratex_first_expand_code + 26 {end of \ximeratex's command codes}
-@d job_name_code=ximeratex_convert_codes {command code for \.{\\jobname}}
-@z
-
-@x
 primitive("jobname",convert,job_name_code);@/
 @!@:job_name_}{\.{\\jobname} primitive@>
 @y
-primitive("expanded",convert,expanded_code);@/
-@!@:expanded_}{\.{\\expanded} primitive@>
-primitive("strcmp",convert,pdf_strcmp_code);@/
-@!@:pdf_strcmp_}{\.{\\pdfstrcmp} primitive@>
 primitive("shellescape",convert,shellescape_code);@/
 @!@:shellescape_}{\.{\\shellescape} primitive@>
-primitive("filesize",convert,filesize_code);@/
-@!@:filesize_}{\.{\\filesize} primitive@>
 primitive("kanjiskip",convert,kanjiskip_code);@/
 @!@:kanjiskip_}{\.{\\kanjiskip} primitive@>
 primitive("Uchar",convert,uchar_code);@/
@@ -178,10 +145,7 @@ primitive("jobname",convert,job_name_code);@/
 @x
   othercases print_esc("jobname")
 @y
-  expanded_code: print_esc("expanded");
-  pdf_strcmp_code: print_esc("pdfstrcmp");
   shellescape_code: print_esc("shellescape");  
-  filesize_code: print_esc("filesize");
   kanjiskip_code: print_esc("kanjiskip");    
   uchar_code: print_esc("Uchar");
   ucharcat_code: print_esc("Ucharcat");
@@ -230,44 +194,7 @@ selector:=old_setting; link(garbage):=str_toks_cat(b,cat); ins_list(link(temp_he
 @x
 job_name_code: if job_name=0 then open_log_file;
 @y
-expanded_code:
-  begin
-    save_scanner_status := scanner_status;
-    save_warning_index := warning_index;
-    save_def_ref := def_ref;
-    save_cur_string;
-    scan_pdf_ext_toks;
-    warning_index := save_warning_index;
-    scanner_status := save_scanner_status;
-    ins_list(link(def_ref));
-    def_ref := save_def_ref;
-    restore_cur_string;
-  end;
-pdf_strcmp_code:
-  begin
-    save_scanner_status:=scanner_status;
-    save_warning_index:=warning_index;
-    save_def_ref:=def_ref;
-    save_cur_string;
-    compare_strings;
-    def_ref:=save_def_ref;
-    warning_index:=save_warning_index;
-    scanner_status:=save_scanner_status;
-    restore_cur_string;
-  end;
 shellescape_code: cur_val:=1;
-filesize_code:
-  begin
-    save_scanner_status := scanner_status;
-    save_warning_index := warning_index;
-    save_def_ref := def_ref;
-    save_cur_string;
-    do_filesize;
-    def_ref := save_def_ref;
-    warning_index := save_warning_index;
-    scanner_status := save_scanner_status;
-    restore_cur_string;
-  end;
 kanjiskip_code: scan_int; { stub for now }
 uchar_code: scan_int;
 ucharcat_code:
@@ -291,9 +218,7 @@ job_name_code: if job_name=0 then open_log_file;
 @x
 job_name_code: print(job_name);
 @y
-pdf_strcmp_code: print_int(cur_val);
 shellescape_code: print_int(cur_val);
-filesize_code: print_int(cur_val);
 uchar_code, ucharcat_code: print_char(cur_val);
 job_name_code: print(job_name);
 @z
@@ -330,66 +255,5 @@ begin
   show_token_list(link(p),null,pool_size-pool_ptr);
   selector:=old_setting;
   tokens_to_string:=make_string;
-end;
-
-procedure scan_pdf_ext_toks;
-begin
-  call_func(scan_toks(false, true)); 
-end;
-
-procedure compare_strings; {to implement \.{\\strcmp}}
-label done;
-var s1, s2: str_number;
-  i1, i2, j1, j2: pool_pointer;
-  save_cur_cs: pointer;
-begin
-  save_cur_cs:=cur_cs; call_func(scan_toks(false, true));
-  s1:=tokens_to_string(def_ref);
-  delete_token_ref(def_ref);
-  cur_cs:=save_cur_cs; call_func(scan_toks(false, true));
-  s2:=tokens_to_string(def_ref);
-  delete_token_ref(def_ref);
-  i1:=str_start[s1];
-  j1:=str_start[s1 + 1];
-  i2:=str_start[s2];
-  j2:=str_start[s2 + 1];
-  while (i1 < j1) and (i2 < j2) do begin
-    if str_pool[i1] < str_pool[i2] then begin
-      cur_val:=-1;
-      goto done;
-    end;
-    if str_pool[i1] > str_pool[i2] then begin
-      cur_val:=1;
-      goto done;
-    end;
-    incr(i1);
-    incr(i2);
-  end;
-  if (i1 = j1) and (i2 = j2) then
-    cur_val:=0
-  else if i1 < j1 then
-    cur_val:=1
-  else
-    cur_val:=-1;
-done:
-  flush_str(s2);
-  flush_str(s1);
-  cur_val_level:=int_val;
-end;
-
-procedure do_filesize; {to implement \.{\\filesize}}
-var s: str_number;
-    save_cur_cs: pointer;
-begin
-  call_func(scan_toks(false, true));
-  s:=tokens_to_string(def_ref);
-  delete_token_ref(def_ref);
-
-  pack_file_name(s,"","");
-
-  cur_val := getfilesize(name_of_file);
-
-  flush_str(s);
-  cur_val_level:=int_val;
 end;
 @z
