@@ -108,7 +108,6 @@ procedure@?ins_the_toks; forward;@t\2@>
 procedure@?scan_pdf_ext_toks; forward;@t\2@>
 procedure@?compare_strings; forward;@t\2@>
 procedure@?do_filesize; forward;@t\2@>
-procedure@?do_directjs; forward;@t\2@>
 procedure@?pack_file_name(@!n,@!a,@!e:str_number); forward;@t\2@>
 procedure@?ins_the_toks; forward;@t\2@>
 @z
@@ -185,7 +184,6 @@ begin str_toks:=str_toks_cat(b,0); end;
 @d filesize_code = ximeratex_first_expand_code + 14 {command code for \.{\\filesize}}
 @d kanjiskip_code = ximeratex_first_expand_code + 15 {command code for \.{\\kanjiskip}}
 @d shellescape_code = ximeratex_first_expand_code + 16 {command code for \.{\\shellescape}}
-@d directjs_code = ximeratex_first_expand_code + 17 {command code for \.{\\directjs}}
 @d ximeratex_convert_codes = ximeratex_first_expand_code + 26 {end of \ximeratex's command codes}
 @d job_name_code=ximeratex_convert_codes {command code for \.{\\jobname}}
 @z
