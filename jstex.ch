@@ -67,41 +67,6 @@
 % This program is indirectly derived from Knuth's TeX via e-TeX.
 @z
 
-
-
-@x
-@!in_state_record = record
-  @!state_field, @!index_field: quarterword;
-  @!start_field,@!loc_field, @!limit_field, @!name_field: halfword;
-  end;
-@y
-@!in_state_record = record
-  @!js_field: quarterword;
-  @!state_field, @!index_field: quarterword;
-  @!start_field,@!loc_field, @!limit_field, @!name_field: halfword;
-  end;
-@z
-
-@x
-  input_stack[input_ptr]:=cur_input; {stack the record}
-@y
-  input_stack[input_ptr]:=cur_input; {stack the record}
-  input_stack[input_ptr].js_field:=0;
-@z
-
-@x
-if name>17 then @<Read next line of file into |buffer|, or
-  |goto restart| if the file has ended@>
-@y
-  if cur_input.js_field then begin
-  print("js_field!");update_terminal;
-  pop_input;return;
-  end;
-if name>17 then @<Read next line of file into |buffer|, or
-  |goto restart| if the file has ended@>  
-@z
-
-
 @x
 procedure@?ins_the_toks; forward;@t\2@>
 @y
