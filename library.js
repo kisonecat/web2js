@@ -331,17 +331,16 @@ module.exports = {
     var last = new Uint32Array( memory, lastp, 1 );
     // FIXME: this should not be ignored
     var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 1 );
-    
-    // cf.\ Matthew 19\thinspace:\thinspace30
-    last[0] = first[0];
+
+    console.log('evaling',string);
     
     var tex = {
       print: function(s) {
         const encoder = new TextEncoder('ascii');
         const view = encoder.encode(s);
         const b = Buffer.from(view);
-        buffer.set( buffer, last[0] );
-        last[0] += view.length;
+        str_pool.set( b, pool_ptr[0] );
+        pool_ptr[0] += view.length;
       }
     };
 

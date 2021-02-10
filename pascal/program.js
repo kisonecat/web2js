@@ -100,8 +100,8 @@ module.exports = class Program {
     module.addFunctionImport( "evaljs", "library", "evaljs",
                               module.addFunctionType(null, Binaryen.none,
                                                      [Binaryen.i32, Binaryen.i32, Binaryen.i32, Binaryen.i32,
-                                                      Binaryen.i32, Binaryen.i32,
-                                                     ] ) );
+                                                      Binaryen.i32, Binaryen.i32, Binaryen.i32, Binaryen.i32,
+                                                      Binaryen.i32, Binaryen.i32, Binaryen.i32                                                             ] ) );
     
     module.addFunctionImport( "rewrite", "library", "rewrite",
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );

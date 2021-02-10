@@ -45,7 +45,8 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} \\the\\catcode`\\^^@\\Ucharcat 65 10 is an A? \\end{document}\n";
 //preamble = "\\documentclass{article}\n\\begin{document}hello\\end{document}\n";
-preamble = "\\input{hello.tex}\n";
+//preamble = "\\input{hello.tex}\n";
+preamble = "";
 //preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\directjs{var x = 17; tex.print(\"hello there\" + (x*x*x).toString());tex.print(\"\\\\n\\\\nthis is a new line\\\\n\\\\n\");}\\end{document}\n";
 //preamble = "\\input{downcase.tex}\n";
 

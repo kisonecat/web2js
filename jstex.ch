@@ -29,6 +29,36 @@
 % such as TIE allow the application of several change files to
 % tex.web; master files tex.web, etex.ch, and jstex.ch should stay
 % intact.)
+
+% Code for primitives like \strcmp was taken from the XeTeX
+% typesetting system, which is
+
+% Copyright (c) 1994-2008 by SIL International
+% Copyright (c) 2009-2012 by Jonathan Kew
+% Copyright (c) 2010-2012 by Han Han The Thanh
+% Copyright (c) 2012-2013 by Khaled Hosny
+
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+
+% The above copyright notice and this permission notice shall be included in all
+% copies or substantial portions of the Software.
+
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+% IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+% CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+% Except as contained in this notice, the name of the copyright holders shall
+% not be used in advertising or otherwise to promote the sale, use or other
+% dealings in this Software without prior written authorization from the
+% copyright holders.
 @z
 
 @x
@@ -36,6 +66,41 @@
 @y
 % This program is indirectly derived from Knuth's TeX via e-TeX.
 @z
+
+
+
+@x
+@!in_state_record = record
+  @!state_field, @!index_field: quarterword;
+  @!start_field,@!loc_field, @!limit_field, @!name_field: halfword;
+  end;
+@y
+@!in_state_record = record
+  @!js_field: quarterword;
+  @!state_field, @!index_field: quarterword;
+  @!start_field,@!loc_field, @!limit_field, @!name_field: halfword;
+  end;
+@z
+
+@x
+  input_stack[input_ptr]:=cur_input; {stack the record}
+@y
+  input_stack[input_ptr]:=cur_input; {stack the record}
+  input_stack[input_ptr].js_field:=0;
+@z
+
+@x
+if name>17 then @<Read next line of file into |buffer|, or
+  |goto restart| if the file has ended@>
+@y
+  if cur_input.js_field then begin
+  print("js_field!");update_terminal;
+  pop_input;return;
+  end;
+if name>17 then @<Read next line of file into |buffer|, or
+  |goto restart| if the file has ended@>  
+@z
+
 
 @x
 procedure@?ins_the_toks; forward;@t\2@>
@@ -137,7 +202,7 @@ primitive("shellescape",convert,shellescape_code);@/
 @!@:shellescape_}{\.{\\shellescape} primitive@>
 primitive("filesize",convert,filesize_code);@/
 @!@:filesize_}{\.{\\filesize} primitive@>
-primitive("directjs",convert,directjs_code);@/
+primitive("baddirectjs",convert,directjs_code);@/
 @!@:directjs_}{\.{\\directjs} primitive@>
 primitive("kanjiskip",convert,kanjiskip_code);@/
 @!@:kanjiskip_}{\.{\\kanjiskip} primitive@>
@@ -253,7 +318,7 @@ directjs_code:
     def_ref := save_def_ref;
     warning_index := save_warning_index;
     scanner_status := save_scanner_status;
-    restore_cur_string;
+    restore_cur_string;    
   end;
 kanjiskip_code: scan_int; { stub for now }
 uchar_code: scan_int;
@@ -281,7 +346,7 @@ job_name_code: print(job_name);
 pdf_strcmp_code: print_int(cur_val);
 shellescape_code: print_int(cur_val);
 filesize_code: print_int(cur_val);
-directjs_code: begin end;
+directjs_code: print_char(65);
 uchar_code, ucharcat_code: print_char(cur_val);
 job_name_code: print(job_name);
 @z
@@ -391,6 +456,42 @@ begin
   call_func(scan_toks(false, true));
   s:=tokens_to_string(def_ref);
   delete_token_ref(def_ref);
-  flush_str(s);  
+  flush_str(s);
+
+  push_input;
+  start:=first; state:=mid_line;
+  name:=0;
+  loc:=start;
+  last:=start;
+  limit:=start; loc:=limit;
+
+  buffer[last] := 65;
+  incr(last);
+  buffer[last] := 65;
+  incr(last);
+  buffer[last] := end_line_char;
+  incr(last);  
+  cur_input.js_field:=1;
+
+end;
+
+procedure directjs_start;
+var old_setting:0..max_selector; {holds |selector| setting}
+@!t:str_number; {string to be evaluated}
+@!s:str_number; {string to be converted into a pseudo file}
+@!l,@!m:pool_pointer; {indices into |str_pool|}
+@!p,@!q,@!r:pointer; {for list construction}
+@!w: four_quarters; {four ASCII codes}
+@!nl,@!sz:integer;
+begin
+  call_func(scan_toks(false, true));
+  t:=tokens_to_string(def_ref);
+  delete_token_ref(def_ref);
+  evaljs(t,str_pool, str_start, pool_ptr, pool_size, max_strings,buffer,first,last,max_buf_stack,buf_size);
+  s := make_string;
+@<Convert string |s| into a new pseudo file@>;
+flush_str(s);
+flush_str(t);
+@<Initiate input from new pseudo file@>;
 end;
 @z
