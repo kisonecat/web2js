@@ -115,6 +115,12 @@ module.exports = class FunctionEvaluation {
                           Binaryen.i32 );
     }    
 
+    if (name.toLowerCase() == "snapshot") {
+      this.type = new Identifier("integer");
+      
+      return module.call( "snapshot", [], Binaryen.i32 );
+    }
+    
     if (name.toLowerCase() == "getfilesize") {
       this.type = new Identifier("integer");
       

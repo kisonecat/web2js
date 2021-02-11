@@ -442,4 +442,9 @@ module.exports = {
     if (file.writing)
       file.output.push( Buffer.from(buffer) );
   },
+
+  snapshot: function() {
+    console.log('(-snapshot-)');
+    return 1;
+  },  
 };

@@ -90,7 +90,10 @@ module.exports = class Program {
                               module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
 
     module.addFunctionImport( "getfilesize", "library", "getfilesize",
-                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );        
+                              module.addFunctionType(null, Binaryen.i32, [Binaryen.i32, Binaryen.i32] ) );
+
+    module.addFunctionImport( "snapshot", "library", "snapshot",
+                              module.addFunctionType(null, Binaryen.i32, [] ) );            
 
     module.addFunctionImport( "inputln", "library", "inputln",
                               module.addFunctionType(null, Binaryen.i32,

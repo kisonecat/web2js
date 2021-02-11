@@ -20,8 +20,9 @@
 @d kanjiskip_code = jstex_first_expand_code+4 {command code for \.{\\kanjiskip}}
 @d shellescape_code = jstex_first_expand_code+5 {command code for \.{\\shellescape}}
 @d expanded_code = jstex_first_expand_code+6 {command code for \.{\\expanded}}
-@d jstex_revision_code = jstex_first_expand_code+7 {end of \jsTeX's command codes}
-@d jstex_convert_codes = jstex_first_expand_code+8 {end of \jsTeX's command codes}
+@d jstex_revision_code = jstex_first_expand_code+7 {command code for \.{\\jsTeXrevision}}
+@d snapshot_code = jstex_first_expand_code+8 {command code for \.{\\snapshot}}
+@d jstex_convert_codes = jstex_first_expand_code+9 {end of \jsTeX's command codes}
 @d job_name_code=jstex_convert_codes {command code for \.{\\jobname}}
 @z
 
