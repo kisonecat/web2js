@@ -1,17 +1,30 @@
 # web2js
 
 This is a Pascal compiler that targets WebAssembly, designed
-specifically to compile TeX.
+specifically to compile TeX so it can be run inside the browser.  More
+specifically, this repository includes a TeX engine called jsTeX which
+is like [LuaTeX](http://www.luatex.org/) but instead of embedding
+[Lua](https://www.lua.org/) it embeds JavaScript.
 
-Importantly, this version passes the [trip tests](http://texdoc.net/texmf-dist/doc/generic/knuth/tex/tripman.pdf) which you can verify by running `make test`.
+Importantly, the jsTeX engine passes the [trip
+tests](http://texdoc.net/texmf-dist/doc/generic/knuth/tex/tripman.pdf)
+which you can verify by running `make test`.
 
 ## Prerequisites
 
-This projects depends on [NodeJS](https://nodejs.org/en/) for executing the javascript.  To post-process the WebAssembly, you will need `wasm-opt` on your path.
+This projects depends on [NodeJS](https://nodejs.org/en/) for
+executing the javascript.  To post-process the WebAssembly, you will
+need `wasm-opt` on your path.
 
-You will need a full TeX installation (e.g., [TeX Live](https://www.tug.org/texlive/)) with access to `kpsewhich` in order that library.js can find the necessary TeX files.  You also need `tie` and `tangle` to turn the WEB sources into Pascal which can be fed to the compiler.
+You will need a full TeX installation (e.g., [TeX
+Live](https://www.tug.org/texlive/)) with access to `kpsewhich` in
+order that `library.js` can find the necessary TeX files.  You also
+need `tie` and `tangle` to turn the WEB sources into Pascal which can
+be fed to the compiler.
 
-The contents of the `texk`, `triptrap`, and `etexdir` subdirectories were simply copied from tug.org via
+The contents of the `texk`, `triptrap`, and `etexdir` subdirectories
+were copied from tug.org via
+
 ```
 mkdir texk
 rsync -a --delete --exclude=.svn tug.org::tldevsrc/Build/source/texk/web2c/tex.web texk
@@ -21,51 +34,44 @@ rsync -a --delete --exclude=.svn tug.org::tldevsrc/Build/source/texk/web2c/etexd
 
 ## Getting started
 
-After cloning this repository, be sure to run `npm install`.
+After cloning this repository, run `npm install`.
 
+Then run
 
-
-The following assumes you have TeX running on your machine (e.g., that
-`tangle` is available).
-
-
-tie -c changes.ch tex.web etex.ch tex.ch
-
-tie -c changes.ch tex.web etex.ch date.ch ord-chr.ch ximera.ch tex.ch 
-tangle -underline tex.web changes.ch
-node compile.js tex.p
-wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect -O out.wasm -o async.wasm
-mv async.wasm out.wasm
-node initex.js
-
-need to use an INTEGER code for pdftexversion!!!!
-@d eTeX_version_code=eTeX_int {code for \.{\\eTeXversion}}
-
-
-Produce the Pascal source by tangling.
 ```
-tangle -underline tex.web changes.ch
+make core.dump
 ```
-You will now have the Pascal source `tex.p` along with `tex.pool` which contains the strings.
 
-Compile the `tex.p` sources to get the the WebAssembly binary `out.wasm`
-```
-npm install
-npm run-script build
-node compile.js tex.p
-```
-You may want to run
-```
-wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect -O out.wasm -o async.wasm
-mv async.wasm out.wasm
-```
-to get a version compatible with [https://github.com/GoogleChromeLabs/asyncify].
+to apply the changefiles, compile the resulting Pascal source to
+WebAssembly, and run `initex.js` to produce a format file and its
+corresponding memory dump.
 
-Produce `plain.fmt` and a corresponding memory dump.
+Then you can run TeX on a file called `sample.tex` with
+
 ```
-node initex.js
+node tex.js sample.tex
 ```
-Now compile `sample.tex` by running
+
+## jsTeX
+
+The main innovation of jsTeX is `\directjs` primitive similar to
+LuaTeX's `\directlua`.  For example,
+
+```latex
+\documentclass[12pt]{article}
+
+\newcommand{\cubeit}[1]{\directjs{
+  tex.print('$');
+  tex.print(`#1^3 = ${#1*#1*#1}`);
+  tex.print('$');
+}}
+
+\begin{document}
+
+Let's multiply eight by eight by eight.  \cubeit{8}
+
+\end{document}
 ```
-node tex.js
-```
+
+Inside `\directjs`, the JavaScript function `tex.print` can be used to
+emit strings back into TeX for further processing.
