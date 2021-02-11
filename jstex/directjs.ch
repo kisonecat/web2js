@@ -41,7 +41,7 @@ begin
   call_func(scan_toks(false, true));
   t:=tokens_to_string(def_ref);
   delete_token_ref(def_ref);
-  evaljs(t,str_pool, str_start, pool_ptr, pool_size, max_strings,buffer,first,last,max_buf_stack,buf_size);
+  evaljs(t,str_pool, str_start, pool_ptr, pool_size, max_strings,eqtb,active_base,eqtb_size,count_base);
   s := make_string;
 @<Convert string |s| into a new pseudo file@>;
 flush_str(s);

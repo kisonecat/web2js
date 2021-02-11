@@ -9,9 +9,11 @@ year:=sys_year; {Anno Domini}
 end;
 @y
 @p procedure fix_date_and_time;
-begin time:=currentminutes; {minutes since midnight}
+begin
+time:=currentminutes; {minutes since midnight}
 day:=currentday; {fourth day of the month}
 month:=currentmonth; {seventh month of the year}
 year:=currentyear; {Anno Domini}
+sys_time:=time;sys_day:=day; sys_month:=month; sys_year:=year;
 end;
 @z

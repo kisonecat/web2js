@@ -104,19 +104,16 @@ module.exports = class CallProcedure {
       var pool_size = this.params[4];
       var max_strings = this.params[5];
 
-      var buffer = this.params[6];
-      var first = this.params[7];
-      var last = this.params[8];
-      var max_buf_stack = this.params[9];
-      var buf_size = this.params[10];
+      var eqtb = this.params[6];
+      var active_base = this.params[7];    
+      var eqtb_size = this.params[8];
+      var count_base = this.params[9];
       
-      buffer.generate(environment);
-      first.generate(environment);
-      last.generate(environment);
-      max_buf_stack.generate(environment);
+      eqtb.generate(environment);
       str_pool.generate(environment);
       str_start.generate(environment);
-      pool_ptr.generate(environment);
+      pool_ptr.generate(environment);                 
+      console.log('eqtb=',eqtb);
       
       return module.call( "evaljs", [str_number.generate(environment),
                                        str_pool.variable.pointer(),
@@ -124,11 +121,10 @@ module.exports = class CallProcedure {
                                        pool_ptr.variable.pointer(),
                                        pool_size.generate(environment),
                                        max_strings.generate(environment),
-                                       buffer.variable.pointer(),
-                                       first.variable.pointer(),
-                                       last.variable.pointer(),                                      
-                                       max_buf_stack.variable.pointer(),
-                                       buf_size.generate(environment),
+                                       eqtb.variable.pointer(),
+                                       active_base.generate(environment),
+                                       eqtb_size.generate(environment),
+                                       count_base.generate(environment)                                               
                                       ],
                             Binaryen.none );
     }          

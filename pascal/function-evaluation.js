@@ -117,7 +117,6 @@ module.exports = class FunctionEvaluation {
 
     if (name.toLowerCase() == "snapshot") {
       this.type = new Identifier("integer");
-      
       return module.call( "snapshot", [], Binaryen.i32 );
     }
     

@@ -135,7 +135,7 @@ module.exports = class Identifier {
         this.type = new Identifier("integer");      
         return module.call( "getCurrentYear", [], Binaryen.i32 );
       }
-      
+
       var f = environment.resolveFunction( this );
       if (f === undefined) {
         throw `Could not find ${this.name}`;

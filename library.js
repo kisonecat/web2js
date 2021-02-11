@@ -320,7 +320,7 @@ module.exports = {
   },
 
   evaljs: function(str_number, str_poolp, str_startp, pool_ptrp, pool_size, max_strings,
-                   bufferp, firstp, lastp, max_buf_stackp, buf_size) {
+                   eqtbp,active_base,eqtb_size,count_base) {
     var str_start = new Uint32Array( memory, str_startp, max_strings+1);
     var pool_ptr = new Uint32Array( memory, pool_ptrp, 1);
     var str_pool = new Uint8Array( memory, str_poolp, pool_size+1);
@@ -328,12 +328,17 @@ module.exports = {
     var input = new Uint8Array( memory, str_poolp + str_start[str_number], length );
     var string = new TextDecoder("ascii").decode(input);
 
-    var buffer = new Uint8Array( memory, bufferp, buf_size);
-    var first = new Uint32Array( memory, firstp, 1 );
-    var last = new Uint32Array( memory, lastp, 1 );
-    // FIXME: this should not be ignored
-    var max_buf_stack = new Uint32Array( memory, max_buf_stackp, 1 );
-
+    var count = new Uint32Array( memory, eqtbp + 8*(count_base - active_base), 512 );
+    
+    const handler = {
+      get: function(target, prop, receiver) {
+        return target[2*prop];
+      },
+      set: function(target, prop, value) {
+        target[2*prop] = value;
+      }
+    };    
+    
     var tex = {
       print: function(s) {
         const encoder = new TextEncoder('ascii');
@@ -341,7 +346,8 @@ module.exports = {
         const b = Buffer.from(view);
         str_pool.set( b, pool_ptr[0] );
         pool_ptr[0] += view.length;
-      }
+      },
+      count: new Proxy(count, handler)
     };
 
     var f = Function(['tex','window'],string);
