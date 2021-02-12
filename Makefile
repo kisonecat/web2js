@@ -29,8 +29,8 @@ tex.wasm: tex.p parser.js
 	node compile.js $< $@
 
 tex-async.wasm: tex.wasm
-	echo wasm-opt --precompute-propagate --code-pushing --simplify-locals-nostructure --flatten --rereloop --rereloop --ssa-nomerge --local-cse --asyncify --pass-arg=asyncify-ignore-indirect --mod-asyncify-never-unwind --merge-blocks --remove-unused-brs --dae-optimizing --inlining-optimizing --generate-stack-ir --optimize-stack-ir --optimize-instructions --vacuum -O4 -O4 $< -o $@
-	wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect --mod-asyncify-never-unwind -O3 $< -o $@
+	wasm-opt --precompute-propagate --code-pushing --simplify-locals-nostructure --flatten --rereloop --rereloop --ssa-nomerge --local-cse --asyncify --pass-arg=asyncify-ignore-indirect --merge-blocks --remove-unused-brs --dae-optimizing --inlining-optimizing --generate-stack-ir --optimize-stack-ir --optimize-instructions --vacuum -O4 -O4 $< -o $@
+	echo wasm-opt --asyncify --pass-arg=asyncify-ignore-indirect --mod-asyncify-never-unwind -O3 $< -o $@
 
 core.dump: tex-async.wasm library.js
 	node initex.js

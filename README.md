@@ -10,6 +10,11 @@ Importantly, the jsTeX engine passes the [trip
 tests](http://texdoc.net/texmf-dist/doc/generic/knuth/tex/tripman.pdf)
 which you can verify by running `make test`.
 
+There is a [live demo](https://tex.rossprogram.org/) and a short overview available at
+
+> [J. Fowler, *Both TEX and DVI viewers inside the
+web browser*, TUGboat, Volume 40 (2019), No. 1](https://www.tug.org/TUGboat/tb40-1/tb124fowler-js.pdf).
+
 ## Prerequisites
 
 This projects depends on [NodeJS](https://nodejs.org/en/) for
@@ -75,3 +80,5 @@ Let's multiply eight by eight by eight.  \cubeit{8}
 
 Inside `\directjs`, the JavaScript function `tex.print` can be used to
 emit strings back into TeX for further processing.
+
+
