@@ -7,6 +7,25 @@ module.exports = class Stack {
     this.memory = memory;
     
     this.module.addGlobal( "stack", Binaryen.i32, true, this.module.i32.const(this.memory.pages*65536 - 1) );
+
+    var getType=this.module.addFunctionType(null,Binaryen.i32,[]);
+
+    var getCode = this.module.block(null, [
+      this.module.return(
+        this.module.global.get( "stack", Binaryen.i32 )
+      )
+    ]);
+    this.module.addFunction("getStackPointer",getType,[],getCode);
+    this.module.addFunctionExport("getStackPointer","getStackPointer");
+
+    var setType=this.module.addFunctionType(null,Binaryen.none,[Binaryen.i32]);
+    var setCode = this.module.block(null, [
+      this.module.global.set( "stack",
+                              this.module.local.get( 0, Binaryen.i32 )
+                            )
+    ]);
+    this.module.addFunction("setStackPointer",setType,[],setCode);
+    this.module.addFunctionExport("setStackPointer","setStackPointer");
   }
     
   extend(bytes) {

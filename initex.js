@@ -1,4 +1,3 @@
-
 var fs = require('fs');
 var library = require('./library');
 
@@ -34,9 +33,27 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{listings}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{epstopdf}";
 
 //preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{pgffor}\n\\RequirePackage{array}\n\\RequirePackage{tkz-euclide}\n\\RequirePackage{tikz-cd}\n";
-preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage{tikz}\n";
-//\\RequirePackage{listings}\n";
+preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage{tikz}\\RequirePackage[makeroom]{cancel}\\RequirePackage{svn-prov}\\RequirePackage{etoolbox}\\RequirePackage{url}\\RequirePackage{fancyvrb}\\RequirePackage{pgfplots}\\RequirePackage{forloop}\\RequirePackage{ifthen}\\RequirePackage{environ}\\RequirePackage{trimspaces}\\RequirePackage{amssymb}\\RequirePackage{amsfonts}\\RequirePackage{amsmath}\\RequirePackage{amstext}\\RequirePackage{amsgen}\\RequirePackage{amsbsy}\\RequirePackage{amsopn}\\RequirePackage{amsthm}\\RequirePackage{xifthen}\\RequirePackage{calc}\\RequirePackage{ifmtarg}\\RequirePackage{multido}\\RequirePackage{ltxcmds}\\RequirePackage{kvsetkeys}\\RequirePackage{nameref}\\RequirePackage{refcount}\\RequirePackage{pdfescape}\\RequirePackage{hycolor}\\RequirePackage{letltxmacro}\\RequirePackage{iftex}\\RequirePackage{pdftexcmds}\\RequirePackage{kvdefinekeys}\\RequirePackage{infwarerr} \\RequirePackage{auxhook}\\RequirePackage{intcalc}\\RequirePackage{etexcmds}\\RequirePackage{bitset}\\RequirePackage{bigintcalc}\\RequirePackage{atbegshi-ltx}\\RequirePackage{rerunfilecheck}\\RequirePackage{ifvtex}";
 
+//"\\RequirePackage{hyperref}";
+
+// 
+
+//
+// 
+
+//
+//
+//\n";
+
+// \\RequirePackage{listings}\\RequirePackage{lstmisc}\\RequirePackage{comment}\\RequirePackage{kvoptions}
+
+
+// \\RequirePackage{everyhook}
+
+//\\RequirePackage{listings}\n";\\RequirePackage{gettitlestring}\\RequirePackage{titleps}
+
+// \\RequirePackage{enumitem}\\RequirePackage{titlesec}\\RequirePackage{titletoc}\\RequirePackage{titling}\\RequirePackage{geometry}\\RequirePackage{xkeyval}
 
 //preamble = "\\catcode`\\^^@=9\\RequirePackage{expl3}\n";
 
