@@ -148,7 +148,7 @@ module.exports = {
     fs.writeSync( file.descriptor, "\n" );
   },
 
-  reset: function(length, pointer) {
+  reset: function(length, pointer) {    
     var buffer = new Uint8Array( memory, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);
 
@@ -197,7 +197,7 @@ module.exports = {
     }
     
     var path = kpse.findFile(filename, format);
-
+    
     if (path == undefined) {
       files.push({
         filename: filename,
@@ -222,7 +222,6 @@ module.exports = {
   rewrite: function(length, pointer) {
     var buffer = new Uint8Array( memory, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);    
-
     filename = filename.replace(/ +$/g,'');    
     
     if (filename == "TTY:") {
@@ -248,7 +247,7 @@ module.exports = {
   getfilesize: function(length, pointer) {
     var buffer = new Uint8Array( memory, pointer, length );
     var filename = String.fromCharCode.apply(null, buffer);
-    
+
     if (filename.startsWith('{')) {
       filename = filename.replace(/^{/g,'');
       filename = filename.replace(/}.*/g,''); 
@@ -273,6 +272,7 @@ module.exports = {
     if (filename) {
       try {
         var stats = fs.statSync(filename);
+
         return stats.size;
       } catch (e) {
         return 0;
@@ -451,6 +451,7 @@ module.exports = {
 
   snapshot: function() {
     console.log('(-snapshot-)');
+    fs.writeFileSync( 'files.json', JSON.stringify(files) );
     return 1;
   },  
 };

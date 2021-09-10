@@ -33,40 +33,101 @@ preamble = "\\documentclass{article}\n\\usepackage{nopageno}\n\\def\\pgfsysdrive
 //preamble = "\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{listings}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{epstopdf}";
 
 //preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage[makeroom]{cancel}\n\\RequirePackage{url}\n\\RequirePackage[table]{xcolor}\n\\RequirePackage{tikz}\n\\RequirePackage{pgfplots}\n\\usepgfplotslibrary{groupplots}\n\\usetikzlibrary{calc}\n\\RequirePackage{fancyvrb}\n\\RequirePackage{forloop}\n\\RequirePackage{amssymb}\n\\RequirePackage{amsmath}\n\\RequirePackage{amsthm}\n\\RequirePackage{xifthen}\n\\RequirePackage{multido}\n\\RequirePackage{comment}\n\\RequirePackage{gettitlestring}\n\\RequirePackage{nameref}\n\\RequirePackage{pgffor}\n\\RequirePackage{array}\n\\RequirePackage{tkz-euclide}\n\\RequirePackage{tikz-cd}\n";
-preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\RequirePackage{tikz}\\RequirePackage[makeroom]{cancel}\\RequirePackage{svn-prov}\\RequirePackage{etoolbox}\\RequirePackage{url}\\RequirePackage{fancyvrb}\\RequirePackage{pgfplots}\\RequirePackage{forloop}\\RequirePackage{ifthen}\\RequirePackage{environ}\\RequirePackage{trimspaces}\\RequirePackage{amssymb}\\RequirePackage{amsfonts}\\RequirePackage{amsmath}\\RequirePackage{amstext}\\RequirePackage{amsgen}\\RequirePackage{amsbsy}\\RequirePackage{amsopn}\\RequirePackage{amsthm}\\RequirePackage{xifthen}\\RequirePackage{calc}\\RequirePackage{ifmtarg}\\RequirePackage{multido}\\RequirePackage{ltxcmds}\\RequirePackage{kvsetkeys}\\RequirePackage{nameref}\\RequirePackage{refcount}\\RequirePackage{pdfescape}\\RequirePackage{hycolor}\\RequirePackage{letltxmacro}\\RequirePackage{iftex}\\RequirePackage{pdftexcmds}\\RequirePackage{kvdefinekeys}\\RequirePackage{infwarerr} \\RequirePackage{auxhook}\\RequirePackage{intcalc}\\RequirePackage{etexcmds}\\RequirePackage{bitset}\\RequirePackage{bigintcalc}\\RequirePackage{atbegshi-ltx}\\RequirePackage{rerunfilecheck}\\RequirePackage{ifvtex}";
 
-//"\\RequirePackage{hyperref}";
+libraries = [
+  "calc",
+  "positioning",
+  "fit",
+  "backgrounds",
+  "trees",
+  "arrows",
+  "shapes",
+  "shapes.geometric",
+  "shapes.misc",
+  "shapes.symbols",
+  "shapes.arrows",
+  "shapes.callouts",
+  "shapes.multipart",
+  "decorations.text",
+  "3d",
+  "angles",
+  "babel",
+  "decorations.markings",
+  "decorations.shapes",
+  "intersections",
+  "patterns",
+  "quotes",
+  "shadows",
+  "fadings",
+  "through",
+  "pgfplots.groupplots"
+]
 
-// 
+let tikzlibraries = libraries.map( (library) => `\\usetikzlibrary{${library}}` ).join('')
 
-//
-// 
+packages = [
+  "listings",
+"lstmisc",
+"everyhook",
+"svn-prov",
+"etoolbox",
+"xcolor",
+"url",
+"fancyvrb",
+"keyval",
+"tkz-euclide",
+"tikz",
+"tikz-cd",
+"pgf",
+"pgfrcs",
+"pgffor",
+"pgfkeys",
+"pgfplots",
+"forloop",
+"ifthen",
+"environ",
+"trimspaces",
+"amssymb",
+"amsfonts",
+"amsmath",
+"amstext",
+"amsgen",
+"amsbsy",
+"amsopn",
+"amsthm",
+"xifthen",
+"calc",
+  "ifmtarg",
+  "multido",
+  "comment",
+  "gettitlestring",
+"kvoptions",
+"ltxcmds",
+"kvsetkeys",
+"nameref",
+"refcount",
+"infwarerr",
+"fontenc",
+"hyperref",
+"iftex",
+"pdftexcmds",
+"kvdefinekeys",
+"pdfescape",
+"hycolor",
+"letltxmacro",
+"auxhook",
+"intcalc",
+"etexcmds",
+"bitset",
+"bigintcalc",
+"atbegshi-ltx",
+"rerunfilecheck",
+"ifvtex"
+]
 
-//
-//
-//\n";
+preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\PassOptionsToPackage{dvisvgm}{graphicx}\\PassOptionsToPackage{hypertex}{hyperref}\\RequirePackage{expl3}\\RequirePackage[makeroom]{cancel}" + packages.map( (package) => `\\RequirePackage{${package}}` ).join('') + tikzlibraries + "\\PassOptionsToClass{web}{ximera}\\let\\abovecaptionskip=\\relax\\let\\belowcaptionskip=\\relax\\let\\maketitle=\\relax\n";
 
-// \\RequirePackage{listings}\\RequirePackage{lstmisc}\\RequirePackage{comment}\\RequirePackage{kvoptions}
-
-
-// \\RequirePackage{everyhook}
-
-//\\RequirePackage{listings}\n";\\RequirePackage{gettitlestring}\\RequirePackage{titleps}
-
-// \\RequirePackage{enumitem}\\RequirePackage{titlesec}\\RequirePackage{titletoc}\\RequirePackage{titling}\\RequirePackage{geometry}\\RequirePackage{xkeyval}
-
-//preamble = "\\catcode`\\^^@=9\\RequirePackage{expl3}\n";
-
-//preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\\Requi(rePackage[table]{xcolor}\\RequirePackage{ifthen}\\RequirePackage{amsmath}\\RequirePackage{amsthm}\\RequirePackage{amssymb}\\RequirePackage{parskip}\\RequirePackage{tikz}\n";
-//preamble = "\\def\\pgfsysdriver{pgfsys-ximera.def}\n";
-//preamble="\n";
-
-//preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} \\the\\catcode`\\^^@\\Ucharcat 65 10 is an A? \\end{document}\n";
-//preamble = "\\documentclass{article}\n\\begin{document}hello\\end{document}\n";
-//preamble = "\\input{hello.tex}\n";
-//preamble = "";
-//preamble = "\\documentclass{article}\n\\begin{document}\\lowercase{HELLO} I am testing things here.\\directjs{var x = 17; tex.print(\"hello there\" + (x*x*x).toString());tex.print(\"\\\\n\\\\nthis is a new line\\\\n\\\\n\");}\\end{document}\n";
-//preamble = "\\input{downcase.tex}\n";
+preamble = preamble + "\\documentclass{ximera}\\renewcommand{\\documentclass}[2][]{}\\snapshot\n";
 
 library.setMemory(memory.buffer);
 library.setInput("\n&latex\n" + preamble + "\n\n\n",
